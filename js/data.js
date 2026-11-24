@@ -24,6 +24,53 @@ var THEMES = {
 if (state && !THEMES[state.theme]) state.theme = 'bear';
 if (!THEMES[setupSel.theme]) setupSel.theme = 'bear';
 function theme() { return THEMES[(state && state.theme)] || THEMES.bear; }
+
+/* ================= design system: fonts + candy chrome ================= */
+var FONT_MAIN = '"Baloo 2","Baloo Bhaijaan 2",ui-rounded,sans-serif';
+var INK = 0x3b2a5e;
+function mixCol(a, b, t) {
+    var ar = a >> 16 & 255, ag = a >> 8 & 255, ab = a & 255;
+    var br = b >> 16 & 255, bg = b >> 8 & 255, bb = b & 255;
+    return (Math.round(ar + (br - ar) * t) << 16) | (Math.round(ag + (bg - ag) * t) << 8) | Math.round(ab + (bb - ab) * t);
+}
+/* candy chrome: drop shadow + darker bottom lip + vertical gradient + top sheen + outline */
+function candyPanel(scene, x, y, w, h, r, cMain, o) {
+    o = o || {};
+    var cTop = o.top != null ? o.top : mixCol(cMain, 0xffffff, .30);
+    var cBot = o.bottom != null ? o.bottom : mixCol(cMain, 0x000000, .06);
+    var lip = o.lip == null ? 5 : o.lip;
+    var g = scene.add.graphics();
+    if (o.shadow !== false) {
+        g.fillStyle(0x2a1f4d, o.shadowA == null ? .16 : o.shadowA);
+        g.fillRoundedRect(x + 2, y + 5, w, h, r);
+    }
+    if (lip > 0) {
+        g.fillStyle(o.lipColor != null ? o.lipColor : mixCol(cMain, 0x000000, .30), 1);
+        g.fillRoundedRect(x, y + lip, w, h - lip, r);
+    }
+    g.fillGradientStyle(cTop, cTop, cBot, cBot, 1, 1, 1, 1);
+    g.fillRoundedRect(x, y, w, h - lip, r);
+    if (o.sheen !== false) {
+        g.fillStyle(0xffffff, o.sheenA == null ? .22 : o.sheenA);
+        g.fillRoundedRect(x + 4, y + 3, w - 8, Math.max(8, Math.round((h - lip) * .34)), { tl: r - 4 > 0 ? r - 4 : 2, tr: r - 4 > 0 ? r - 4 : 2, bl: Math.round(r * .5), br: Math.round(r * .5) });
+    }
+    if (o.border != null) {
+        g.lineStyle(o.borderW || 3, o.border, o.borderA == null ? 1 : o.borderA);
+        g.strokeRoundedRect(x, y, w, h - lip, r);
+    }
+    return g;
+}
+/* press bounce for any interactive object */
+function pressBounce(scene, obj, s) {
+    s = s || .88;
+    scene.tweens.add({ targets: obj, scaleX: s, scaleY: s, duration: 90, yoyo: true, ease: 'Quad.easeOut' });
+}
+/* scene-change with a soft fade */
+function goScene(scene, key, data) {
+    scene.cameras.main.fadeOut(160, 255, 255, 255);
+    scene.cameras.main.once('camerafadeoutcomplete', function () { scene.scene.start(key, data); });
+}
+function fadeSceneIn(scene, ms) { scene.cameras.main.fadeIn(ms || 200, 255, 255, 255); }
 /* drawn UI icons (no OS emoji) */
 function drawSpeakerIcon(scene, x, y, k, color, on) {
     var g = scene.add.graphics();

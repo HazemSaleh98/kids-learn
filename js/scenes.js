@@ -150,11 +150,11 @@ class HomeScene extends Phaser.Scene {
         addCloud(this, 'cloud3', 170, 68000, .5, -26000);
         addCloud(this, 'cloud4', 250, 56000, .42, -12000).setAlpha(.75);
 
+        fadeSceneIn(this, 180);
         /* top bar */
-        var pill = this.add.graphics();
-        pill.fillStyle(0xffb03d, 1).fillRoundedRect(14, 16, 92, 44, 22);
-        this.add.image(38, 38, 'tile_star').setScale(.24);
-        this.starTxt = this.add.text(56, 38, String((state && state.stars) || 0), { fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
+        candyPanel(this, 14, 14, 94, 44, 22, 0xffb03d, { lipColor: 0xd17f1a });
+        this.add.image(38, 36, 'tile_star').setScale(.24);
+        this.starTxt = this.add.text(56, 36, String((state && state.stars) || 0), { fontFamily: FONT_MAIN, fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
         this.muteBtn = this.add.container(W - 116, 38);
         this.muteIc = drawSpeakerIcon(this, 0, 0, 1, 0x3b2a5e, !(state && state.muted));
         this.muteBtn.add(this.muteIc);
@@ -181,12 +181,11 @@ class HomeScene extends Phaser.Scene {
         /* mascot + bubble */
         var m = mascotWithFace(this, 78, 166, 96);
         makeSquish(this, m, 1);
+        candyPanel(this, 152, 106, 224, 96, 20, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
         var bb = this.add.graphics();
-        bb.fillStyle(0xffffff, 1).fillRoundedRect(152, 106, 224, 96, 20);
-        bb.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(152, 106, 224, 96, 20);
-        bb.fillStyle(0xffd93d, 1).fillTriangle(152, 172, 152, 146, 132, 162);
-        this.add.text(166, 126, 'Hi, ' + kidName() + '!', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
-        this.add.text(166, 158, "Let's play and learn\nwith " + charName() + '!', { fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
+        bb.fillStyle(0xffd93d, 1).fillTriangle(154, 172, 154, 146, 134, 162);
+        this.add.text(166, 126, 'Hi, ' + kidName() + '!', { fontFamily: FONT_MAIN, fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
+        this.add.text(166, 158, "Let's play and learn\nwith " + charName() + '!', { fontFamily: FONT_MAIN, fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
 
         /* game spots: scrollable grid */
         var world = this.add.container(0, 0);
@@ -199,10 +198,7 @@ class HomeScene extends Phaser.Scene {
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
             var cx = (i % 2 === 0) ? 102 : 288, cy = 248 + Math.floor(i / 2) * 106;
             var btn = s.add.container(cx, cy);
-            var bg2 = s.add.graphics();
-            bg2.fillStyle(col[1], 1).fillRoundedRect(-78, -42, 156, 100, 22); /* shadow lip */
-            bg2.fillStyle(col[0], 1).fillRoundedRect(-78, -50, 156, 100, 22);
-            btn.add(bg2);
+            btn.add(candyPanel(s, -78, -50, 156, 102, 22, col[0], { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), borderW: 2, borderA: .6 }));
             var circ = s.add.graphics();
             circ.fillStyle(0xffffff, 1).fillCircle(0, -26, 23);
             btn.add(circ);
@@ -215,12 +211,12 @@ class HomeScene extends Phaser.Scene {
                 var ico = s.add.image(0, -26, g.ico).setScale((g.icos || .4) * .68);
                 if (g.icoTint) ico.setTint(g.icoTint);
                 btn.add(ico);
-                if (g.icoText) btn.add(s.add.text(0, -26, g.icoText, { fontSize: '18px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                if (g.icoText) btn.add(s.add.text(0, -26, g.icoText, { fontFamily: FONT_MAIN, fontSize: '18px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             }
-            btn.add(s.add.text(0, 2, g.title, { fontSize: '14.5px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
-            btn.add(s.add.text(0, 20, g.sub, { fontSize: '10px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
+            btn.add(s.add.text(0, 2, g.title, { fontFamily: FONT_MAIN, fontSize: '14.5px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+            btn.add(s.add.text(0, 20, g.sub, { fontFamily: FONT_MAIN, fontSize: '10px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
+            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
             btn.setSize(156, 100);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerup', function () {
@@ -261,5 +257,5 @@ var SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8], [0xff9f43, 0xe07f1
 
 function startGameScene(scene, id) {
     var key = GAMES[id] && GAMES[id].scene;
-    if (key && scene.scene.get(key)) scene.scene.start(key);
+    if (key && scene.scene.get(key)) goScene(scene, key);
 }
