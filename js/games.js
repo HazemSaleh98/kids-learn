@@ -232,6 +232,7 @@ class GameBase extends Phaser.Scene {
             scale: { start: .3, end: 0 }, lifespan: 900, gravityY: 300, emitting: false
         });
         burst.explode(14);
+        SFX.play('sparkle'); SFX.play('cheer');
         var conf = this.add.particles(0, -10, 'conf', {
             x: { min: 0, max: W }, speedY: { min: 120, max: 300 }, speedX: { min: -60, max: 60 },
             scale: { min: .5, max: 1.1 }, lifespan: 2200, rotate: { min: 0, max: 360 },
@@ -263,6 +264,7 @@ class GameBase extends Phaser.Scene {
         var s = this;
         this.levelUpMaybe(false); save();
         if (targets) this.tweens.add({ targets: targets, x: '+=8', duration: 60, yoyo: true, repeat: 3, onComplete: function () { } });
+        SFX.play('buzz');
         if (!(state && state.muted)) VO.oops();
     }
     popParticles(x, y, tint) {
@@ -303,6 +305,7 @@ class LettersScene extends GameBase {
                 if (s.roundLock || c.dead) return;
                 if (ch === cur.target) {
                     c.dead = true;
+                    SFX.play('pop');
                     s.popParticles(c.x, c.y, [tintPool[i % tintPool.length], 0xffffff]);
                     s.tweens.add({ targets: c, scaleX: 1.5, scaleY: 1.5, alpha: 0, duration: 220, onComplete: function () { c.destroy(); } });
                     if (!(state && state.muted)) VO.mini();
@@ -356,6 +359,7 @@ class FeedScene extends GameBase {
                         onComplete: function () {
                             card.destroy();
                             /* munch */
+                            SFX.play('munch');
                             s.tweens.add({ targets: m, scaleY: .88, scaleX: 1.1, duration: 110, yoyo: true, repeat: 3 });
                             s.tweens.add({ targets: m, y: m.y - 46, duration: 260, yoyo: true, ease: 'Quad.easeOut' });
                             s.popParticles(m.x, m.y - 30, [0xffd93d, 0xff9f43]);
@@ -441,9 +445,11 @@ class TrainScene extends GameBase {
                         }
                     });
                     /* sound-out: each placed grapheme says its sound */
+                    SFX.play('note', s.placedCount);
                     if (!(state && state.muted)) VO.say(phKey(tile.g));
                     s.placedCount++;
                     if (s.placedCount >= L) {
+                        SFX.play('whoosh');
                         /* then the whole word */
                         if (!(state && state.muted)) s.time.delayedCall(650, function () { VO.say('word_' + word); });
                         s.roundObjs.forEach(function (o) {
@@ -496,6 +502,7 @@ class CountScene extends GameBase {
                 zone.on('pointerdown', function () {
                     if (s.roundLock) return;
                     if (n === cur.answer) {
+                        SFX.play('chime');
                         s.popParticles(px, 420, [0xffd93d, 0x4ade80]);
                         s.win();
                     } else s.oopsAt(null);
@@ -536,6 +543,7 @@ class CountScene extends GameBase {
                 it.on('pointerdown', function () {
                     if (s.roundLock || it.dead) return;
                     it.dead = true;
+                    SFX.play('munch');
                     cur.got++;
                     s.cntTxt.setText(String(cur.got));
                     s.tweens.add({ targets: s.cntTxt, scaleX: 1.7, scaleY: 1.7, duration: 140, yoyo: true });
@@ -602,6 +610,7 @@ class RocketScene extends GameBase {
                         lifespan: 600, tint: [0xffb03d, 0xff6b35, 0xfff3b0], frequency: 40
                     });
                     s.track(blast);
+                    SFX.play('whoosh');
                     s.tweens.killTweensOf(r);
                     s.tweens.add({ targets: r, y: -220, duration: 850, ease: 'Quad.easeIn' });
                     if (!(state && state.muted)) VO.mini();
@@ -669,6 +678,7 @@ class SortScene extends GameBase {
                     pc.disableInteractive();
                     hit.sil.setAlpha(0);
                     s.tweens.add({ targets: pc, scaleX: pc.bs * 1.15, scaleY: pc.bs * 1.15, duration: 140, yoyo: true, ease: 'Back.easeOut' });
+                    SFX.play('chime');
                     s.popParticles(hit.x, hit.y, [0xffffff, 0xffd93d]);
                     if (!(state && state.muted)) VO.mini();
                     s.sortFilled++;
@@ -752,6 +762,7 @@ class PatternScene extends GameBase {
                     s.tweens.add({
                         targets: c, x: s.missPos.x, y: s.missPos.y, scaleX: .55, scaleY: .55, duration: 350, ease: 'Back.easeOut',
                         onComplete: function () {
+                            SFX.play('pop');
                             s.popParticles(s.missPos.x, s.missPos.y, [0x2ecc71, 0xffd93d]);
                             if (!(state && state.muted) && cur.mode === 'num') VO.say('num_' + cur.answer);
                             /* train chugs off */
@@ -869,7 +880,7 @@ class StoryScene extends Phaser.Scene {
         this.layer.push(dots);
         /* buttons: replay, next/end */
         var rp = this.add.text(96, 720, '🔊', { fontSize: '34px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
-        rp.on('pointerdown', function () { s.narrate(); });
+        rp.on('pointerdown', function () { SFX.play('tap'); s.narrate(); });
         this.layer.push(rp);
         var last = this.page >= this.pages.length - 1;
         var nx = this.add.container(W - 110, 720);
@@ -880,6 +891,7 @@ class StoryScene extends Phaser.Scene {
         nx.setSize(168, 68); nx.setInteractive({ useHandCursor: true });
         nx.on('pointerdown', function () {
             if (s.finished) return;
+            SFX.play('tap');
             if (last) { s.finished = true; nx.disableInteractive(); s.finishStory(); }
             else { s.page++; s.showPage(); }
         });

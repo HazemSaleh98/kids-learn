@@ -160,6 +160,7 @@ class HomeScene extends Phaser.Scene {
             btn.setSize(176, 140);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerdown', function () {
+                SFX.play('tap');
                 s.tweens.add({ targets: btn, scaleX: .93, scaleY: .93, duration: 90, yoyo: true });
                 s.time.delayedCall(140, function () { startGameScene(s, id); });
             });
@@ -169,6 +170,8 @@ class HomeScene extends Phaser.Scene {
             s.tweens.add({ targets: btn, angle: i % 2 ? 1.4 : -1.4, duration: 2400 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         });
         VO.hello();
+        /* unlock WebAudio on first touch */
+        this.input.once('pointerdown', function () { SFX.unlock(); });
     }
 }
 var SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8], [0xff9f43, 0xe07f1a], [0x2ecc71, 0x22a355], [0x9b59f5, 0x7a3fd4], [0xff5f57, 0xe03e36]];
