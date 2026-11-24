@@ -180,7 +180,7 @@ class HomeScene extends Phaser.Scene {
         this.gear.on('pointerout', function () { if (holdT) { holdT.remove(); holdT = null; } });
 
         /* mascot + bubble */
-        var m = mascotWithFace(this, 78, 166, 96);
+        var m = mascotWithFace(this, 74, 162, 116);
         makeSquish(this, m, 1);
         candyPanel(this, 152, 106, 224, 96, 20, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
         var bb = this.add.graphics();

@@ -467,7 +467,7 @@ class LettersScene extends GameBase {
     constructor() { super('g_letters', 'letters'); }
     buildRound(cur) {
         var s = this;
-        s.addPlayBuddy(W - 64, 752, 92);
+        s.addPlayBuddy(W - 66, 744, 110);
         var tintPool = [0xffc7dd, 0xbfe6ff, 0xc7f9cc, 0xfff3b0, 0xe5ccff, 0xffd9b3];
         var cols = 3, rows = 3;
         cur.chars.forEach(function (ch, i) {
@@ -566,7 +566,7 @@ class TrainScene extends GameBase {
     constructor() { super('g_train', 'spelling'); }
     buildRound(cur) {
         var s = this;
-        s.addPlayBuddy(60, 762, 84);
+        s.addPlayBuddy(58, 752, 102);
         var word = cur.word, graphs = cur.graphs, L = graphs.length;
         /* word picture (if one exists) */
         if (this.textures.exists('w_' + word)) {
@@ -699,7 +699,7 @@ class CountScene extends GameBase {
             return;
         }
         /* ---- count & feed ---- */
-        var m = mascotWithFace(this, W - 92, 205, 120);
+        var m = mascotWithFace(this, W - 96, 210, 136);
         this.track(m);
         makeSquish(this, m, 1);
         this.cntTxt = this.add.text(90, 205, '0', { fontFamily: FONT_MAIN, fontSize: '54px', fontStyle: '900', color: '#e07f1a' }).setOrigin(.5);
@@ -759,7 +759,7 @@ class RocketScene extends GameBase {
     constructor() { super('g_rocket', 'math'); this.bgKey = 'bg_space'; }
     buildRound(cur) {
         var s = this;
-        s.addPlayBuddy(W - 62, 372, 96);
+        s.addPlayBuddy(W - 64, 366, 112);
         /* equation */
         var eqG = this.add.graphics();
         eqG.fillStyle(0x1e2a5e, .92).fillRoundedRect(W / 2 - 130, 165, 260, 76, 24);
@@ -819,7 +819,7 @@ class SortScene extends GameBase {
     constructor() { super('g_sort', 'shapes'); }
     buildRound(cur) {
         var s = this;
-        s.addPlayBuddy(64, 770, 82);
+        s.addPlayBuddy(60, 760, 98);
         var holes = [];
         /* holes (homes) at bottom */
         cur.holes.forEach(function (h, i) {
@@ -895,7 +895,7 @@ class PatternScene extends GameBase {
     constructor() { super('g_pattern', 'pattern'); }
     buildRound(cur) {
         var s = this;
-        s.addPlayBuddy(64, 742, 92);
+        s.addPlayBuddy(60, 730, 110);
         /* engine + cars row */
         var n = cur.mode === 'num' ? cur.seq.length : cur.seq.length + 1;
         var gap = 8;
@@ -983,7 +983,7 @@ class MemoryScene extends GameBase {
         var n = cur.words.length * 2, rows = n / 4;
         var cw = 84, x0 = 57, stepX = 92;
         var y0 = rows === 3 ? 252 : 212, rowH = rows === 3 ? 148 : 126;
-        s.addPlayBuddy(W / 2, rows === 3 ? 726 : 730, rows === 3 ? 96 : 88);
+        s.addPlayBuddy(W / 2, rows === 3 ? 722 : 726, rows === 3 ? 110 : 100);
         var cards = [];
         cur.words.forEach(function (w) {
             if (cur.mode === 'letter') {
@@ -1090,7 +1090,7 @@ class BalloonScene extends GameBase {
         this.spawnIn = 0;
         this.balloons = [];
         /* the buddy catcher */
-        var m = mascotWithFace(this, W / 2, H - 150, 120);
+        var m = mascotWithFace(this, W / 2, H - 158, 140);
         this.catcher = m;
         this.track(m);
         makeSquish(this, m, 1);
@@ -1182,7 +1182,7 @@ class RunScene extends GameBase {
         var sh = this.add.ellipse(92, this.gy + 2, 74, 16, 0x2a1f4d, .22);
         this.track(sh);
         /* runner buddy (the kid's buddy runs) */
-        var m = mascotWithFace(this, 92, this.gy - 50, 92);
+        var m = mascotWithFace(this, 92, this.gy - 54, 110);
         this.runner = m; this.baseY = this.gy - 50; this.jumping = false;
         this.track(m);
         this.tweens.add({ targets: m, scaleY: .93, scaleX: 1.04, duration: 140, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -1312,7 +1312,7 @@ class TraceScene extends GameBase {
         this.input.on('pointerdown', function (p) { s.paint(p); });
         this.input.on('pointermove', function (p) { if (p.isDown) s.paint(p); });
         this.input.on('pointerup', function () { s.lastP = null; });
-        this.addPlayBuddy(74, 690, 78);
+        this.addPlayBuddy(66, 682, 94);
     }
     paint(p) {
         if (this.roundLock || !this.pts) return;
@@ -1380,7 +1380,7 @@ class HopScene extends GameBase {
         });
         /* buddy stands on the start pad */
         var sp2 = this.startPad || this.pads[0];
-        var m = mascotWithFace(this, sp2.x, sp2.y - 52, 84);
+        var m = mascotWithFace(this, sp2.x, sp2.y - 56, 96);
         this.hopper = m;
         this.track(m);
         makeSquish(this, m, 1);
@@ -1446,7 +1446,7 @@ class BuildScene extends GameBase {
         });
         this.pulseDot();
         this.input.on('pointermove', function (p) { if (p.isDown) s.dragCheck(p); });
-        this.addPlayBuddy(72, 730, 74);
+        this.addPlayBuddy(68, 722, 90);
     }
     pulseDot() {
         var d = this.dots[this.nextDot];
@@ -1566,7 +1566,7 @@ class MachineScene extends GameBase {
             s.track(c);
             s.chips.push(c);
         });
-        this.addPlayBuddy(66, 780, 78);
+        this.addPlayBuddy(62, 772, 96);
     }
     tapChip(c) {
         if (this.roundLock || c.done) return;
