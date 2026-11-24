@@ -1,0 +1,12 @@
+{"voice":"Orus (Shalabi), warm friendly big-brother monster, Egyptian Arabic with short simple English words","files_dir":"assets/audio/sh/<key>.mp3","register_in":"SH_FILES in js/teacher.js (set key to true)","lines":{
+"map_hello":"يا هلا يا بطل! أنا شلبي معلمك. يلا نلعب ونتعلم إنجليزي!",
+"letters_party":"يلا نعمل حفلة حروف! فرقع الفقاعة الصح!",
+"letter_listen":"اسمع الحرف وقوله معايا!",
+"word_listen":"اسمع الكلمة وقولها معايا!",
+"sent_listen":"اسمع الجملة وقولها معايا!",
+"pick_letter":"فرقع الحرف الصح!",
+"pick_word":"فرقع الكلمة الصح!",
+"sent_pick":"اسمع الجملة وفرقع الصورة الصح!",
+"sent_build":"ركّب الجملة بالترتيب!",
+"try_again":"قربت! جرب تاني يا بطل!",
+"lesson_done":"برافو عليك! خلصت اللعبة دي!"}}

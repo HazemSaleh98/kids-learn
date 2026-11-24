@@ -33,6 +33,7 @@ class BootScene extends Phaser.Scene {
         ['stand', 'walk1', 'walk2', 'jump', 'ready', 'hurt'].forEach(function (p) { this.load.image('bunny_' + p, 'bunny/bunny1_' + p + '.png'); }, this);
         Object.keys(WIMG).forEach(function (w) { this.load.image('w_' + w, WIMG[w]); }, this);
         Object.keys(STORY_ART_HAS).forEach(function (sid) { for (var pi = 1; pi <= 5; pi++) this.load.image('storyart_' + sid + '_p' + pi, 'story/' + sid + '_p' + pi + '.jpg'); }, this);
+        this.load.image('teacher_duo', 'teacher/shalabi_duo.png');
         Object.keys(GAMES).forEach(function (gid) { this.load.image('icon_' + gid, 'icons/' + gid + '.png'); }, this);
         for (var d = 0; d <= 9; d++) this.load.image('tile_' + d, 'tiles/tile' + d + '.png');
         /* photo face (data URL) loads on demand in HomeScene */
@@ -243,6 +244,52 @@ class HomeScene extends Phaser.Scene {
         bb.fillStyle(0xffd93d, 1).fillTriangle(150, 156, 150, 134, 132, 146);
         this.add.text(162, 116, 'Hi, ' + kidName() + '!', { fontFamily: FONT_MAIN, fontSize: '22px', fontStyle: '900', color: '#3b2a5e' });
         this.add.text(162, 148, "Let's play and learn\nwith " + charName() + '!', { fontFamily: FONT_MAIN, fontSize: '15px', fontStyle: '700', color: '#7a7194' });
+
+
+        /* Teacher Shalabi banner (opens the English curriculum) */
+        (function () {
+            var bx = 14, by = 206, bw = 362, bh = 78;
+            var bn = s.add.container(0, 0);
+            bn.add(candyPanel(s, bx, by, bw, bh, 26, 0x3d9bf0, { lipColor: 0x2368c4, top: 0x7fd0ff, bottom: 0x3d8bf0, border: 0xffffff, borderW: 3 }));
+            var prog = (typeof Teacher !== 'undefined') ? Teacher.progress() : { done: 0, total: 17 };
+            if (s.textures.exists('teacher_duo')) {
+                var duo = s.add.image(bx + 56, by + bh - 4, 'teacher_duo').setOrigin(.5, 1);
+                duo.setScale(92 / duo.height);
+                bn.add(duo);
+                s.tweens.add({ targets: duo, y: by + bh - 10, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            }
+            bn.add(s.add.text(bx + 112, by + 12, 'Teacher Shalabi', { fontFamily: FONT_MAIN, fontSize: '24px', fontStyle: '900', color: '#fff', stroke: '#1f5fb8', strokeThickness: 5 }));
+            bn.add(s.add.text(bx + 112, by + 42, 'English lessons with Shalabi', { fontFamily: FONT_MAIN, fontSize: '13px', fontStyle: '800', color: '#eaf6ff' }));
+            var pill = s.add.text(bx + 112, by + 58, prog.done + ' / ' + prog.total + ' games done', { fontFamily: FONT_MAIN, fontSize: '11px', fontStyle: '900', color: '#4a2c00', backgroundColor: '#ffd93d', padding: { x: 7, y: 1 } });
+            bn.add(pill);
+            var go = s.add.text(bx + bw - 44, by + bh / 2 - 2, '\u25B6', { fontFamily: FONT_MAIN, fontSize: '30px', color: '#fff', stroke: '#1f5fb8', strokeThickness: 5 }).setOrigin(.5);
+            bn.add(go);
+            s.tweens.add({ targets: go, x: bx + bw - 38, duration: 500, yoyo: true, repeat: -1 });
+            var sheen = s.add.graphics();
+            sheen.fillStyle(0xffffff, .28).fillRoundedRect(0, 0, 26, bh - 10, 8);
+            sheen.setPosition(bx + 20, by + 5).setAngle(8);
+            var gm = s.make.graphics({ x: 0, y: 0, add: false }); gm.fillStyle(0xffffff).fillRoundedRect(bx, by, bw, bh - 4, 26);
+            sheen.setMask(gm.createGeometryMask());
+            s.tweens.add({ targets: sheen, x: bx + bw, duration: 1300, repeat: -1, repeatDelay: 2600, ease: 'Sine.easeInOut' });
+            bn.add(sheen);
+            if (prog.done === 0) {
+                var nw = s.add.text(bx + bw - 14, by - 2, 'NEW', { fontFamily: FONT_MAIN, fontSize: '13px', fontStyle: '900', color: '#fff', backgroundColor: '#ff4d6d', padding: { x: 7, y: 2 } }).setOrigin(1, .5).setAngle(8);
+                bn.add(nw);
+                s.tweens.add({ targets: nw, scale: 1.18, duration: 500, yoyo: true, repeat: -1 });
+            }
+            var hit = s.add.zone(bx + bw / 2, by + bh / 2, bw, bh).setInteractive({ useHandCursor: true });
+            hit.on('pointerup', function () {
+                if (s._scrolled) return;
+                SFX.play('tap');
+                s.tweens.add({ targets: bn, scaleX: .97, scaleY: .97, duration: 80, yoyo: true });
+                s.time.delayedCall(120, function () { Teacher.open(); });
+            });
+            bn.setScale(0); bn.setPosition(W / 2, by + bh / 2);
+            bn.each(function (c) { c.x += 0; });
+            bn.setScale(1); bn.setPosition(0, 0);
+            bn.setAlpha(0);
+            s.tweens.add({ targets: bn, alpha: 1, duration: 400, delay: 150 });
+        })();
 
         /* game spots: horizontal paged carousel, 4 per page */
         var world = this.add.container(0, 0);
