@@ -140,23 +140,23 @@ class HomeScene extends Phaser.Scene {
         ids.forEach(function (id, i) {
             var g = GAMES[id];
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
-            var cx = (i % 2 === 0) ? 102 : 288, cy = 330 + Math.floor(i / 2) * 168;
+            var cx = (i % 2 === 0) ? 102 : 288, cy = 322 + Math.floor(i / 2) * 148;
             var btn = s.add.container(cx, cy);
             var bg2 = s.add.graphics();
-            bg2.fillStyle(col[1], 1).fillRoundedRect(-88, -72, 176, 152, 28); /* shadow lip */
-            bg2.fillStyle(col[0], 1).fillRoundedRect(-88, -80, 176, 152, 28);
+            bg2.fillStyle(col[1], 1).fillRoundedRect(-88, -66, 176, 138, 26); /* shadow lip */
+            bg2.fillStyle(col[0], 1).fillRoundedRect(-88, -74, 176, 138, 26);
             btn.add(bg2);
             var circ = s.add.graphics();
-            circ.fillStyle(0xffffff, 1).fillCircle(0, -34, 30);
+            circ.fillStyle(0xffffff, 1).fillCircle(0, -34, 28);
             btn.add(circ);
             var ico = s.add.image(0, -34, g.ico).setScale(g.icos || .4);
             if (g.icoTint) ico.setTint(g.icoTint);
             btn.add(ico);
-            btn.add(s.add.text(0, 8, g.title, { fontSize: '17px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
-            btn.add(s.add.text(0, 30, g.sub, { fontSize: '11.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
+            btn.add(s.add.text(0, 2, g.title, { fontSize: '17px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+            btn.add(s.add.text(0, 24, g.sub, { fontSize: '11.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 52, 'Level ' + lv, { fontSize: '11px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 8, y: 2 } }).setOrigin(.5));
-            btn.setSize(176, 152);
+            btn.add(s.add.text(0, 46, 'Level ' + lv, { fontSize: '11px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 8, y: 2 } }).setOrigin(.5));
+            btn.setSize(176, 140);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerdown', function () {
                 s.tweens.add({ targets: btn, scaleX: .93, scaleY: .93, duration: 90, yoyo: true });

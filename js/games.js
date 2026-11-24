@@ -1,56 +1,94 @@
 'use strict';
 /* ================= round generators (KG curriculum, auto-leveling) ================= */
 GAMES.letters.gen = function (lvl, kg) {
-    var target, pool, mode = 'upper';
-    if (kg === 'kg2') {
-        if (lvl >= 3) mode = 'phonics';
-        else { mode = 'lower'; pool = lvl < 2 ? LETTERS.slice(0, 10) : LETTERS; }
-    } else {
-        pool = lvl < 2 ? LETTERS.slice(0, 10) : lvl < 4 ? LETTERS.slice(0, 18) : LETTERS;
-    }
-    if (mode === 'phonics') { target = pick(LETTERS); pool = LETTERS; }
-    else target = pick(pool);
-    var disp = mode === 'lower' ? target.toLowerCase() : target;
-    var others = sample(pool, 8, [target]);
-    if (mode === 'lower') others = others.map(function (l) { return l.toLowerCase(); });
-    var chars = shuffle([disp, disp, disp].concat(others.slice(0, 6)));
-    var instr = mode === 'phonics' ? 'Pop the letter that says "' + SOUNDS[target] + '"!' : 'Pop every ' + disp + ' bubble!';
-    var keys = mode === 'phonics' ? ['instr_letters_phonics', 'ph_' + target.toLowerCase()]
-        : ['instr_letters_1', 'letter_' + target.toLowerCase(), 'instr_letters_2'];
+    kg = kg || 'kg1';
+    var groups = PHON[kg];
+    var gi = Math.min(lvl, groups.length) - 1;
+    var current = groups[gi].split(' ');
+    var unlocked = unlockedPhon(kg, lvl);
+    var target = pick(current);
+    var mode = (kg === 'kg1' && lvl <= 2) ? 'upper' : 'phonics';
+    var disp = mode === 'upper' ? target.toUpperCase() : phDisp(target);
+    var others = sample(unlocked, 8, [target]);
+    var chars = shuffle([disp, disp, disp].concat(others.slice(0, 6).map(function (g) {
+        return mode === 'upper' ? g.toUpperCase() : phDisp(g);
+    })));
+    var instr = mode === 'upper' ? 'Pop every ' + disp + ' bubble!' : 'Pop the sound "' + phDisp(target) + '"!';
+    var keys = mode === 'upper'
+        ? ['instr_letters_1', 'letter_' + target.toLowerCase(), 'instr_letters_2']
+        : ['instr_letters_phonics', phKey(target)];
     return { mode: mode, target: disp, chars: chars, hits: 0, need: 3, instr: instr, keys: keys };
 };
 GAMES.words.gen = function (lvl, kg) {
-    if (kg === 'kg2' && lvl >= 3) {
-        var ansS = pick(SIGHT);
-        var optsS = shuffle([ansS].concat(sample(SIGHT, 3, [ansS])));
+    kg = kg || 'kg1';
+    /* sight-word reading at the top of each stage */
+    if ((kg === 'kg2' && lvl >= 4) || (kg === 'g1' && lvl >= 3)) {
+        var poolS = sightPool(kg);
+        var ansS = pick(poolS);
+        var optsS = shuffle([ansS].concat(sample(poolS, 3, [ansS])));
         return { mode: 'read', word: ansS, options: optsS, instr: 'Give me the word "' + ansS + '"!', keys: ['instr_feed_1', 'sight_' + ansS], answer: ansS };
     }
-    var pool = kg === 'kg2' ? WORDS2.concat(WORDS3) : (lvl < 2 ? WORDS1 : lvl < 4 ? WORDS1.concat(WORDS2) : ALLWORDS);
+    /* blend-to-feed: hear the sounds, pick the picture */
+    if (kg !== 'kg1' || lvl >= 4) {
+        var ansB = pick(ALLWORDS);
+        var othersB = sample(ALLWORDS, 3, [ansB]);
+        var gs = graphemesOf(ansB);
+        var keysB = ['instr_blend_1'].concat(gs.map(phKey)).concat(['instr_blend_2']);
+        return { mode: 'pic', word: ansB, options: shuffle([ansB].concat(othersB)), instr: 'Sound it out and feed me!', keys: keysB, answer: ansB };
+    }
+    var pool = lvl < 2 ? WORDS1 : WORDS1.concat(WORDS2);
     var ans = pick(pool);
     var opts = shuffle([ans].concat(sample(pool, 3, [ans])));
     return { mode: 'pic', word: ans, options: opts, instr: 'Give me the ' + ans + '!', keys: ['instr_feed_1', 'word_' + ans], answer: ans };
 };
 GAMES.spelling.gen = function (lvl, kg) {
-    var pool = kg === 'kg2' ? WORDS2.concat(WORDS3) : (lvl < 2 ? WORDS1 : lvl < 4 ? WORDS2 : WORDS3);
+    kg = kg || 'kg1';
+    var pool = decodablePool(kg, lvl);
     var ans = pick(pool);
-    var keys = ['instr_train_1'].concat(ans.split('').map(function (c) { return 'letter_' + c; }));
-    keys.push('word_' + ans);
-    return { word: ans, tiles: shuffle(ans.split('').map(function (c, i) { return { c: c, id: i }; })), instr: 'Build the word!', keys: keys, answer: ans };
+    var gs = graphemesOf(ans);
+    return { word: ans, graphs: gs, tiles: shuffle(gs.map(function (g, i) { return { g: g, id: i }; })),
+        instr: 'Build the word! Tap the sounds!', keys: ['instr_train_1'], answer: ans };
 };
 GAMES.counting.gen = function (lvl, kg) {
-    var max = kg === 'kg2' ? (lvl < 2 ? 10 : lvl < 4 ? 15 : 20) : (lvl < 2 ? 5 : 10);
+    kg = kg || 'kg1';
+    /* more / less rounds from L3 */
+    if (lvl >= 3 && rnd(2) === 0) {
+        var hi = kg === 'g1' ? 20 : 10;
+        var a = 1 + rnd(hi), b = 1 + rnd(hi);
+        while (b === a) b = 1 + rnd(hi);
+        var askMore = rnd(2) === 0;
+        return { mode: 'more', a: a, b: b, askMore: askMore, img: pick(CNTIMG),
+            instr: askMore ? 'Which plate has MORE?' : 'Which plate has LESS?',
+            keys: [askMore ? 'instr_more_1' : 'instr_less_1'],
+            answer: askMore ? Math.max(a, b) : Math.min(a, b) };
+    }
+    var max = kg === 'g1' ? (lvl < 3 ? 20 : 30) : kg === 'kg2' ? (lvl < 2 ? 10 : lvl < 4 ? 15 : 20) : (lvl < 2 ? 5 : 10);
     var n = 1 + rnd(max);
     var img = pick(CNTIMG);
     var extra = Math.min(4, Math.ceil(n / 3));
-    return { n: n, img: img, total: n + extra, got: 0, instr: 'Give me ' + n + ' ' + (n === 1 ? 'piece' : 'pieces') + '!', keys: ['instr_count_1', 'num_' + n, 'instr_count_2'], answer: n };
+    return { mode: 'count', n: n, img: img, total: n + extra, got: 0,
+        instr: 'Give me ' + n + ' ' + (n === 1 ? 'piece' : 'pieces') + '!',
+        keys: ['instr_count_1', 'num_' + n, 'instr_count_2'], answer: n };
 };
 GAMES.math.gen = function (lvl, kg) {
-    var max = kg === 'kg2' ? (lvl < 2 ? 10 : 20) : 5;
+    kg = kg || 'kg1';
+    /* number bonds to 10 (kg2 L2+) */
+    if ((kg === 'kg2' && lvl === 2) || (kg === 'g1' && lvl === 1)) {
+        var ba = 1 + rnd(9), bb = 10 - ba;
+        var bopts = {}; bopts[bb] = 1;
+        while (Object.keys(bopts).length < 4) bopts[Math.max(0, bb + rnd(7) - 3)] = 1;
+        return { eq: ba + ' + ? = 10', options: shuffle(Object.keys(bopts)), ships: shuffle(['red', 'green', 'blue', 'orange']),
+            instr: 'Make ten! What is missing?',
+            keys: ['instr_bonds_1', 'num_' + ba], answer: String(bb) };
+    }
+    var max = kg === 'g1' ? (lvl < 4 ? 20 : 50) : kg === 'kg2' ? (lvl < 2 ? 10 : 20) : 5;
     var a = 1 + rnd(max), b = 1 + rnd(max), op = pick(['+', '-']);
+    if (kg === 'g1' && lvl >= 4) { a = (1 + rnd(9)) * 10; b = (1 + rnd(9)) * 10; } /* tens */
     if (op === '-' && b > a) { var t = a; a = b; b = t; }
     var ans = op === '+' ? a + b : a - b;
     var opts = {}; opts[ans] = 1;
-    while (Object.keys(opts).length < 4) opts[Math.max(0, ans + rnd(7) - 3)] = 1;
+    var spread = kg === 'g1' && lvl >= 4 ? 30 : 7;
+    while (Object.keys(opts).length < 4) opts[Math.max(0, ans + rnd(spread) - Math.floor(spread / 2))] = 1;
     return { eq: a + ' ' + op + ' ' + b + ' = ?', options: shuffle(Object.keys(opts)),
         ships: shuffle(['red', 'green', 'blue', 'orange']),
         instr: 'Launch the right rocket!',
@@ -81,6 +119,36 @@ GAMES.shapes.gen = function (lvl, kg) {
     }
     var txt = { shape: 'Sort the shapes! Put every shape in its home!', color: 'Sort by color!', combo: 'Match the shape AND the color!' };
     return { mode: mode, holes: holes, pieces: shuffle(pieces), instr: txt[mode], keys: ['instr_sort_' + mode], answer: 'all' };
+};
+GAMES.pattern = GAMES.pattern || {};
+GAMES.pattern.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    /* number patterns (skip counting) for g1, shape/color patterns for kg */
+    if (kg === 'g1' || (kg === 'kg2' && lvl >= 4)) {
+        var step = kg === 'g1' ? pick([2, 5, 10]) : pick([1, 2]);
+        var start = 1 + rnd(4) * step;
+        var seq = [];
+        for (var i = 0; i < 5; i++) seq.push(start + i * step);
+        var missAt = 3 + rnd(2);
+        var ansN = seq[missAt];
+        var optsN = {}; optsN[ansN] = 1;
+        while (Object.keys(optsN).length < 3) optsN[Math.max(1, ansN + (rnd(3) - 1) * step)] = 1;
+        return { mode: 'num', seq: seq, missAt: missAt, options: shuffle(Object.keys(optsN)),
+            instr: 'What number comes next?', keys: ['instr_skip_1'], answer: String(ansN) };
+    }
+    var kinds = kg === 'kg2' && lvl >= 2 ? ['ABB', 'ABC', 'AB'] : ['AB'];
+    var kind = kinds[Math.min(lvl - 1, kinds.length - 1)];
+    var cols = shuffle(SORTCOLORS).slice(0, kind === 'AB' ? 2 : 3);
+    var shp = pick(SHAPEBODIES);
+    var unit = kind === 'AB' ? [cols[0][0], cols[1][0]] : kind === 'ABB' ? [cols[0][0], cols[1][0], cols[1][0]] : [cols[0][0], cols[1][0], cols[2][0]];
+    var seqS = [];
+    while (seqS.length < 6) unit.forEach(function (c) { if (seqS.length < 6) seqS.push(c); });
+    var ansS = seqS[5];
+    var optNames = cols.map(function (c) { return c[0]; });
+    var extras = SORTCOLORS.filter(function (c) { return optNames.indexOf(c[0]) < 0; });
+    while (optNames.length < 3 && extras.length) optNames.push(extras.shift()[0]);
+    return { mode: 'shape', seq: seqS.slice(0, 5), shape: shp, options: shuffle(optNames),
+        instr: 'What comes next?', keys: [rnd(2) ? 'instr_pattern_1' : 'instr_pattern_2'], answer: ansS };
 };
 function cntKey(path) {
     var f = path.replace(/\.png$/, '');
@@ -222,7 +290,8 @@ class LettersScene extends GameBase {
             var gy = 240 + Math.floor(i / cols) * 185 + rnd(20) - 10;
             var c = s.add.container(gx, gy);
             var bub = s.add.image(0, 0, 'bubble').setScale(.62).setTint(tintPool[i % tintPool.length]);
-            var txt = s.add.text(0, -4, ch, { fontSize: '44px', fontStyle: '900', color: '#2d2340' }).setOrigin(.5);
+            var fs = ch.length > 2 ? '22px' : ch.length > 1 ? '30px' : '44px';
+            var txt = s.add.text(0, -4, ch, { fontSize: fs, fontStyle: '900', color: '#2d2340' }).setOrigin(.5);
             c.add([bub, txt]);
             c.setSize(110, 110);
             c.setInteractive({ useHandCursor: true });
@@ -309,14 +378,19 @@ class TrainScene extends GameBase {
     constructor() { super('g_train', 'spelling'); }
     buildRound(cur) {
         var s = this;
-        var word = cur.word, L = word.length;
-        /* word picture */
-        var pic = this.add.image(W / 2, 235, 'w_' + word);
-        pic.setScale(Math.min(110 / pic.width, 110 / pic.height));
-        this.track(pic);
-        this.bobTween(pic, 8, 1600);
+        var word = cur.word, graphs = cur.graphs, L = graphs.length;
+        /* word picture (if one exists) */
+        if (this.textures.exists('w_' + word)) {
+            var pic = this.add.image(W / 2, 225, 'w_' + word);
+            pic.setScale(Math.min(100 / pic.width, 100 / pic.height));
+            this.track(pic);
+            this.bobTween(pic, 8, 1600);
+        } else {
+            /* show the word itself as the goal */
+            this.track(this.add.text(W / 2, 225, word, { fontSize: '46px', fontStyle: '900', color: '#3b2a5e', backgroundColor: 'rgba(255,255,255,.9)', padding: { x: 22, y: 10 } }).setOrigin(.5));
+        }
         /* slots (train cars) */
-        var slotW = 62, gap = 8;
+        var slotW = Math.min(66, (W - 70) / L - 6), gap = 6;
         var totalW = L * slotW + (L - 1) * gap;
         var x0 = W / 2 - totalW / 2 + slotW / 2;
         var slots = [];
@@ -333,12 +407,20 @@ class TrainScene extends GameBase {
         }
         this.trainSlots = slots;
         this.placedCount = 0;
-        /* letter tiles */
+        /* grapheme tiles: picture tile for single letters, text card for digraphs */
         cur.tiles.forEach(function (tile, i) {
-            var tx = 55 + (i % 4) * 95, ty = 560 + Math.floor(i / 4) * 110;
+            var cols = 4;
+            var tx = 55 + (i % cols) * 95, ty = 555 + Math.floor(i / cols) * 105;
             var t = s.add.container(tx, ty);
-            var im = s.add.image(0, 0, 'tile_' + tile.c.toUpperCase()).setScale(.5);
-            t.add(im);
+            if (tile.g.length === 1 && s.textures.exists('tile_' + tile.g.toUpperCase())) {
+                t.add(s.add.image(0, 0, 'tile_' + tile.g.toUpperCase()).setScale(.5));
+            } else {
+                var card = s.add.graphics();
+                card.fillStyle(0xffd93d, 1).fillRoundedRect(-42, -34, 84, 68, 14);
+                card.lineStyle(3, 0xe07f1a, 1).strokeRoundedRect(-42, -34, 84, 68, 14);
+                t.add(card);
+                t.add(s.add.text(0, 0, phDisp(tile.g), { fontSize: tile.g.length > 2 ? '20px' : '26px', fontStyle: '900', color: '#4a2c00' }).setOrigin(.5));
+            }
             t.setSize(84, 84);
             t.setInteractive({ useHandCursor: true });
             t.setScale(0);
@@ -346,8 +428,8 @@ class TrainScene extends GameBase {
             s.bobTween(t, 6, 1300 + i * 120);
             t.on('pointerdown', function () {
                 if (s.roundLock || t.dead) return;
-                var need = word[s.placedCount];
-                if (tile.c === need) {
+                var need = graphs[s.placedCount];
+                if (tile.g === need) {
                     t.dead = true;
                     var slot = s.trainSlots[s.placedCount];
                     s.tweens.killTweensOf(t);
@@ -358,13 +440,14 @@ class TrainScene extends GameBase {
                             s.popParticles(slot.x, slot.y, [0x9b59f5, 0xffd93d]);
                         }
                     });
-                    if (!(state && state.muted)) VO.say('letter_' + tile.c);
+                    /* sound-out: each placed grapheme says its sound */
+                    if (!(state && state.muted)) VO.say(phKey(tile.g));
                     s.placedCount++;
                     if (s.placedCount >= L) {
-                        /* train chugs off */
-                        if (!(state && state.muted)) VO.say('word_' + word);
+                        /* then the whole word */
+                        if (!(state && state.muted)) s.time.delayedCall(650, function () { VO.say('word_' + word); });
                         s.roundObjs.forEach(function (o) {
-                            s.tweens.add({ targets: o, x: o.x + W + 200, duration: 900, delay: 500, ease: 'Quad.easeIn' });
+                            s.tweens.add({ targets: o, x: o.x + W + 200, duration: 900, delay: 1400, ease: 'Quad.easeIn' });
                         });
                         var smoke = s.add.particles(W / 2, 360, 'dot', {
                             speed: { min: 30, max: 90 }, angle: { min: 240, max: 300 },
@@ -372,8 +455,8 @@ class TrainScene extends GameBase {
                             lifespan: 900, tint: 0xffffff, frequency: 90, emitting: true
                         });
                         s.track(smoke);
-                        s.time.delayedCall(1400, function () { smoke.destroy(); });
-                        s.time.delayedCall(600, function () { s.win(); });
+                        s.time.delayedCall(2300, function () { smoke.destroy(); });
+                        s.time.delayedCall(1500, function () { s.win(); });
                     }
                 } else s.oopsAt(t);
             });
@@ -387,36 +470,69 @@ class CountScene extends GameBase {
     constructor() { super('g_count', 'counting'); }
     buildRound(cur) {
         var s = this;
-        /* mascot waiting */
+        /* ---- more / less: two plates, tap the right one ---- */
+        if (cur.mode === 'more') {
+            var key = cntKey(cur.img);
+            [[W / 4, cur.a, 'a'], [3 * W / 4, cur.b, 'b']].forEach(function (pd) {
+                var px = pd[0], n = pd[1];
+                var plate = s.add.graphics();
+                plate.fillStyle(0xffffff, .95).fillRoundedRect(px - 82, 260, 164, 380, 26);
+                plate.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(px - 82, 260, 164, 380, 26);
+                s.track(plate);
+                var cols2 = Math.ceil(Math.sqrt(n));
+                var cell = Math.min(150 / cols2, 330 / Math.ceil(n / cols2), 64);
+                var sc = cell * .82;
+                for (var i = 0; i < n; i++) {
+                    var ix = px - (cols2 - 1) * cell / 2 + (i % cols2) * cell;
+                    var iy = 300 + Math.floor(i / cols2) * cell;
+                    var it = s.add.image(ix, iy, key);
+                    var k = Math.min(sc / it.width, sc / it.height);
+                    it.setScale(k);
+                    it.setScale(0);
+                    s.tweens.add({ targets: it, scaleX: k, scaleY: k, duration: 300, delay: 100 + i * 55, ease: 'Back.easeOut' });
+                    s.track(it);
+                }
+                var zone = s.add.zone(px, 450, 164, 380).setInteractive({ useHandCursor: true });
+                zone.on('pointerdown', function () {
+                    if (s.roundLock) return;
+                    if (n === cur.answer) {
+                        s.popParticles(px, 420, [0xffd93d, 0x4ade80]);
+                        s.win();
+                    } else s.oopsAt(null);
+                });
+                s.track(zone);
+            });
+            return;
+        }
+        /* ---- count & feed ---- */
         var m = mascotWithFace(this, W - 92, 205, 120);
         this.track(m);
         makeSquish(this, m, 1);
-        /* big counter */
         this.cntTxt = this.add.text(90, 205, '0', { fontSize: '54px', fontStyle: '900', color: '#e07f1a' }).setOrigin(.5);
         this.track(this.cntTxt);
-        /* picnic blanket */
         var bl = this.add.graphics();
         bl.fillStyle(0xff8fa3, 1).fillRoundedRect(24, 300, W - 48, 420, 30);
         bl.lineStyle(4, 0xffffff, .8);
         for (var lx = 44; lx < W - 40; lx += 46) { bl.lineBetween(lx, 308, lx, 712); }
         for (var ly = 316; ly < 712; ly += 46) { bl.lineBetween(30, ly, W - 30, ly); }
         this.track(bl);
-        /* items */
         var key = cntKey(cur.img);
+        var big = cur.total > 14;
+        var sz = big ? 42 : 54, mind = big ? 44 : 58;
         var placed = [];
         for (var i = 0; i < cur.total; i++) {
             (function (i) {
                 var px, py, ok = false, tries = 0;
-                while (!ok && tries++ < 60) {
-                    px = 60 + rnd(W - 120); py = 340 + rnd(340);
-                    ok = placed.every(function (p) { var dx = p[0] - px, dy = p[1] - py; return dx * dx + dy * dy > 58 * 58; });
+                while (!ok && tries++ < 80) {
+                    px = 52 + rnd(W - 104); py = 336 + rnd(352);
+                    ok = placed.every(function (p) { var dx = p[0] - px, dy = p[1] - py; return dx * dx + dy * dy > mind * mind; });
                 }
                 placed.push([px, py]);
                 var it = s.add.image(px, py, key);
-                it.setScale(Math.min(54 / it.width, 54 / it.height));
+                var kk = Math.min(sz / it.width, sz / it.height);
                 it.setInteractive({ useHandCursor: true });
                 it.setScale(0);
-                s.tweens.add({ targets: it, scaleX: Math.min(54 / it.width, 54 / it.height), scaleY: Math.min(54 / it.width, 54 / it.height), duration: 340, delay: 80 + i * 60, ease: 'Back.easeOut' });
+                s.tweens.add({ targets: it, scaleX: kk, scaleY: kk, duration: 340, delay: 80 + i * 45, ease: 'Back.easeOut' });
                 it.on('pointerdown', function () {
                     if (s.roundLock || it.dead) return;
                     it.dead = true;
@@ -425,7 +541,7 @@ class CountScene extends GameBase {
                     s.tweens.add({ targets: s.cntTxt, scaleX: 1.7, scaleY: 1.7, duration: 140, yoyo: true });
                     if (!(state && state.muted)) VO.say('num_' + cur.got);
                     s.tweens.add({
-                        targets: it, x: m.x, y: m.y + 10, scaleX: .15, scaleY: .15, duration: 380, ease: 'Quad.easeIn',
+                        targets: it, x: m.x, y: m.y + 10, scaleX: .15, scaleY: .15, duration: 320, ease: 'Quad.easeIn',
                         onComplete: function () {
                             it.destroy();
                             s.tweens.add({ targets: m, scaleY: .9, scaleX: 1.08, duration: 100, yoyo: true, repeat: 1 });
@@ -567,3 +683,88 @@ class SortScene extends GameBase {
         });
     }
 }
+
+/* ================= 7) Pattern Train ================= */
+class PatternScene extends GameBase {
+    constructor() { super('g_pattern', 'pattern'); }
+    buildRound(cur) {
+        var s = this;
+        /* engine + cars row */
+        var n = cur.mode === 'num' ? cur.seq.length : cur.seq.length + 1;
+        var gap = 8;
+        var carW = Math.min(58, Math.floor((W - 60 - (n - 1) * gap) / n));
+        var totalW = n * carW + (n - 1) * gap;
+        var x0 = W / 2 - totalW / 2 + carW / 2;
+        var y0 = 330;
+        var missIdx = cur.mode === 'num' ? cur.missAt : cur.seq.length - 1 + 0; /* shape: answer slot at end */
+        if (cur.mode === 'shape') { missIdx = cur.seq.length; }
+        this.missPos = null;
+        for (var i = 0; i <= (cur.mode === 'shape' ? cur.seq.length : cur.seq.length - 1); i++) {
+            (function (i) {
+                var cx = x0 + i * (carW + gap);
+                var isMiss = i === missIdx;
+                var car = s.add.graphics();
+                car.fillStyle(isMiss ? 0xfff1c7 : 0xffffff, .96).fillRoundedRect(cx - carW / 2, y0 - 34, carW, 68, 14);
+                car.lineStyle(3, isMiss ? 0xe07f1a : 0x9b59f5, 1).strokeRoundedRect(cx - carW / 2, y0 - 34, carW, 68, 14);
+                var wx = Math.min(14, carW / 4);
+                car.fillStyle(0x3b2a5e, 1).fillCircle(cx - wx, y0 + 42, 7).fillCircle(cx + wx, y0 + 42, 7);
+                s.track(car);
+                var inner = Math.min(40, carW - 14);
+                if (isMiss) {
+                    s.missPos = { x: cx, y: y0 };
+                    s.track(s.add.text(cx, y0, '?', { fontSize: '30px', fontStyle: '900', color: '#e07f1a' }).setOrigin(.5));
+                } else if (cur.mode === 'num') {
+                    s.track(s.add.text(cx, y0, String(cur.seq[i]), { fontSize: (cur.seq[i] > 99 ? '17px' : '22px'), fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                } else {
+                    var im = s.add.image(cx, y0, shapeKey(cur.shape, cur.seq[i]));
+                    im.setScale(Math.min(inner / im.width, inner / im.height));
+                    s.track(im);
+                }
+            })(i);
+        }
+        /* option cards */
+        var oy = 560;
+        var opts = cur.options;
+        opts.forEach(function (opt, i) {
+            var ox = W / 2 + (i - (opts.length - 1) / 2) * 120;
+            var c = s.add.container(ox, oy);
+            var card = s.add.graphics();
+            card.fillStyle(0xffffff, 1).fillRoundedRect(-52, -52, 104, 104, 20);
+            card.lineStyle(4, 0x2ecc71, 1).strokeRoundedRect(-52, -52, 104, 104, 20);
+            c.add(card);
+            if (cur.mode === 'num') {
+                c.add(s.add.text(0, 0, String(opt), { fontSize: '30px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+            } else {
+                var im2 = s.add.image(0, 0, shapeKey(cur.shape, opt));
+                im2.setScale(Math.min(64 / im2.width, 64 / im2.height));
+                c.add(im2);
+            }
+            c.setSize(104, 104);
+            c.setInteractive({ useHandCursor: true });
+            c.setScale(0);
+            s.tweens.add({ targets: c, scaleX: 1, scaleY: 1, duration: 380, delay: 200 + i * 90, ease: 'Back.easeOut' });
+            s.bobTween(c, 7, 1300 + i * 150);
+            c.on('pointerdown', function () {
+                if (s.roundLock || c.dead) return;
+                if (String(opt) === String(cur.answer)) {
+                    c.dead = true;
+                    s.tweens.killTweensOf(c);
+                    s.tweens.add({
+                        targets: c, x: s.missPos.x, y: s.missPos.y, scaleX: .55, scaleY: .55, duration: 350, ease: 'Back.easeOut',
+                        onComplete: function () {
+                            s.popParticles(s.missPos.x, s.missPos.y, [0x2ecc71, 0xffd93d]);
+                            if (!(state && state.muted) && cur.mode === 'num') VO.say('num_' + cur.answer);
+                            /* train chugs off */
+                            s.time.delayedCall(500, function () {
+                                s.roundObjs.forEach(function (o) { s.tweens.add({ targets: o, x: o.x + W + 220, duration: 800, ease: 'Quad.easeIn' }); });
+                            });
+                            s.time.delayedCall(900, function () { s.win(); });
+                        }
+                    });
+                } else s.oopsAt(c);
+            });
+            s.track(c);
+        });
+    }
+}
+

@@ -62,6 +62,65 @@ var VO_MANIFEST = {
         L['mini_' + (i + 1)] = { t: t };
     });
 })();
+
+/* ================= BATCH 2: curriculum deepening (KG -> Grade 1) ================= */
+(function () {
+    var L = VO_MANIFEST.lines;
+    var NOTE_SOUND = 'Say only this sound, slowly and clearly, like phonics practice with a young child.';
+    /* digraphs & Grade-1 graphemes */
+    var digraphs = {
+        ck: 'ck', ff: 'ff', ll: 'll', ss: 'ss', zz: 'zz', qu: 'kw',
+        sh: 'sh', ch: 'ch', th: 'th', ng: 'ng',
+        ai: 'ay', ee: 'ee', igh: 'igh', oa: 'oh',
+        oo: 'oo', ar: 'ar', or: 'or', ur: 'ur',
+        ow: 'ow', oi: 'oy', ear: 'ear', er: 'er',
+        ay: 'ay', ea: 'ee', oy: 'oy', aw: 'aw',
+        a_e: 'ay', i_e: 'eye', o_e: 'oh', u_e: 'yoo',
+        ing: 'ing', ed: 'ed'
+    };
+    Object.keys(digraphs).forEach(function (g) {
+        L['ph_' + g] = { t: digraphs[g], i: NOTE_SOUND };
+    });
+    /* decodable words (phonics sequence) */
+    var words = ('sat sit pin pat tap nap tin pan tip pit sip sin tan ' +
+        'mat map man mad sad can cat cap dog dig pig kid kit big ' +
+        'pen ten hen bed red wet run sun bun cup cut bus rug hug hat hot hop bat bit but ' +
+        'fox box six van vet jam jet jug win web fun fan fat fit log lot lip leg ' +
+        'yes yet zip zap yum yak quiz quit ' +
+        'duck sock rock kick lick sick pick pack back neck bell sell tell hill fill kiss miss ' +
+        'ship shop fish dish cash rush chop chat chin rich much bath math path sing ring king long song thing ' +
+        'rain tail pail wait see bee tree feet seed night light right boat coat goat road ' +
+        'moon zoo food boot car star far jar for corn turn ' +
+        'cow how now owl oil coin boil ear hear dear her ' +
+        'cake make name late five like time bike nine home nose note cube cute ' +
+        'day play say train read leaf soap snow slow ' +
+        'hard park barn fork storm bird girl shirt turn burn ' +
+        'cats dogs runs jumps jumped playing singing').split(/\s+/);
+    words.forEach(function (w) { L['word_' + w] = { t: w.charAt(0).toUpperCase() + w.slice(1) + '!' }; });
+    /* sight words: KG2 +20, Grade 1 +40 */
+    ('said was are they all for his but that with had her what there out this have went some so ' +
+     'after again an any as ask by could every fly from give going has him how just know let live may of old once open over put round stop take thank them then think walk were when').split(/\s+/)
+        .forEach(function (w) { L['sight_' + w] = { t: w }; });
+    /* numbers 21-100 */
+    var ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+    var tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    for (var n = 21; n <= 100; n++) {
+        var t = n === 100 ? 'one hundred' : (n % 10 === 0 ? tens[n / 10] : tens[Math.floor(n / 10)] + '-' + ones[n % 10]);
+        L['num_' + n] = { t: t.charAt(0).toUpperCase() + t.slice(1) + '!' };
+    }
+    /* new instruction lines */
+    var instr = {
+        blend_1: 'Sound it out!', blend_2: 'What word is it? Tap the picture!',
+        more_1: 'Which plate has MORE? Tap it!', less_1: 'Which plate has less? Tap it!',
+        bonds_1: 'Make ten! What is missing?',
+        pattern_1: 'What comes next?', pattern_2: 'Finish the pattern!',
+        story_1: 'Story time!',
+        place_1: 'How many is that? Count the tens and the ones!',
+        skip_1: 'Count the pattern! What number comes next?'
+    };
+    Object.keys(instr).forEach(function (k) { L['instr_' + k] = { t: instr[k] }; });
+})();
+
 /* files that actually exist in assets/audio (filled in as generations land) */
 var VO_FILES = {
     "cheer_1": true,

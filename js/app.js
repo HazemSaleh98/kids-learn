@@ -6,7 +6,7 @@ var KLGame = new Phaser.Game({
     height: H,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_HORIZONTALLY },
     backgroundColor: '#6ecdf5',
-    scene: [BootScene, HomeScene, LettersScene, FeedScene, TrainScene, CountScene, RocketScene, SortScene],
+    scene: [BootScene, HomeScene, LettersScene, FeedScene, TrainScene, CountScene, RocketScene, SortScene, PatternScene],
     input: { activePointers: 2 },
     disableContextMenu: true
 });

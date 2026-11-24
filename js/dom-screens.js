@@ -42,9 +42,10 @@ var DOMScreens = (function () {
         return h + '</div>';
     }
     function kgBtns(sel, attr) {
-        var h = '<div class="dth" style="grid-template-columns:1fr 1fr">';
-        ['kg1', 'kg2'].forEach(function (k) {
-            h += '<button type="button" class="dtb' + (sel === k ? ' on' : '') + '" data-' + attr + '="' + k + '"><span class="tn" style="font-size:19px">' + (k === 'kg1' ? 'KG1 🌱' : 'KG2 🚀') + '</span><span class="tn" style="font-size:12px;font-weight:700">' + (k === 'kg1' ? 'تأسيس أول (٤-٥ سنين)' : 'تأسيس تاني (٥-٦ سنين)') + '</span></button>';
+        var h = '<div class="dth" style="grid-template-columns:1fr 1fr 1fr">';
+        var defs = [['kg1', 'KG1 🌱', 'تأسيس أول (٤-٥ سنين)'], ['kg2', 'KG2 🚀', 'تأسيس تاني (٥-٦ سنين)'], ['g1', 'G1 ⭐', 'أولى ابتدائي (٦-٧ سنين)']];
+        defs.forEach(function (d) {
+            h += '<button type="button" class="dtb' + (sel === d[0] ? ' on' : '') + '" data-' + attr + '="' + d[0] + '"><span class="tn" style="font-size:18px">' + d[1] + '</span><span class="tn" style="font-size:11px;font-weight:700">' + d[2] + '</span></button>';
         });
         return h + '</div>';
     }
@@ -106,8 +107,8 @@ var DOMScreens = (function () {
         Object.keys(GAMES).forEach(function (id) {
             var g2 = GAMES[id];
             var lv2 = (state.levels && state.levels[id]) || 1;
-            h += '<div class="dkr"><span>' + g2.em + ' ' + esc(g2.title) + '</span><span class="dkc">' + (state.kg === 'kg2' ? 'KG2' : 'KG1') + ' · L' + lv2 + '</span></div>';
-            h += '<div class="dkd">' + esc(g2.kg[state.kg === 'kg2' ? 'kg2' : 'kg1']) + '</div>';
+            h += '<div class="dkr"><span>' + g2.em + ' ' + esc(g2.title) + '</span><span class="dkc">' + ((typeof KG_LABEL !== 'undefined' && KG_LABEL[state.kg]) || 'KG1') + ' · L' + lv2 + '</span></div>';
+            h += '<div class="dkd">' + esc(g2.kg[state.kg] || g2.kg.kg1) + '</div>';
         });
         h += '</div><div class="dn">المستوى (L) بيترفع لوحده كل ما الطفل يجاوب صح جوه المرحلة.</div>'
             + '<button type="button" class="dcta" id="d-photo2" style="background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;box-shadow:0 6px 0 #4338ca">صورة الطفل جوه الشخصية 📸</button>'
