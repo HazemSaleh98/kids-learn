@@ -1109,10 +1109,28 @@ class StoryScene extends Phaser.Scene {
         var hasArt = STORY_ART_HAS[st.id] && this.textures.exists(artKey);
         if (hasArt) {
             var im = this.add.image(W / 2, 330, artKey);
-            im.setScale(Math.min((W - 72) / im.width, 300 / im.height));
+            var sc0 = Math.min((W - 72) / im.width, 300 / im.height);
+            im.setScale(sc0);
+            var mw = im.displayWidth, mh = im.displayHeight;
+            /* clip to the framed area, then Ken Burns inside it */
+            var maskG = this.make.graphics({ x: 0, y: 0, add: false });
+            maskG.fillStyle(0xffffff, 1).fillRoundedRect(W / 2 - mw / 2, 330 - mh / 2, mw, mh, 16);
+            im.setMask(maskG.createGeometryMask());
+            this.tweens.add({ targets: im, scaleX: sc0 * 1.13, scaleY: sc0 * 1.13, x: W / 2 - 12, y: 330 + 9, duration: 7000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             var frame = this.add.graphics();
-            frame.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(W / 2 - im.displayWidth / 2 - 6, 330 - im.displayHeight / 2 - 6, im.displayWidth + 12, im.displayHeight + 12, 18);
+            frame.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(W / 2 - mw / 2 - 4, 330 - mh / 2 - 4, mw + 8, mh + 8, 18);
             this.layer.push(im); this.layer.push(frame);
+            /* narrator buddy watching beside the art: breathing + idle hops */
+            var pb = makePlayBuddy(this, W - 68, 140, 50);
+            if (pb) this.layer.push(pb.c);
+            /* ambient sparkle drift over the scene */
+            var sp = this.add.particles(W / 2, 330, 'dot', {
+                x: { min: -mw / 2 + 10, max: mw / 2 - 10 }, y: { min: -mh / 2 + 10, max: mh / 2 - 10 },
+                speedY: { min: -16, max: -5 }, speedX: { min: -6, max: 6 },
+                scale: { start: .7, end: 0 }, alpha: { start: .55, end: 0 },
+                lifespan: 2400, frequency: 420, tint: [0xffffff, 0xffe9a8], blendMode: 'ADD'
+            });
+            this.layer.push(sp);
         } else {
             this.layer.push(this.add.text(W / 2 + 30, 250, STORY_ART[pg.art] || '✨', { fontSize: '120px' }).setOrigin(.5));
         }
