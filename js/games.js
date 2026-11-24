@@ -247,6 +247,32 @@ GAMES.hop.gen = function (lvl, kg) {
     return { seq: seq, pads: pads, next: 1, need: len, step: step,
         instr: 'Hop to ' + first + '!', keys: ['numberhop_go', 'num_' + first] };
 };
+function ngonPts(n, r, rot) { var a = []; for (var i = 0; i < n; i++) { var t = rot + i * Math.PI * 2 / n; a.push([Math.cos(t) * r, Math.sin(t) * r]); } return a; }
+var SHAPE_PTS = {
+    triangle: ngonPts(3, 1, -Math.PI / 2),
+    square: [[-.72, -.72], [.72, -.72], [.72, .72], [-.72, .72]],
+    rectangle: [[-1, -.58], [1, -.58], [1, .58], [-1, .58]],
+    diamond: [[0, -1], [.72, 0], [0, 1], [-.72, 0]],
+    pentagon: ngonPts(5, 1, -Math.PI / 2),
+    hexagon: ngonPts(6, 1, -Math.PI / 2),
+    circle: ngonPts(8, .95, -Math.PI / 2),
+    oval: ngonPts(10, 1, -Math.PI / 2).map(function (p) { return [p[0], p[1] * .6]; }),
+    star: (function () { var a = []; for (var i = 0; i < 10; i++) { var t = -Math.PI / 2 + i * Math.PI / 5; var r = i % 2 ? .45 : 1; a.push([Math.cos(t) * r, Math.sin(t) * r]); } return a; })(),
+    heart: [[0, .92], [-.7, .5], [-.95, .05], [-.85, -.45], [-.45, -.85], [-.05, -.55], [0, -.4], [.05, -.55], [.45, -.85], [.85, -.45], [.95, .05], [.7, .5]]
+};
+var SHAPE_FILL = { triangle: 0x4ade80, square: 0x38bdf8, rectangle: 0xfb923c, diamond: 0xc084fc, pentagon: 0xf472b6, hexagon: 0xffd93d, circle: 0xf472b6, oval: 0x38bdf8, star: 0xffd93d, heart: 0xef4444 };
+GAMES.build = GAMES.build || {};
+GAMES.build.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    var sets = { kg1: ['triangle', 'square', 'circle'], kg2: ['rectangle', 'diamond', 'pentagon', 'star'], g1: ['hexagon', 'oval', 'heart', 'star'] };
+    var arr = sets[kg] || sets.kg1;
+    var shape = arr[(lvl - 1 + rnd(arr.length)) % arr.length];
+    return { shape: shape, instr: 'Build the ' + shape + '!', keys: ['shapebuild_go', 'shape_name_' + shape] };
+};
+VO_MANIFEST.lines['shapebuild_go'] = { t: 'Connect the dots and build the', v: 'lily', d: 'game instruction' };
+['triangle', 'square', 'rectangle', 'diamond', 'pentagon', 'hexagon', 'circle', 'oval', 'star', 'heart'].forEach(function (sn) {
+    VO_MANIFEST.lines['shape_name_' + sn] = { t: sn.charAt(0).toUpperCase() + sn.slice(1) + '!', v: 'lily', d: 'shape name' };
+});
 VO_MANIFEST.lines['numberhop_go'] = { t: 'Hop to', v: 'lily', d: 'game instruction' };
 VO_MANIFEST.lines['letterrun_catch'] = { t: 'Run and catch every', v: 'lily', d: 'game instruction' };
 VO_MANIFEST.lines['lettertrace_do'] = { t: 'Trace with your finger', v: 'lily', d: 'game instruction' };
@@ -1342,6 +1368,78 @@ class HopScene extends GameBase {
         } else {
             this.oopsAt([c]);
         }
+    }
+}
+
+/* ================= 13) Shape Builder: connect the dots ================= */
+class BuildScene extends GameBase {
+    constructor() { super('g_build', 'build'); }
+    buildRound(cur) {
+        var s = this;
+        this.input.off('pointerdown'); this.input.off('pointermove'); this.input.off('pointerup');
+        var card = this.add.graphics();
+        card.fillStyle(0xffffff, .96).fillRoundedRect(26, 168, W - 52, 470, 28);
+        card.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(26, 168, W - 52, 470, 28);
+        this.track(card);
+        var cx = W / 2, cy = 395, R = 165;
+        this.pts = SHAPE_PTS[cur.shape].map(function (p) { return { x: cx + p[0] * R, y: cy + p[1] * R * .92 }; });
+        this.nextDot = 0;
+        this.fillG = this.add.graphics(); this.track(this.fillG);
+        this.lineG = this.add.graphics(); this.track(this.lineG);
+        this.dots = [];
+        this.pts.forEach(function (p, i) {
+            var d = s.add.container(p.x, p.y);
+            var g = s.add.graphics();
+            g.fillStyle(0xffffff, 1).fillCircle(0, 0, 17);
+            g.lineStyle(3, 0xffb03d, 1).strokeCircle(0, 0, 17);
+            d.add(g);
+            d.add(s.add.text(0, 1, String(i + 1), { fontSize: '15px', fontStyle: '900', color: '#b45309' }).setOrigin(.5));
+            d.setSize(42, 42);
+            d.setInteractive({ useHandCursor: true });
+            d.on('pointerdown', function () { s.tryDot(i); });
+            s.track(d); s.dots.push(d);
+        });
+        this.pulseDot();
+        this.input.on('pointermove', function (p) { if (p.isDown) s.dragCheck(p); });
+        this.addPlayBuddy(72, 730, 74);
+    }
+    pulseDot() {
+        var d = this.dots[this.nextDot];
+        if (!d) return;
+        this.tweens.add({ targets: d, scaleX: 1.28, scaleY: 1.28, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+    connect(i) {
+        var s = this, p = this.pts[i], d = this.dots[i];
+        this.tweens.killTweensOf(d);
+        d.setScale(1);
+        this.lineG.lineStyle(7, 0xffb03d, 1);
+        if (i > 0) this.lineG.lineBetween(this.pts[i - 1].x, this.pts[i - 1].y, p.x, p.y);
+        this.lineG.lineStyle(4, 0xffd93d, 1).strokeCircle(p.x, p.y, 17);
+        SFX.play('pop');
+        this.popParticles(p.x, p.y, [0xffd93d, 0xffb03d, 0xffffff]);
+        this.nextDot++;
+        if (this.nextDot >= this.pts.length) {
+            this.lineG.lineStyle(7, 0xffb03d, 1).lineBetween(p.x, p.y, this.pts[0].x, this.pts[0].y);
+            this.fillG.fillStyle(SHAPE_FILL[this.cur.shape] || 0xffd93d, .88);
+            this.fillG.fillPoints(this.pts.map(function (q) { return new Phaser.Geom.Point(q.x, q.y); }), true);
+            this.fillG.setAlpha(0);
+            this.tweens.add({ targets: this.fillG, alpha: 1, duration: 500 });
+            SFX.play('sparkle');
+            if (!(state && state.muted)) VO.say('shape_name_' + this.cur.shape);
+            this.time.delayedCall(650, function () { s.win(); });
+        } else this.pulseDot();
+    }
+    tryDot(i) {
+        if (this.roundLock) return;
+        if (i === this.nextDot) this.connect(i);
+        else this.oopsAt([this.dots[i]]);
+    }
+    dragCheck(p) {
+        if (this.roundLock || this.nextDot >= this.dots.length) return;
+        var d = this.dots[this.nextDot];
+        if (!d) return;
+        var dx = p.x - d.x, dy = p.y - d.y;
+        if (dx * dx + dy * dy < 34 * 34) this.connect(this.nextDot);
     }
 }
 

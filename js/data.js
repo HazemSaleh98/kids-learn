@@ -282,5 +282,6 @@ var GAMES = {
     run: { ico: 'bubble', icos: .3, icoTint: 0x2ecc71, icoText: 'GO', em: '🏃', title: 'Letter Run', sub: 'Run & catch!', scene: 'g_run', kg: { kg1: 'يجري ويمسك الحرف المطلوب — كبير/صغير حسب المستوى', kg2: 'يمسك المركبات الصوتية وهو جاري', g1: 'يمسك الأعداد حتى ٢٠ بسرعة أكبر' } },
     trace: { ico: 'bubble', icos: .3, icoTint: 0x9b59f5, icoText: 'abc', em: '✏️', title: 'Letter Tracing', sub: 'Trace with your finger', scene: 'g_trace', kg: { kg1: 'كتابة الحروف الكبيرة بالتتبع بالصباع', kg2: 'تتبع الحروف الصغيرة', g1: 'تتبع الأرقام' } },
     hop: { ico: 'bubble', icos: .3, icoTint: 0x38bdf8, icoText: '5', em: '🐸', title: 'Number Hop', sub: 'Hop in order!', scene: 'g_hop', kg: { kg1: 'العد بالترتيب حتى ١٠ — نقّز على الرقم الصح', kg2: 'العد بالترتيب حتى ٢٠', g1: 'العد القفزي ٢ و ٥ و ١٠' } },
+    build: { ico: 'bubble', icos: .3, icoTint: 0xffd93d, icoText: '☆', em: '📐', title: 'Shape Builder', sub: 'Connect the dots!', scene: 'g_build', kg: { kg1: 'يوصل النقط ويبني مثلث ومربع ودايرة', kg2: 'مستطيل ومعين وخماسي ونجمة', g1: 'سداسي وبيضاوي وقلب — وأشكال أصعب' } },
     story: { ico: 'w_owl', icos: .42, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
 };
