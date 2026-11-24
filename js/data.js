@@ -24,6 +24,31 @@ var THEMES = {
 if (state && !THEMES[state.theme]) state.theme = 'bear';
 if (!THEMES[setupSel.theme]) setupSel.theme = 'bear';
 function theme() { return THEMES[(state && state.theme)] || THEMES.bear; }
+/* drawn UI icons (no OS emoji) */
+function drawSpeakerIcon(scene, x, y, k, color, on) {
+    var g = scene.add.graphics();
+    g.fillStyle(color, 1);
+    g.fillRect(x - 12 * k, y - 5 * k, 6 * k, 10 * k);
+    g.fillTriangle(x - 6 * k, y - 9 * k, x - 6 * k, y + 9 * k, x + 4 * k, y + 14 * k);
+    g.fillTriangle(x - 6 * k, y - 9 * k, x + 4 * k, y - 14 * k, x + 4 * k, y + 14 * k);
+    if (on) {
+        g.lineStyle(2.5 * k, color, 1);
+        g.beginPath(); g.arc(x + 5 * k, y, 8 * k, -0.85, 0.85); g.strokePath();
+        g.beginPath(); g.arc(x + 5 * k, y, 13 * k, -0.7, 0.7); g.strokePath();
+    } else {
+        g.lineStyle(3.5 * k, 0xef4444, 1);
+        g.lineBetween(x - 13 * k, y - 13 * k, x + 15 * k, y + 13 * k);
+    }
+    return g;
+}
+function drawGearIcon(scene, x, y, k, color) {
+    var g = scene.add.graphics();
+    g.lineStyle(3.5 * k, color, 1);
+    for (var i = 0; i < 8; i++) { var a = i * Math.PI / 4; g.lineBetween(x + Math.cos(a) * 8 * k, y + Math.sin(a) * 8 * k, x + Math.cos(a) * 13 * k, y + Math.sin(a) * 13 * k); }
+    g.strokeCircle(x, y, 7 * k);
+    g.fillStyle(color, 1).fillCircle(x, y, 2.5 * k);
+    return g;
+}
 function kidName() { var n = (state && state.name) || 'friend'; if (String(n).toLowerCase().replace(/[^a-z0-9]/g, '') === 'malik') return 'Malek'; return n; }
 function charName() { return (state && state.charName) || theme().charDef; }
 function save() { saveLS(KEY, state); }

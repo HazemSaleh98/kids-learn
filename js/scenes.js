@@ -155,13 +155,20 @@ class HomeScene extends Phaser.Scene {
         pill.fillStyle(0xffb03d, 1).fillRoundedRect(14, 16, 92, 44, 22);
         this.add.image(38, 38, 'tile_star').setScale(.24);
         this.starTxt = this.add.text(56, 38, String((state && state.stars) || 0), { fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
-        this.muteBtn = this.add.text(W - 116, 38, (state && state.muted) ? '🔇' : '🔊', { fontSize: '26px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+        this.muteBtn = this.add.container(W - 116, 38);
+        this.muteIc = drawSpeakerIcon(this, 0, 0, 1, 0x3b2a5e, !(state && state.muted));
+        this.muteBtn.add(this.muteIc);
+        this.muteBtn.setSize(44, 44).setInteractive({ useHandCursor: true });
         this.muteBtn.on('pointerdown', function () {
             state.muted = !state.muted; save();
             if (state.muted) VO.stop();
-            s.muteBtn.setText(state.muted ? '🔇' : '🔊');
+            s.muteIc.destroy();
+            s.muteIc = drawSpeakerIcon(s, 0, 0, 1, 0x3b2a5e, !state.muted);
+            s.muteBtn.add(s.muteIc);
         });
-        this.gear = this.add.text(W - 56, 38, '⚙️', { fontSize: '26px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+        this.gear = this.add.container(W - 56, 38);
+        this.gear.add(drawGearIcon(this, 0, 0, 1, 0x3b2a5e));
+        this.gear.setSize(44, 44).setInteractive({ useHandCursor: true });
         var holdT = null, taps = 0;
         this.gear.on('pointerdown', function () {
             holdT = s.time.delayedCall(1200, function () { holdT = null; DOMScreens.showParents(); });

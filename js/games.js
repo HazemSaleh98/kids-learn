@@ -311,8 +311,13 @@ class GameBase extends Phaser.Scene {
         pr.fillStyle(0xffffff, .96).fillRoundedRect(20, 78, W - 40, 62, 20);
         pr.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(20, 78, W - 40, 62, 20);
         this.promptTxt = this.add.text(W / 2 - 16, 109, '', { fontSize: '19px', fontStyle: '900', color: '#3b2a5e', align: 'center', wordWrap: { width: W - 130 } }).setOrigin(.5);
-        this.sayBtn = this.add.text(W - 48, 109, '🔊', { fontSize: '24px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
-        this.sayBtn.on('pointerdown', function () { s.sayRound(); });
+        this.sayBtn = this.add.container(W - 48, 109);
+        this.sayBtn.add(drawSpeakerIcon(this, 0, 0, 1.05, 0x3b2a5e, true));
+        this.sayBtn.setSize(46, 46).setInteractive({ useHandCursor: true });
+        this.sayBtn.on('pointerdown', function () {
+            s.tweens.add({ targets: s.sayBtn, scaleX: .85, scaleY: .85, duration: 90, yoyo: true });
+            s.sayRound();
+        });
         this.newRound();
     }
     lvl() { return (state.levels && state.levels[this.gameId]) || 1; }
@@ -1044,7 +1049,7 @@ class BalloonScene extends GameBase {
         m.on('drag', function (ptr, dx) { m.x = Math.max(52, Math.min(W - 52, dx)); });
         m.on('pointerdown', function () { SFX.play('tap'); });
         /* hint arrow */
-        var hint = this.add.text(W / 2, H - 60, 'drag me! ◀ ▶', { fontSize: '15px', fontStyle: '900', color: 'rgba(255,255,255,.95)', backgroundColor: 'rgba(59,42,94,.35)', padding: { x: 10, y: 4 } }).setOrigin(.5);
+        var hint = this.add.text(W / 2, H - 60, 'drag me!', { fontSize: '15px', fontStyle: '900', color: 'rgba(255,255,255,.95)', backgroundColor: 'rgba(59,42,94,.35)', padding: { x: 10, y: 4 } }).setOrigin(.5);
         this.track(hint);
         this.tweens.add({ targets: hint, alpha: .4, duration: 800, yoyo: true, repeat: -1 });
     }
@@ -1593,7 +1598,13 @@ class StoryScene extends Phaser.Scene {
         }
         this.layer.push(dots);
         /* buttons: replay, next/end */
-        var rp = this.add.text(96, 720, '🔊', { fontSize: '34px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+        var rp = this.add.container(96, 720);
+        var rpG = this.add.graphics();
+        rpG.fillStyle(0xffffff, .95).fillCircle(0, 0, 26);
+        rpG.lineStyle(3, 0xffd93d, 1).strokeCircle(0, 0, 26);
+        rp.add(rpG);
+        rp.add(drawSpeakerIcon(this, 0, 0, 1.15, 0x9b59f5, true));
+        rp.setSize(56, 56).setInteractive({ useHandCursor: true });
         rp.on('pointerdown', function () { SFX.play('tap'); s.narrate(); });
         this.layer.push(rp);
         var last = this.page >= this.pages.length - 1;
@@ -1601,7 +1612,8 @@ class StoryScene extends Phaser.Scene {
         var ng = this.add.graphics();
         ng.fillStyle(last ? 0x2ecc71 : 0xff9f43, 1).fillRoundedRect(-84, -34, 168, 68, 22);
         nx.add(ng);
-        nx.add(this.add.text(last ? 8 : 0, 0, last ? 'النهاية!' : 'التالي ◀', { fontSize: '20px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        nx.add(this.add.text(last ? 8 : -2, 0, last ? 'النهاية!' : 'التالي', { fontSize: '20px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        if (!last) { var na = this.add.graphics(); na.fillStyle(0xffffff, 1).fillTriangle(-52, -9, -52, 9, -64, 0); nx.add(na); }
         if (last) nx.add(this.add.image(-38, 0, 'tile_star').setScale(.2));
         nx.setSize(168, 68); nx.setInteractive({ useHandCursor: true });
         nx.on('pointerdown', function () {
@@ -1612,8 +1624,13 @@ class StoryScene extends Phaser.Scene {
         });
         this.layer.push(nx);
         if (this.page > 0) {
-            var pv = this.add.text(48, 720, '▶', { fontSize: '30px', color: '#9b59f5' }).setOrigin(.5).setInteractive({ useHandCursor: true });
-            pv.on('pointerdown', function () { s.page--; s.showPage(); });
+            var pv = this.add.container(48, 720);
+            var pvG = this.add.graphics();
+            pvG.fillStyle(0xffffff, .95).fillCircle(0, 0, 24);
+            pvG.fillStyle(0x9b59f5, 1).fillTriangle(-6, -11, -6, 11, 10, 0);
+            pv.add(pvG);
+            pv.setSize(52, 52).setInteractive({ useHandCursor: true });
+            pv.on('pointerdown', function () { SFX.play('tap'); s.page--; s.showPage(); });
             this.layer.push(pv);
         }
         this.narrate();
