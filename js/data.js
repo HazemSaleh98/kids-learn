@@ -36,6 +36,13 @@ function mixCol(a, b, t) {
 /* candy chrome: drop shadow + darker bottom lip + vertical gradient + top sheen + outline */
 function candyPanel(scene, x, y, w, h, r, cMain, o) {
     o = o || {};
+    if (typeof KLSTYLE !== 'undefined' && KLSTYLE === 'modern') {
+        var gf = scene.add.graphics();
+        if (o.shadow !== false) { gf.fillStyle(0x2a1f4d, o.shadowA == null ? .10 : o.shadowA); gf.fillRoundedRect(x, y + 3, w, h, r); }
+        gf.fillStyle(cMain, 1).fillRoundedRect(x, y, w, h, r);
+        if (o.border != null) { gf.lineStyle(o.borderW || 2, o.border, o.borderA == null ? 1 : o.borderA); gf.strokeRoundedRect(x, y, w, h, r); }
+        return gf;
+    }
     var cTop = o.top != null ? o.top : mixCol(cMain, 0xffffff, .30);
     var cBot = o.bottom != null ? o.bottom : mixCol(cMain, 0x000000, .06);
     var lip = o.lip == null ? 5 : o.lip;

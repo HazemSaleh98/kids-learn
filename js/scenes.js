@@ -147,6 +147,11 @@ class HomeScene extends Phaser.Scene {
         /* world */
         var bg = this.add.image(W / 2, H / 2, 'bg_grass');
         bg.setScale(Math.max(W / bg.width, H / bg.height) * 1.02);
+        if (KLSTYLE === 'bubblegum') {
+            var tint = this.add.graphics();
+            tint.fillGradientStyle(0xff7ab8, 0xff7ab8, 0x8a3ffc, 0x8a3ffc, .16, .16, .14, .14);
+            tint.fillRect(0, 0, W, H);
+        }
         addCloud(this, 'cloud1', 90, 46000, .45);
         addCloud(this, 'cloud3', 170, 68000, .5, -26000);
         addCloud(this, 'cloud4', 250, 56000, .42, -12000).setAlpha(.75);
@@ -180,28 +185,30 @@ class HomeScene extends Phaser.Scene {
         this.gear.on('pointerout', function () { if (holdT) { holdT.remove(); holdT = null; } });
 
         /* mascot + bubble */
-        var m = mascotWithFace(this, 74, 162, 116);
+        var m = mascotWithFace(this, 64, 140, 96);
         makeSquish(this, m, 1);
-        candyPanel(this, 152, 106, 224, 96, 20, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
+        this.tweens.add({ targets: m, y: 130, duration: 420, yoyo: true, repeat: -1, repeatDelay: 2600, ease: 'Quad.easeOut' });
+        candyPanel(this, 148, 96, 228, 84, 18, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
         var bb = this.add.graphics();
-        bb.fillStyle(0xffd93d, 1).fillTriangle(154, 172, 154, 146, 134, 162);
-        this.add.text(166, 126, 'Hi, ' + kidName() + '!', { fontFamily: FONT_MAIN, fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
-        this.add.text(166, 158, "Let's play and learn\nwith " + charName() + '!', { fontFamily: FONT_MAIN, fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
+        bb.fillStyle(0xffd93d, 1).fillTriangle(150, 156, 150, 134, 132, 146);
+        this.add.text(162, 116, 'Hi, ' + kidName() + '!', { fontFamily: FONT_MAIN, fontSize: '20px', fontStyle: '900', color: '#3b2a5e' });
+        this.add.text(162, 146, "Let's play and learn\nwith " + charName() + '!', { fontFamily: FONT_MAIN, fontSize: '13.5px', fontStyle: '700', color: '#7a7194' });
 
         /* game spots: scrollable grid */
         var world = this.add.container(0, 0);
         var ids = Object.keys(GAMES);
         var lastRow = Math.floor((ids.length - 1) / 2);
-        var contentBottom = 248 + lastRow * 106 + 50;
+        var contentBottom = 258 + lastRow * 106 + 50;
         var minY = Math.min(0, H - contentBottom - 20);
         ids.forEach(function (id, i) {
             var g = GAMES[id];
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
-            var cx = (i % 2 === 0) ? 102 : 288, cy = 248 + Math.floor(i / 2) * 106;
+            var modern = KLSTYLE === 'modern';
+            var cx = (i % 2 === 0) ? 102 : 288, cy = 258 + Math.floor(i / 2) * 106;
             var btn = s.add.container(cx, cy);
-            btn.add(candyPanel(s, -78, -50, 156, 102, 22, col[0], { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), borderW: 2, borderA: .6 }));
+            btn.add(candyPanel(s, -78, -50, 156, 102, 22, modern ? 0xffffff : col[0], modern ? { lip: 0, sheen: false, border: 0xe5e1f0, borderW: 2, shadowA: .10 } : { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), lip: KLSTYLE === 'bubblegum' ? 8 : 5, borderW: KLSTYLE === 'bubblegum' ? 3 : 2, borderA: .6 }));
             var circ = s.add.graphics();
-            circ.fillStyle(0xffffff, 1).fillCircle(0, -26, 23);
+            circ.fillStyle(modern ? mixCol(col[0], 0xffffff, .80) : 0xffffff, 1).fillCircle(0, -26, 23);
             btn.add(circ);
             var ik = 'icon_' + id;
             if (s.textures.exists(ik)) {
@@ -214,10 +221,12 @@ class HomeScene extends Phaser.Scene {
                 btn.add(ico);
                 if (g.icoText) btn.add(s.add.text(0, -26, g.icoText, { fontFamily: FONT_MAIN, fontSize: '18px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             }
-            btn.add(s.add.text(0, 2, g.title, { fontFamily: FONT_MAIN, fontSize: '14.5px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
-            btn.add(s.add.text(0, 20, g.sub, { fontFamily: FONT_MAIN, fontSize: '10px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
+            var pastel = KLSTYLE === 'pastel';
+            var pStroke = pastel ? ('#' + ('00000' + mixCol(col[1], 0x000000, .25).toString(16)).slice(-6)) : undefined;
+            btn.add(s.add.text(0, 2, g.title, { fontFamily: FONT_MAIN, fontSize: '14.5px', fontStyle: '900', color: modern ? ('#' + ('00000' + col[1].toString(16)).slice(-6)) : '#fff', stroke: pStroke, strokeThickness: pastel ? 4 : 0 }).setOrigin(.5));
+            btn.add(s.add.text(0, 20, g.sub, { fontFamily: FONT_MAIN, fontSize: '10px', fontStyle: '700', color: modern ? '#8a84a3' : 'rgba(255,255,255,.95)', stroke: pStroke, strokeThickness: pastel ? 3 : 0 }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
+            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: modern ? ('#' + ('00000' + col[0].toString(16)).slice(-6)) : 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
             btn.setSize(156, 100);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerup', function () {
@@ -255,6 +264,11 @@ class HomeScene extends Phaser.Scene {
     }
 }
 var SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8], [0xff9f43, 0xe07f1a], [0x2ecc71, 0x22a355], [0x9b59f5, 0x7a3fd4], [0xff5f57, 0xe03e36]];
+/* art-direction variants for style mockups (?style=bubblegum|pastel|modern) */
+var KLSTYLE = '';
+try { KLSTYLE = new URLSearchParams(window.location.search).get('style') || ''; } catch (e) {}
+if (KLSTYLE === 'bubblegum') SPOTCOLORS = [[0xff4d8d, 0xd92662], [0x3d7bff, 0x1e54e0], [0xff8f1f, 0xe06a00], [0x17c964, 0x0a9e4c], [0x8a3ffc, 0x6920d8], [0xff4d4d, 0xd92b2b]];
+if (KLSTYLE === 'pastel') SPOTCOLORS = [[0xf498bd, 0xd975a2], [0x8fb8ee, 0x6a93d4], [0xf6bd82, 0xe09a4e], [0x93d8ab, 0x6bb589], [0xc2a3ea, 0x9a7bcc], [0xee9d95, 0xd0756c]];
 
 function startGameScene(scene, id) {
     var key = GAMES[id] && GAMES[id].scene;
