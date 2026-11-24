@@ -249,7 +249,7 @@ class HomeScene extends Phaser.Scene {
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
             var modern = KLSTYLE === 'modern';
             var pg = Math.floor(i / 4), slot = i % 4;
-            var cx = pg * W + ((slot % 2 === 0) ? 107 : 283), cy = 336 + Math.floor(slot / 2) * 152;
+            var cx = pg * W + ((slot % 2 === 0) ? 103 : 287), cy = 340 + Math.floor(slot / 2) * 160;
             var btn = s.add.container(cx, cy);
             btn.add(candyPanel(s, -78, -50, 156, 102, 22, modern ? 0xffffff : col[0], modern ? { lip: 0, sheen: false, border: 0xe5e1f0, borderW: 2, shadowA: .10 } : { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), lip: KLSTYLE === 'bubblegum' ? 8 : 5, borderW: KLSTYLE === 'bubblegum' ? 3 : 2, borderA: .6 }));
             var circ = s.add.graphics();
@@ -282,7 +282,7 @@ class HomeScene extends Phaser.Scene {
             });
             /* entrance bounce + idle sway */
             btn.setScale(0);
-            s.tweens.add({ targets: btn, scaleX: 1, scaleY: 1, duration: 500, delay: 80 + i * 90, ease: 'Back.easeOut' });
+            s.tweens.add({ targets: btn, scaleX: 1.15, scaleY: 1.15, duration: 500, delay: 80 + i * 90, ease: 'Back.easeOut' });
             s.tweens.add({ targets: btn, angle: i % 2 ? 1.4 : -1.4, duration: 2400 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             world.add(btn);
         });
