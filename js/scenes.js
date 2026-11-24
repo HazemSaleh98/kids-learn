@@ -31,6 +31,7 @@ class BootScene extends Phaser.Scene {
         ['face_a', 'face_b', 'face_c', 'face_d', 'face_e'].forEach(function (f) { this.load.image(f, 'shapes/' + f + '.png'); }, this);
         ['stand', 'walk1', 'walk2', 'jump', 'ready', 'hurt'].forEach(function (p) { this.load.image('bunny_' + p, 'bunny/bunny1_' + p + '.png'); }, this);
         Object.keys(WIMG).forEach(function (w) { this.load.image('w_' + w, WIMG[w]); }, this);
+        Object.keys(STORY_ART_HAS).forEach(function (sid) { for (var pi = 1; pi <= 5; pi++) this.load.image('storyart_' + sid + '_p' + pi, 'story/' + sid + '_p' + pi + '.jpg'); }, this);
         for (var d = 0; d <= 9; d++) this.load.image('tile_' + d, 'tiles/tile' + d + '.png');
         /* photo face (data URL) loads on demand in HomeScene */
     }

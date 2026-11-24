@@ -1029,6 +1029,7 @@ class BalloonScene extends GameBase {
 }
 
 /* ================= 10) Story Time: buddy-narrated stories ================= */
+var STORY_ART_HAS = { fuzzy_apple: true };
 var STORY_ART = { cat: '🐱', sleep: '😴', milk: '🥛', bus: '🚌', hill: '⛰️', home: '🏠', park: '🌳', fish: '🐟', pond: '🏞️', gift: '🎁', apple: '🍎', jump: '🤸', bonk: '💫', star: '⭐', play: '🎈', friends: '💛', garden: '🌷', butterfly: '🦋' };
 var BUDDY_THEME = { fuzzy: 'monster_blue', blinky: 'monster_green', captain: 'hero', luna: 'caped', princess: 'princess', fairy: 'fairy' };
 var BUDDY_AR = { fuzzy: 'فزفز', blinky: 'بلينكي', captain: 'كابتن ستار', luna: 'لونا', princess: 'الأميرة', fairy: 'الجنية' };
@@ -1103,11 +1104,21 @@ class StoryScene extends Phaser.Scene {
         card.fillStyle(0xffffff, .96).fillRoundedRect(24, 88, W - 48, 560, 28);
         card.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(24, 88, W - 48, 560, 28);
         this.layer.push(card);
-        /* art: big emoji prop center stage */
-        this.layer.push(this.add.text(W / 2 + 30, 250, STORY_ART[pg.art] || '✨', { fontSize: '120px' }).setOrigin(.5));
-        /* narrator buddy on stage, breathing idle */
+        /* art: generated illustration when available, else emoji prop */
+        var artKey = 'storyart_' + st.id + '_p' + (this.page + 1);
+        var hasArt = STORY_ART_HAS[st.id] && this.textures.exists(artKey);
+        if (hasArt) {
+            var im = this.add.image(W / 2, 330, artKey);
+            im.setScale(Math.min((W - 72) / im.width, 300 / im.height));
+            var frame = this.add.graphics();
+            frame.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(W / 2 - im.displayWidth / 2 - 6, 330 - im.displayHeight / 2 - 6, im.displayWidth + 12, im.displayHeight + 12, 18);
+            this.layer.push(im); this.layer.push(frame);
+        } else {
+            this.layer.push(this.add.text(W / 2 + 30, 250, STORY_ART[pg.art] || '✨', { fontSize: '120px' }).setOrigin(.5));
+        }
+        /* narrator buddy on stage, breathing idle (only when no illustration) */
         var tk2 = BUDDY_THEME[st.buddy] || st.buddy;
-        if (this.textures.exists('theme_' + tk2)) {
+        if (!hasArt && this.textures.exists('theme_' + tk2)) {
             var bm = this.add.image(108, 350, 'theme_' + tk2);
             bm.setScale(140 / Math.max(bm.width, bm.height));
             var bs0 = bm.scaleX;
