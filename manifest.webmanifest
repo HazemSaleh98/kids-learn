@@ -1,0 +1,33 @@
+{
+  "id": "/kids-learn/",
+  "name": "Kids Learn",
+  "short_name": "Kids Learn",
+  "start_url": "/kids-learn/",
+  "scope": "/kids-learn/",
+  "display": "standalone",
+  "background_color": "#2b1a5e",
+  "theme_color": "#2b1a5e",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
