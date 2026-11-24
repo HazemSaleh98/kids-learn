@@ -487,9 +487,16 @@ class LettersScene extends GameBase {
             var gy = 240 + Math.floor(i / cols) * 185 + rnd(20) - 10;
             var c = s.add.container(gx, gy);
             var bub = s.add.image(0, 0, 'bubble').setScale(.62).setTint(tintPool[i % tintPool.length]);
+            var bcol = [0xff6b9d, 0x4fc3f7, 0x66d97a, 0xffd23f, 0xa77bff, 0xff9d4d][i % 6];
+            var gloss = s.add.graphics();
+            gloss.fillStyle(bcol, .88).fillCircle(0, 0, 57);
+            gloss.fillStyle(mixCol(bcol, 0xffffff, .55), .55).fillCircle(0, -9, 46);
+            gloss.fillStyle(0xffffff, .85).fillEllipse(-20, -34, 30, 17);
+            gloss.fillStyle(0xffffff, .5).fillCircle(28, 30, 6);
+            bub.setAlpha(.5);
             var fs = ch.length > 2 ? '28px' : ch.length > 1 ? '38px' : '54px';
-            var txt = s.add.text(0, -4, ch, { fontFamily: FONT_MAIN, fontSize: fs, fontStyle: '900', color: '#2d2340' }).setOrigin(.5);
-            c.add([bub, txt]);
+            var txt = s.add.text(0, -4, ch, { fontFamily: FONT_MAIN, fontSize: fs, fontStyle: '900', color: '#ffffff', stroke: '#2d2340', strokeThickness: 6 }).setOrigin(.5);
+            c.add([gloss, bub, txt]);
             c.setSize(110, 110);
             c.setInteractive({ useHandCursor: true });
             c.setScale(0);
