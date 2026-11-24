@@ -4,6 +4,9 @@
    (silent if neither works). */
 var VO = (function () {
     var cur = null, queue = [], playing = false;
+    /* base path for clips; a future second bundle (e.g. Egyptian-Arabic banter)
+       can live at assets/audio/ar/<key>.mp3 and be switched on per line set. */
+    var base = 'assets/audio/';
 
     /* TTS fallback (kept from v4 patch) */
     var ttsOK = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
@@ -56,7 +59,7 @@ var VO = (function () {
         var done = function () { playing = false; setTimeout(playNext, 90); };
         if (VO_FILES[key]) {
             try {
-                cur = new Audio('assets/audio/' + key + '.mp3');
+                cur = new Audio(base + key + '.mp3');
                 cur.onended = done;
                 cur.onerror = function () { tts(lineText(key)); playing = false; setTimeout(playNext, 60); };
                 var p = cur.play();
@@ -77,6 +80,8 @@ var VO = (function () {
     }
 
     return {
+        /* switch clip bundle (e.g. 'assets/audio/ar/'); resets to default when omitted */
+        setBase: function (b) { base = b || 'assets/audio/'; },
         /* queue one or more keys */
         say: function () {
             stopAll();
