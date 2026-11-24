@@ -248,13 +248,13 @@ class HomeScene extends Phaser.Scene {
 
         /* Teacher Shalabi banner (opens the English curriculum) */
         (function () {
-            var bx = 14, by = 206, bw = 362, bh = 78;
+            var bx = 14, by = 214, bw = 362, bh = 78;
             var bn = s.add.container(0, 0);
             bn.add(candyPanel(s, bx, by, bw, bh, 26, 0x3d9bf0, { lipColor: 0x2368c4, top: 0x7fd0ff, bottom: 0x3d8bf0, border: 0xffffff, borderW: 3 }));
             var prog = (typeof Teacher !== 'undefined') ? Teacher.progress() : { done: 0, total: 17 };
             if (s.textures.exists('teacher_duo')) {
                 var duo = s.add.image(bx + 56, by + bh - 4, 'teacher_duo').setOrigin(.5, 1);
-                duo.setScale(92 / duo.height);
+                duo.setScale(84 / duo.height);
                 bn.add(duo);
                 s.tweens.add({ targets: duo, y: by + bh - 10, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             }
@@ -299,30 +299,30 @@ class HomeScene extends Phaser.Scene {
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
             var modern = KLSTYLE === 'modern';
             var pg = Math.floor(i / 4), slot = i % 4;
-            var cx = pg * W + ((slot % 2 === 0) ? 103 : 287), cy = 340 + Math.floor(slot / 2) * 160;
+            var cx = pg * W + ((slot % 2 === 0) ? 100 : 290), cy = 408 + Math.floor(slot / 2) * 196;
             var btn = s.add.container(cx, cy);
-            btn.add(candyPanel(s, -78, -50, 156, 102, 22, modern ? 0xffffff : col[0], modern ? { lip: 0, sheen: false, border: 0xe5e1f0, borderW: 2, shadowA: .10 } : { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), lip: KLSTYLE === 'bubblegum' ? 8 : 5, borderW: KLSTYLE === 'bubblegum' ? 3 : 2, borderA: .6 }));
+            btn.add(candyPanel(s, -84, -90, 168, 182, 28, modern ? 0xffffff : col[0], modern ? { lip: 0, sheen: false, border: 0xe5e1f0, borderW: 2, shadowA: .10 } : { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), lip: KLSTYLE === 'bubblegum' ? 8 : 5, borderW: KLSTYLE === 'bubblegum' ? 3 : 2, borderA: .6 }));
             var circ = s.add.graphics();
-            circ.fillStyle(modern ? mixCol(col[0], 0xffffff, .80) : 0xffffff, 1).fillCircle(0, -26, 23);
+            circ.fillStyle(modern ? mixCol(col[0], 0xffffff, .80) : 0xffffff, 1).fillCircle(0, -44, 40);
             btn.add(circ);
             var ik = 'icon_' + id;
             if (s.textures.exists(ik)) {
-                var im = s.add.image(0, -26, ik);
-                im.setScale(44 / Math.max(im.width, im.height));
+                var im = s.add.image(0, -44, ik);
+                im.setScale(74 / Math.max(im.width, im.height));
                 btn.add(im);
             } else {
-                var ico = s.add.image(0, -26, g.ico).setScale((g.icos || .4) * .68);
+                var ico = s.add.image(0, -44, g.ico).setScale((g.icos || .4) * 1.15);
                 if (g.icoTint) ico.setTint(g.icoTint);
                 btn.add(ico);
-                if (g.icoText) btn.add(s.add.text(0, -26, g.icoText, { fontFamily: FONT_MAIN, fontSize: '18px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                if (g.icoText) btn.add(s.add.text(0, -44, g.icoText, { fontFamily: FONT_MAIN, fontSize: '30px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             }
             var pastel = KLSTYLE !== 'modern' && KLSTYLE !== 'bubblegum' && KLSTYLE !== 'candy';
             var pStroke = pastel ? ('#' + ('00000' + mixCol(col[1], 0x000000, .25).toString(16)).slice(-6)) : undefined;
-            btn.add(s.add.text(0, 2, g.title, { fontFamily: FONT_MAIN, fontSize: '16.5px', fontStyle: '900', color: modern ? ('#' + ('00000' + col[1].toString(16)).slice(-6)) : '#fff', stroke: pStroke, strokeThickness: pastel ? 4 : 0 }).setOrigin(.5));
-            btn.add(s.add.text(0, 20, g.sub, { fontFamily: FONT_MAIN, fontSize: '11.5px', fontStyle: '700', color: modern ? '#8a84a3' : 'rgba(255,255,255,.95)', stroke: pStroke, strokeThickness: pastel ? 3 : 0 }).setOrigin(.5));
+            btn.add(s.add.text(0, 16, g.title, { fontFamily: FONT_MAIN, fontSize: '19px', fontStyle: '900', color: modern ? ('#' + ('00000' + col[1].toString(16)).slice(-6)) : '#fff', stroke: pStroke, strokeThickness: pastel ? 4 : 0 }).setOrigin(.5));
+            btn.add(s.add.text(0, 40, g.sub, { fontFamily: FONT_MAIN, fontSize: '13px', fontStyle: '700', color: modern ? '#8a84a3' : 'rgba(255,255,255,.95)', stroke: pStroke, strokeThickness: pastel ? 3 : 0 }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '10.5px', fontStyle: '900', color: '#fff', backgroundColor: modern ? ('#' + ('00000' + col[0].toString(16)).slice(-6)) : 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
-            btn.setSize(156, 100);
+            btn.add(s.add.text(0, 66, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '12px', fontStyle: '900', color: '#fff', backgroundColor: modern ? ('#' + ('00000' + col[0].toString(16)).slice(-6)) : 'rgba(255,255,255,.3)', padding: { x: 9, y: 3 } }).setOrigin(.5));
+            btn.setSize(168, 180);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerup', function () {
                 if (s._scrolled) return;
@@ -332,7 +332,7 @@ class HomeScene extends Phaser.Scene {
             });
             /* entrance bounce + idle sway */
             btn.setScale(0);
-            s.tweens.add({ targets: btn, scaleX: 1.15, scaleY: 1.15, duration: 500, delay: 80 + i * 90, ease: 'Back.easeOut' });
+            s.tweens.add({ targets: btn, scaleX: 1, scaleY: 1, duration: 500, delay: 80 + i * 90, ease: 'Back.easeOut' });
             s.tweens.add({ targets: btn, angle: i % 2 ? 1.4 : -1.4, duration: 2400 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             world.add(btn);
         });
@@ -347,9 +347,9 @@ class HomeScene extends Phaser.Scene {
             for (var d = 0; d <= maxPage; d++) {
                 var dx0 = W / 2 + (d - maxPage / 2) * 24;
                 if (d === s.page) {
-                    dotsG.fillStyle(0xffffff, 1).fillCircle(dx0, 604, 6);
-                    dotsG.lineStyle(2, 0x3b2a5e, .3).strokeCircle(dx0, 604, 6);
-                } else dotsG.fillStyle(0xffffff, .55).fillCircle(dx0, 604, 4);
+                    dotsG.fillStyle(0xffffff, 1).fillCircle(dx0, 726, 6);
+                    dotsG.lineStyle(2, 0x3b2a5e, .3).strokeCircle(dx0, 726, 6);
+                } else dotsG.fillStyle(0xffffff, .55).fillCircle(dx0, 726, 4);
             }
         }
         function goToPage(p2) {
@@ -384,7 +384,7 @@ class HomeScene extends Phaser.Scene {
             s.time.delayedCall(60, function () { s._scrolled = false; });
         });
         /* first-visit swipe hint */
-        var sa = this.add.triangle(W - 22, 412, 0, 5, 10, 0, 10, 10, 0xffffff, .9);
+        var sa = this.add.triangle(W - 22, 500, 0, 5, 10, 0, 10, 10, 0xffffff, .9);
         this.tweens.add({ targets: sa, x: W - 30, alpha: .35, duration: 600, yoyo: true, repeat: 3 });
         this.tweens.add({ targets: sa, alpha: 0, delay: 3200, duration: 500, onComplete: function () { sa.destroy(); } });
         VO.hello();

@@ -69,15 +69,26 @@ var Teacher = (function () {
     }
     function resolve(k) {
         if (k.indexOf('ar:') === 0) { var a = k.slice(3); return arHas(a) ? 'assets/audio/ar/' + a + '.mp3' : null; }
-        if (k.indexOf('sh:') === 0) { var s = k.slice(3); return SH_FILES[s] ? 'assets/audio/sh/' + s + '.mp3' : null; }
+        if (k.indexOf('sh:') === 0) { var s = k.slice(3); if (typeof SH_AVAIL !== 'undefined' && SH_AVAIL[s]) return 'assets/audio/sh/' + s + '.' + SH_AVAIL[s]; return SH_FILES[s] ? 'assets/audio/sh/' + s + '.mp3' : null; }
         return VO.hasClip(k) ? 'assets/audio/' + k + '.mp3' : null;
     }
     function talk(on) { var s = root && root.querySelector('#sh'); if (s) s.classList[on ? 'add' : 'remove']('talk'); }
     function stop() { seq++; if (cur) { try { cur.pause(); } catch (e) {} cur = null; } try { VO.stop(); } catch (e) {} talk(false); }
-    var seenSh = {};
+    var seenSh = {}, bags = {}, lastP = {}, pendingIntro = null;
+    /* variety: pick a line from a pool (never the same twice in a row, cycles the whole pool), only lines with audio */
+    function tpick(pool) {
+        var all = (typeof SHV !== 'undefined' && SHV[pool]) ? Object.keys(SHV[pool]) : [];
+        var ok = all.filter(function (id) { return typeof SH_AVAIL !== 'undefined' && SH_AVAIL[id]; });
+        if (!ok.length) return null;
+        var bag = (bags[pool] || []).filter(function (id) { return ok.indexOf(id) >= 0; });
+        if (!bag.length) { bag = shuffle(ok); if (bag.length > 1 && bag[0] === lastP[pool]) bag.push(bag.shift()); }
+        var id = bag.shift(); bags[pool] = bag; lastP[pool] = id;
+        return { key: 'sh:' + id, en: SHV[pool][id][1], ar: SHV[pool][id][0] };
+    }
     function say(items, onEach, onEnd) {
         stop();
-        items = items.filter(function (k) { if (k.indexOf('sh:') !== 0 || k === 'sh:try_again' || k === 'sh:lesson_done' || k === 'sh:map_hello') return true; if (seenSh[k]) return false; seenSh[k] = 1; return true; });
+        if (pendingIntro) { items = [pendingIntro].concat(items); pendingIntro = null; }
+        items = items.filter(function (k) { if (k.indexOf('sh:') !== 0 || /^sh:(ok|okl|okw|oks|combo|c3|c5|no1|no2|no3|d1|d2|d3|hn|hb|ha|sl|sw|ss|pk)_/.test(k) || k === 'sh:try_again' || k === 'sh:lesson_done' || k === 'sh:map_hello') return true; if (seenSh[k]) return false; seenSh[k] = 1; return true; });
         var id = seq, i = 0;
         talk(true);
         (function next() {
@@ -274,6 +285,8 @@ var Teacher = (function () {
             if (arHas('fuzzy_cheer_1')) pool.push('ar:fuzzy_cheer_1');
             if (arHas('fuzzy_cheer_2')) pool.push('ar:fuzzy_cheer_2');
             if (!pool.length) pool.push(praiseKey());
+            var pv = tpick('poke');
+            if (pv) { say([pv.key]); bubble(pv.en, pv.ar); return; }
             say([pick(pool)]);
             var r = rnd(3);
             bubble(['Hehe! That tickles!', 'I love teaching you!', 'Keep going, champ!'][r], ['هههه بتضحكني!', 'بحب أعلمك!', 'كمل يا بطل!'][r]);
@@ -313,7 +326,8 @@ var Teacher = (function () {
             ? ['Hi ' + nm() + '! I am Shalabi, your English teacher. Ready to play?', 'أهلاً يا ' + nm() + '! أنا شلبي معلمك. جاهز نلعب؟']
             : (ni >= 0 ? ['Welcome back, ' + nm() + '! Let us play the next game.', 'نورت يا ' + nm() + '! يلا نكمل.'] : ['You finished everything, ' + nm() + '! You are a champion!', 'خلصت كل حاجة يا بطل!']);
         bubble(greet[0], greet[1]);
-        say(['sh:map_hello', helloKey()]);
+        var hv = tpick(n === 0 ? 'hello_new' : (ni >= 0 ? 'hello_back' : 'hello_all'));
+        if (hv) { bubble(hv.en, hv.ar); say([hv.key]); } else say(['sh:map_hello', helloKey()]);
         root.querySelector('#tc-back').onclick = function () { sfx('tap'); close(); };
         root.querySelector('#tc-album').onclick = function () { sfx('tap'); showAlbum(); };
         root.querySelector('#tc-cont').onclick = function () { sfx('tap'); startLesson(ni >= 0 ? ni : 0); };
@@ -386,7 +400,10 @@ var Teacher = (function () {
         seenSh = {};
         L = { i: i, l: l, steps: buildSteps(l), p: 0, miss: 0, combo: 0, best: 0, tries: 0 };
         touchStreak();
+        var sv = tpick(l.kind === 'letters' ? 'start_letters' : (l.kind === 'words' ? 'start_words' : 'start_sent'));
+        pendingIntro = sv ? sv.key : null;
         showStep();
+        if (sv) setTimeout(function () { try { bubble(sv.en, sv.ar); } catch (e) {} }, 60);
     }
     function frame(inner, bubEn, bubAr) {
         var segs = '';
@@ -481,8 +498,11 @@ var Teacher = (function () {
         var cb = L.combo >= 3 ? [['Combo x' + L.combo + '! You are on fire!', 'كومبو ×' + L.combo + '! نار يا بطل!']] : null;
         var pr = [['Great job, ' + nm() + '!', 'برافو يا ' + nm() + '!'], ['Yes! You got it!', 'ايوه! صح!'], ['Wow, super smart!', 'يا سلام! شاطر!'], ['That is right! High five!', 'صح! هاتها!']];
         var m = cb ? cb[0] : pick(pr);
-        bubble(m[0], m[1]);
-        say([praiseKey()], null, after);
+        var wp = L.l.kind === 'letters' ? 'ok_letters' : (L.l.kind === 'words' ? 'ok_words' : 'ok_sent');
+        var vp = L.combo === 3 ? 'combo3' : (L.combo === 5 ? 'combo5' : (L.combo >= 4 ? 'combo' : (Math.random() < .35 ? wp : 'ok')));
+        var v = tpick(vp) || tpick('ok');
+        if (v) { bubble(v.en, v.ar); say([v.key], null, after); }
+        else { bubble(m[0], m[1]); say([praiseKey()], null, after); }
         if (L.combo === 3 || L.combo === 5) confetti();
     }
     function wrong(el, hintKeys) {
@@ -491,8 +511,9 @@ var Teacher = (function () {
         el.classList.add('no'); setTimeout(function () { el.classList.remove('no'); }, 500);
         var pills = root.querySelectorAll('.tc-pill'); if (pills[0]) pills[0].textContent = '🔥 0';
         var m = pick([['Almost! Try again, you can do it!', 'قربت! جرب تاني!'], ['Oops! Listen again with me.', 'أوبس! اسمع تاني معايا.'], ['No problem! Let us try once more.', 'عادي! نجرب مرة كمان.']]);
-        bubble(m[0], m[1]);
-        say(['sh:try_again'].concat(hintKeys || []));
+        var v = tpick(L.tries >= 3 ? 'no3' : (L.tries === 2 ? 'no2' : 'no1'));
+        if (v) { bubble(v.en, v.ar); say([v.key].concat(hintKeys || [])); }
+        else { bubble(m[0], m[1]); say(['sh:try_again'].concat(hintKeys || [])); }
     }
     function stepPickL(s) {
         var c = s.c, e = LET[c][1], w = LET[c][0], q, qa, prompt, hint;
@@ -636,7 +657,9 @@ var Teacher = (function () {
             + '<div class="tc-foot"><div id="sh"><img src="assets/teacher/shalabi_duo.png" alt=""></div><div class="tc-bub" id="bub"><div class="en">' + h(msg[0]) + '</div><div class="ar">' + h(msg[1]) + '</div></div></div></div>');
         wireShalabi();
         confetti(); sfx('cheer'); shAnim('jump');
-        setTimeout(function () { say(['sh:lesson_done', hypeKey()]); }, 500);
+        var dv = tpick('done' + stars);
+        if (dv) { bubble(dv.en, dv.ar); setTimeout(function () { say([dv.key]); }, 500); }
+        else setTimeout(function () { say(['sh:lesson_done', hypeKey()]); }, 500);
         root.querySelector('#tc-x').onclick = function () { sfx('tap'); showMap(); };
         root.querySelector('#tc-m').onclick = function () { sfx('tap'); showMap(); };
         root.querySelector('#tc-n').onclick = function () { sfx('tap'); if (more) startLesson(ni); else showMap(); };

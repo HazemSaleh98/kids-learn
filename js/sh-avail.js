@@ -1,0 +1,1 @@
+var SH_AVAIL = {};
