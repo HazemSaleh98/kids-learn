@@ -274,6 +274,33 @@ VO_MANIFEST.lines['shapebuild_go'] = { t: 'Connect the dots and build the', v: '
     VO_MANIFEST.lines['shape_name_' + sn] = { t: sn.charAt(0).toUpperCase() + sn.slice(1) + '!', v: 'lily', d: 'shape name' };
 });
 VO_MANIFEST.lines['numberhop_go'] = { t: 'Hop to', v: 'lily', d: 'game instruction' };
+
+/* ================= 14) Word Machine: fill in the missing letter/sound ================= */
+var MACHINE_WORDS = WORDS1.concat(WORDS2);
+GAMES.machine = GAMES.machine || {};
+GAMES.machine.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    var DIG = ['sh', 'ch', 'th', 'ck', 'ng'];
+    var w = pick(MACHINE_WORDS);
+    if (kg !== 'kg1') {
+        for (var i = 0; i < DIG.length; i++) {
+            var p = w.indexOf(DIG[i]);
+            if (p >= 0) {
+                var opts = shuffle([DIG[i]].concat(sample(DIG.filter(function (d) { return d !== DIG[i]; }), 2, [])));
+                return { word: w, missing: DIG[i], at: p, opts: opts, answer: DIG[i], vk: phKey(DIG[i]),
+                    img: 'w_' + w, instr: 'What sound is missing?', keys: ['wordmachine_go', 'word_' + w] };
+            }
+        }
+    }
+    /* kg1 (or word without a digraph): missing first letter */
+    var first = w[0];
+    var pool = unlockedPhon(kg, lvl).filter(function (g) { return g.length === 1 && g !== first; });
+    if (pool.length < 2) pool = 'abcdfghilmnoprstu'.split('').filter(function (g) { return g !== first; });
+    var opts2 = shuffle([first].concat(sample(pool, 2, [])));
+    return { word: w, missing: first, at: 0, opts: opts2, answer: first, vk: 'letter_' + first,
+        img: 'w_' + w, instr: 'What letter is missing?', keys: ['wordmachine_go', 'word_' + w] };
+};
+VO_MANIFEST.lines['wordmachine_go'] = { t: 'The word machine needs your help! What is missing?', v: 'lily', d: 'game instruction' };
 VO_MANIFEST.lines['letterrun_catch'] = { t: 'Run and catch every', v: 'lily', d: 'game instruction' };
 VO_MANIFEST.lines['lettertrace_do'] = { t: 'Trace with your finger', v: 'lily', d: 'game instruction' };
 function cntKey(path) {
@@ -1445,6 +1472,111 @@ class BuildScene extends GameBase {
         if (!d) return;
         var dx = p.x - d.x, dy = p.y - d.y;
         if (dx * dx + dy * dy < 34 * 34) this.connect(this.nextDot);
+    }
+}
+
+/* ================= 14) Word Machine scene ================= */
+class MachineScene extends GameBase {
+    constructor() { super('g_machine', 'machine'); }
+    buildRound(cur) {
+        var s = this;
+        /* machine body */
+        var mg = this.add.graphics();
+        mg.fillStyle(0xffd93d, 1).fillRoundedRect(30, 235, W - 60, 330, 28);
+        mg.fillStyle(0xfb923c, 1).fillRoundedRect(30, 235, W - 60, 52, { tl: 28, tr: 28, bl: 0, br: 0 });
+        mg.fillStyle(0xe5a100, 1).fillRoundedRect(52, 545, W - 104, 20, 10); /* feet bar */
+        this.track(mg);
+        /* eyes */
+        var e1 = this.add.circle(150, 261, 12, 0xffffff), e2 = this.add.circle(240, 261, 12, 0xffffff);
+        var p1 = this.add.circle(153, 263, 5, 0x3b2a5e), p2 = this.add.circle(243, 263, 5, 0x3b2a5e);
+        [e1, e2, p1, p2].forEach(function (o) { s.track(o); });
+        this.tweens.add({ targets: [p1, p2], y: '+=3', x: '-=4', duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        /* gears */
+        var g1 = drawGearIcon(this, 58, 330, 1.6, 0x3b2a5e), g2 = drawGearIcon(this, W - 58, 330, 1.3, 0x3b2a5e);
+        this.track(g1); this.track(g2);
+        this.tweens.add({ targets: g1, angle: 360, duration: 6000, repeat: -1 });
+        this.tweens.add({ targets: g2, angle: -360, duration: 4500, repeat: -1 });
+        /* screen window with the word picture */
+        var winG = this.add.graphics();
+        winG.fillStyle(0x3b2a5e, 1).fillRoundedRect(W / 2 - 108, 300, 216, 148, 18);
+        winG.lineStyle(4, 0xffffff, .8).strokeRoundedRect(W / 2 - 108, 300, 216, 148, 18);
+        this.track(winG);
+        var pic = this.add.image(W / 2, 374, cur.img);
+        pic.setScale(112 / Math.max(pic.width, pic.height));
+        pic.setInteractive({ useHandCursor: true });
+        pic.on('pointerdown', function () { SFX.play('tap'); if (!(state && state.muted)) VO.say('word_' + cur.word); });
+        this.track(pic);
+        this.tweens.add({ targets: pic, scale: pic.scale * 1.06, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        /* word row with missing slot(s) */
+        var chars = cur.word.split('');
+        var blankIdx = {}; for (var bi = 0; bi < cur.missing.length; bi++) blankIdx[cur.at + bi] = true;
+        var step = Math.min(40, 300 / chars.length);
+        var x0 = W / 2 - (chars.length - 1) * step / 2;
+        this.slotObjs = []; this.slotPos = null;
+        chars.forEach(function (ch, i) {
+            var x = x0 + i * step, y = 505;
+            if (blankIdx[i]) {
+                var slot = s.add.graphics();
+                slot.fillStyle(0xfff6c9, 1).fillRoundedRect(x - 15, y - 22, 30, 40, 8);
+                slot.lineStyle(3, 0x3b2a5e, .9).strokeRoundedRect(x - 15, y - 22, 30, 40, 8);
+                s.track(slot);
+                s.slotObjs.push(slot);
+                if (!s.slotPos) s.slotPos = { x: x, y: y };
+                var q = s.add.text(x, y - 1, '?', { fontSize: '24px', fontStyle: '900', color: '#c98a00' }).setOrigin(.5);
+                s.track(q); s.slotObjs.push(q);
+                s.tweens.add({ targets: q, alpha: .35, duration: 500, yoyo: true, repeat: -1 });
+            } else {
+                var lt = s.add.text(x, y, ch, { fontSize: '34px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5);
+                s.track(lt); s.slotObjs.push(lt);
+            }
+        });
+        /* conveyor belt with option chips */
+        var belt = this.add.graphics();
+        belt.fillStyle(0x6d5a8f, 1).fillRoundedRect(24, 620, W - 48, 96, 20);
+        belt.fillStyle(0x8b77b8, 1).fillRoundedRect(24, 620, W - 48, 18, { tl: 20, tr: 20, bl: 0, br: 0 });
+        for (var bl = 0; bl < 6; bl++) { belt.fillStyle(0x5a4a78, 1).fillCircle(56 + bl * 56, 700, 6); }
+        this.track(belt);
+        var xs = [86, W / 2, W - 86];
+        this.chips = [];
+        cur.opts.forEach(function (o, i) {
+            var c = s.add.container(xs[i], 668);
+            var cg = s.add.graphics();
+            cg.fillStyle(0xffffff, 1).fillRoundedRect(-42, -30, 84, 60, 16);
+            cg.lineStyle(4, 0x3b2a5e, 1).strokeRoundedRect(-42, -30, 84, 60, 16);
+            c.add(cg);
+            c.add(s.add.text(0, 0, o, { fontSize: '30px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+            c.setSize(84, 60);
+            c.setInteractive({ useHandCursor: true });
+            c.val = o;
+            c.on('pointerdown', function () { s.tapChip(c); });
+            s.tweens.add({ targets: c, y: 662, duration: 900 + i * 220, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            s.track(c);
+            s.chips.push(c);
+        });
+        this.addPlayBuddy(66, 780, 78);
+    }
+    tapChip(c) {
+        if (this.roundLock || c.done) return;
+        var s = this, cur = this.cur;
+        if (c.val === cur.answer) {
+            c.done = true;
+            this.roundLock = true;
+            SFX.play('pop');
+            var tp = this.slotPos || { x: W / 2, y: 505 };
+            this.tweens.add({ targets: c, x: tp.x, y: tp.y, scale: .72, duration: 380, ease: 'Quad.easeIn', onComplete: function () {
+                SFX.play('ding');
+                s.slotObjs.forEach(function (o) { if (o && o.destroy) o.destroy(); });
+                var full = s.add.text(W / 2, 505, cur.word, { fontSize: '38px', fontStyle: '900', color: '#1b7a43', stroke: '#ffffff', strokeThickness: 5 }).setOrigin(.5);
+                s.track(full);
+                s.tweens.add({ targets: full, scale: 1.12, duration: 180, yoyo: true });
+                s.tweens.add({ targets: s.cameras.main, x: 5, duration: 40, yoyo: true, repeat: 3 });
+                s.popParticles(W / 2, 380, [0xffd93d, 0xfb923c, 0xffffff, 0x54c878]);
+                if (!(state && state.muted)) { VO.say('word_' + cur.word); if (cur.vk) setTimeout(function () { if (!(state && state.muted)) VO.say(cur.vk); }, 900); }
+                setTimeout(function () { s.roundLock = false; s.win(); }, 950);
+            } });
+        } else {
+            this.oopsAt([c]);
+        }
     }
 }
 
