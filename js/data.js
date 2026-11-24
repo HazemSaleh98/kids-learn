@@ -24,7 +24,7 @@ var THEMES = {
 if (state && !THEMES[state.theme]) state.theme = 'bear';
 if (!THEMES[setupSel.theme]) setupSel.theme = 'bear';
 function theme() { return THEMES[(state && state.theme)] || THEMES.bear; }
-function kidName() { return (state && state.name) || 'friend'; }
+function kidName() { var n = (state && state.name) || 'friend'; if (String(n).toLowerCase().replace(/[^a-z0-9]/g, '') === 'malik') return 'Malek'; return n; }
 function charName() { return (state && state.charName) || theme().charDef; }
 function save() { saveLS(KEY, state); }
 
@@ -281,5 +281,6 @@ var GAMES = {
     balloon: { ico: 'bubble', icos: .3, icoTint: 0xff6b9d, em: '🎈', title: 'Balloon Catch', sub: 'Catch them all!', scene: 'g_balloon', kg: { kg1: 'يمسك البالونات بالحرف المطلوب وهو يحرك صديقه', kg2: 'بالونات الأصوات المركبة + الأعداد', g1: 'بالونات الأعداد حتى ٢٠ بسرعة أكبر' } },
     run: { ico: 'bubble', icos: .3, icoTint: 0x2ecc71, icoText: 'GO', em: '🏃', title: 'Letter Run', sub: 'Run & catch!', scene: 'g_run', kg: { kg1: 'يجري ويمسك الحرف المطلوب — كبير/صغير حسب المستوى', kg2: 'يمسك المركبات الصوتية وهو جاري', g1: 'يمسك الأعداد حتى ٢٠ بسرعة أكبر' } },
     trace: { ico: 'bubble', icos: .3, icoTint: 0x9b59f5, icoText: 'abc', em: '✏️', title: 'Letter Tracing', sub: 'Trace with your finger', scene: 'g_trace', kg: { kg1: 'كتابة الحروف الكبيرة بالتتبع بالصباع', kg2: 'تتبع الحروف الصغيرة', g1: 'تتبع الأرقام' } },
+    hop: { ico: 'bubble', icos: .3, icoTint: 0x38bdf8, icoText: '5', em: '🐸', title: 'Number Hop', sub: 'Hop in order!', scene: 'g_hop', kg: { kg1: 'العد بالترتيب حتى ١٠ — نقّز على الرقم الصح', kg2: 'العد بالترتيب حتى ٢٠', g1: 'العد القفزي ٢ و ٥ و ١٠' } },
     story: { ico: 'w_owl', icos: .42, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
 };

@@ -224,6 +224,30 @@ GAMES.trace.gen = function (lvl, kg) {
     var vk = target.length > 1 ? phKey(target) : 'letter_' + target.toLowerCase();
     return { letter: L, instr: 'Trace the letter ' + L + '!', keys: ['lettertrace_do', vk] };
 };
+GAMES.hop = GAMES.hop || {};
+GAMES.hop.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    var step = kg === 'g1' ? pick([2, 5, 10]) : 1;
+    var len = 5 + Math.min(2, Math.floor((lvl - 1) / 2)); /* 5-7 hops */
+    var maxStart;
+    if (kg === 'g1') maxStart = step === 10 ? Math.max(0, 90 - step * len) : Math.max(0, 40 - step * len);
+    else maxStart = Math.max(0, (kg === 'kg1' ? 10 : 20) - step * (len + 1));
+    var start = kg === 'g1' && step === 10 ? 10 * rnd(Math.floor(maxStart / 10) + 1) : rnd(maxStart + 1);
+    var seq = [];
+    for (var i = 0; i <= len; i++) seq.push(start + step * i);
+    var inSeq = {}; seq.forEach(function (n) { inSeq[n] = 1; });
+    var extra = {};
+    var guard = 0;
+    while (Object.keys(extra).length < 3 && guard++ < 60) {
+        var d = Math.max(0, start + rnd(step * (len + 2)) - step);
+        if (!inSeq[d]) extra[d] = 1;
+    }
+    var pads = shuffle(seq.concat(Object.keys(extra).map(Number)));
+    var first = seq[1];
+    return { seq: seq, pads: pads, next: 1, need: len, step: step,
+        instr: 'Hop to ' + first + '!', keys: ['numberhop_go', 'num_' + first] };
+};
+VO_MANIFEST.lines['numberhop_go'] = { t: 'Hop to', v: 'lily', d: 'game instruction' };
 VO_MANIFEST.lines['letterrun_catch'] = { t: 'Run and catch every', v: 'lily', d: 'game instruction' };
 VO_MANIFEST.lines['lettertrace_do'] = { t: 'Trace with your finger', v: 'lily', d: 'game instruction' };
 function cntKey(path) {
@@ -1246,7 +1270,82 @@ class TraceScene extends GameBase {
     }
 }
 
-/* ================= 10) Story Time: buddy-narrated stories ================= */
+/* ================= 12) Number Hop: tap the next number, buddy hops ================= */
+class HopScene extends GameBase {
+    constructor() { super('g_hop', 'hop'); }
+    buildRound(cur) {
+        var s = this;
+        /* pond */
+        var pond = this.add.graphics();
+        pond.fillStyle(0x4fc3f7, 1).fillRoundedRect(16, 220, W - 32, 500, 30);
+        pond.fillStyle(0x81d4fa, 1).fillRoundedRect(24, 228, W - 48, 484, 26);
+        this.track(pond);
+        /* lily pads on a loose zigzag grid */
+        var spots = [];
+        var rows = [320, 450, 580];
+        for (var r = 0; r < rows.length; r++)
+            for (var cIdx = 0; cIdx < 3; cIdx++)
+                spots.push({ x: 84 + cIdx * 111 + (r % 2 ? 24 : -10), y: rows[r] });
+        var chosen = shuffle(spots).slice(0, cur.pads.length);
+        this.pads = [];
+        var startNum = cur.seq[0];
+        cur.pads.forEach(function (n, i) {
+            var pos = chosen[i];
+            var c = s.add.container(pos.x, pos.y);
+            var g = s.add.graphics();
+            g.fillStyle(0x1b7a43, 1).fillEllipse(0, 6, 96, 40); /* shadow */
+            g.fillStyle(0x2ea85c, 1).fillEllipse(0, 0, 96, 44);
+            g.fillStyle(0x54c878, 1).fillEllipse(0, -4, 84, 34);
+            c.add(g);
+            c.add(s.add.text(0, -4, String(n), { fontSize: '26px', fontStyle: '900', color: '#fff', stroke: '#1b7a43', strokeThickness: 4 }).setOrigin(.5));
+            c.num = n;
+            c.setSize(96, 50);
+            c.setInteractive({ useHandCursor: true });
+            c.on('pointerdown', function () { s.tapPad(c); });
+            s.tweens.add({ targets: c, y: pos.y - 4, duration: 1400 + rnd(600), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            s.track(c);
+            s.pads.push(c);
+            if (n === startNum) s.startPad = c;
+        });
+        /* buddy stands on the start pad */
+        var sp2 = this.startPad || this.pads[0];
+        var m = mascotWithFace(this, sp2.x, sp2.y - 52, 84);
+        this.hopper = m;
+        this.track(m);
+        makeSquish(this, m, 1);
+        this.hopping = false;
+    }
+    tapPad(c) {
+        if (this.roundLock || this.hopping) return;
+        var s = this, cur = this.cur;
+        SFX.play('tap');
+        if (c.num === cur.seq[cur.next]) {
+            this.hopping = true;
+            SFX.play('whoosh');
+            var m = this.hopper, ty = c.y - 52;
+            this.tweens.add({ targets: m, x: c.x, duration: 420, ease: 'Quad.easeInOut' });
+            this.tweens.add({
+                targets: m, y: ty - 70, duration: 200, yoyo: true, ease: 'Quad.easeOut',
+                onComplete: function () {
+                    m.y = ty;
+                    s.hopping = false;
+                    SFX.play('pop');
+                    s.popParticles(c.x, c.y - 10, [0xffffff, 0x54c878, 0xffd93d]);
+                    if (!(state && state.muted)) VO.mini();
+                    cur.next++;
+                    if (cur.next > cur.need) { s.win(); return; }
+                    var t = cur.seq[cur.next];
+                    s.promptTxt.setText('Hop to ' + t + '!');
+                    if (!(state && state.muted)) VO.say('num_' + t);
+                }
+            });
+        } else {
+            this.oopsAt([c]);
+        }
+    }
+}
+
+/* ================= 13) Story Time: buddy-narrated stories ================= */
 var STORY_ART_HAS = { fuzzy_apple: true, sam_cat: true, blinky_star: true, princess_butterfly: true, red_bus: true, fish_mom: true };
 var STORY_ART = { cat: '🐱', sleep: '😴', milk: '🥛', bus: '🚌', hill: '⛰️', home: '🏠', park: '🌳', fish: '🐟', pond: '🏞️', gift: '🎁', apple: '🍎', jump: '🤸', bonk: '💫', star: '⭐', play: '🎈', friends: '💛', garden: '🌷', butterfly: '🦋' };
 var BUDDY_THEME = { fuzzy: 'monster_blue', blinky: 'monster_green', captain: 'hero', luna: 'caped', princess: 'princess', fairy: 'fairy' };

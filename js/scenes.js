@@ -32,7 +32,7 @@ class BootScene extends Phaser.Scene {
         ['stand', 'walk1', 'walk2', 'jump', 'ready', 'hurt'].forEach(function (p) { this.load.image('bunny_' + p, 'bunny/bunny1_' + p + '.png'); }, this);
         Object.keys(WIMG).forEach(function (w) { this.load.image('w_' + w, WIMG[w]); }, this);
         Object.keys(STORY_ART_HAS).forEach(function (sid) { for (var pi = 1; pi <= 5; pi++) this.load.image('storyart_' + sid + '_p' + pi, 'story/' + sid + '_p' + pi + '.jpg'); }, this);
-        Object.keys(GAMES).forEach(function (gid) { this.load.image('icon_' + gid, 'icons/' + gid + '.jpg'); }, this);
+        Object.keys(GAMES).forEach(function (gid) { this.load.image('icon_' + gid, 'icons/' + gid + '.png'); }, this);
         for (var d = 0; d <= 9; d++) this.load.image('tile_' + d, 'tiles/tile' + d + '.png');
         /* photo face (data URL) loads on demand in HomeScene */
     }
@@ -181,8 +181,12 @@ class HomeScene extends Phaser.Scene {
         this.add.text(166, 126, 'Hi, ' + kidName() + '!', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
         this.add.text(166, 158, "Let's play and learn\nwith " + charName() + '!', { fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
 
-        /* game spots */
+        /* game spots: scrollable grid */
+        var world = this.add.container(0, 0);
         var ids = Object.keys(GAMES);
+        var lastRow = Math.floor((ids.length - 1) / 2);
+        var contentBottom = 248 + lastRow * 106 + 50;
+        var minY = Math.min(0, H - contentBottom - 20);
         ids.forEach(function (id, i) {
             var g = GAMES[id];
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
@@ -193,15 +197,12 @@ class HomeScene extends Phaser.Scene {
             bg2.fillStyle(col[0], 1).fillRoundedRect(-78, -50, 156, 100, 22);
             btn.add(bg2);
             var circ = s.add.graphics();
-            circ.fillStyle(0xffffff, 1).fillCircle(0, -26, 22);
+            circ.fillStyle(0xffffff, 1).fillCircle(0, -26, 23);
             btn.add(circ);
             var ik = 'icon_' + id;
             if (s.textures.exists(ik)) {
                 var im = s.add.image(0, -26, ik);
-                im.setScale(42 / Math.max(im.width, im.height));
-                var imask = s.make.graphics({ x: 0, y: 0, add: false });
-                imask.fillStyle(0xffffff, 1).fillCircle(cx, cy - 26, 21);
-                im.setMask(imask.createGeometryMask());
+                im.setScale(44 / Math.max(im.width, im.height));
                 btn.add(im);
             } else {
                 var ico = s.add.image(0, -26, g.ico).setScale((g.icos || .4) * .68);
@@ -215,7 +216,8 @@ class HomeScene extends Phaser.Scene {
             btn.add(s.add.text(0, 36, 'Level ' + lv, { fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
             btn.setSize(156, 100);
             btn.setInteractive({ useHandCursor: true });
-            btn.on('pointerdown', function () {
+            btn.on('pointerup', function () {
+                if (s._scrolled) return;
                 SFX.play('tap');
                 s.tweens.add({ targets: btn, scaleX: .93, scaleY: .93, duration: 90, yoyo: true });
                 s.time.delayedCall(140, function () { startGameScene(s, id); });
@@ -224,7 +226,25 @@ class HomeScene extends Phaser.Scene {
             btn.setScale(0);
             s.tweens.add({ targets: btn, scaleX: 1, scaleY: 1, duration: 500, delay: 80 + i * 90, ease: 'Back.easeOut' });
             s.tweens.add({ targets: btn, angle: i % 2 ? 1.4 : -1.4, duration: 2400 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            world.add(btn);
         });
+        /* drag-to-scroll */
+        this._scrolled = false;
+        var drag = null;
+        this.input.on('pointerdown', function (p) { drag = { y: p.y, wy: world.y }; s._scrolled = false; });
+        this.input.on('pointermove', function (p) {
+            if (!drag || !p.isDown) return;
+            var dy = p.y - drag.y;
+            if (Math.abs(dy) > 10) s._scrolled = true;
+            if (s._scrolled) world.y = Math.max(minY, Math.min(0, drag.wy + dy));
+        });
+        this.input.on('pointerup', function () { drag = null; s.time.delayedCall(60, function () { s._scrolled = false; }); });
+        /* scroll hint arrow when content overflows */
+        if (minY < 0) {
+            var sa = this.add.triangle(W / 2, H - 16, 0, 0, 10, 0, 5, 10, 0xffffff, .9);
+            this.tweens.add({ targets: sa, y: H - 26, alpha: .4, duration: 700, yoyo: true, repeat: -1 });
+            this.tweens.add({ targets: sa, alpha: 0, delay: 4000, duration: 600, onComplete: function () { sa.destroy(); } });
+        }
         VO.hello();
         /* unlock WebAudio on first touch */
         this.input.once('pointerdown', function () { SFX.unlock(); });
