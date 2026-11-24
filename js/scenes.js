@@ -1,0 +1,178 @@
+'use strict';
+/* ================= Phaser scenes ================= */
+var W = 390, H = 844;
+
+/* ---------- Boot: preload all assets ---------- */
+class BootScene extends Phaser.Scene {
+    constructor() { super('boot'); }
+    preload() {
+        var fill = document.getElementById('boot-fill');
+        this.load.on('progress', function (p) { if (fill) fill.style.width = Math.round(p * 100) + '%'; });
+        this.load.setPath('assets');
+        Object.keys(THEMES).forEach(function (k) { var t = THEMES[k]; this.load.image('theme_' + k, t.img); if (t.imgCheer) this.load.image('theme_' + k + '_cheer', t.imgCheer); }, this);
+        ['owl', 'frog'].forEach(function (a) { this.load.image('an_' + a, 'animals/' + a + '.png'); }, this);
+        this.load.image('bg_grass', 'bg/grass.png');
+        this.load.image('sun', 'bg/sun.png');
+        ['cloud1', 'cloud3', 'cloud4'].forEach(function (c) { this.load.image(c, 'bg/' + c + '.png'); }, this);
+        this.load.image('tree', 'bg/tree.png');
+        this.load.image('treePine', 'bg/treePine.png');
+        this.load.image('bush1', 'bg/bush1.png');
+        this.load.image('bush2', 'bg/bush2.png');
+        this.load.image('bubble', 'fx/bubble.png');
+        ['fish', 'fish2'].forEach(function (f) { this.load.image('food_' + f, 'food/' + f + '.png'); }, this);
+        ['donut1', 'donut2', 'donut3', 'carrot', 'carrot_gold', 'cake'].forEach(function (f) { this.load.image('food_' + f, 'food/' + f + '.png'); }, this);
+        this.load.image('tile_star', 'tiles/star.png');
+        this.load.image('tile_heart', 'tiles/heart.png');
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function (c) { this.load.image('tile_' + c, 'tiles/tile' + c + '.png'); }, this);
+        ['red', 'green', 'blue', 'orange'].forEach(function (c) { this.load.image('ship_' + c, 'ships/' + c + '.png'); }, this);
+        ['circle', 'square', 'rhombus'].forEach(function (s) {
+            ['red', 'blue', 'green', 'pink'].forEach(function (c) { this.load.image('shape_' + c + '_' + s, 'shapes/' + c + '_' + s + '.png'); }, this);
+        }, this);
+        ['face_a', 'face_b', 'face_c', 'face_d', 'face_e'].forEach(function (f) { this.load.image(f, 'shapes/' + f + '.png'); }, this);
+        ['stand', 'walk1', 'walk2', 'jump', 'ready', 'hurt'].forEach(function (p) { this.load.image('bunny_' + p, 'bunny/bunny1_' + p + '.png'); }, this);
+        Object.keys(WIMG).forEach(function (w) { this.load.image('w_' + w, WIMG[w]); }, this);
+        for (var d = 0; d <= 9; d++) this.load.image('tile_' + d, 'tiles/tile' + d + '.png');
+        /* photo face (data URL) loads on demand in HomeScene */
+    }
+    create() {
+        /* particle textures */
+        var g = this.make.graphics({ x: 0, y: 0, add: false });
+        g.fillStyle(0xffffff, 1).fillCircle(5, 5, 5);
+        g.generateTexture('dot', 10, 10); g.clear();
+        g.fillStyle(0xffffff, 1).fillRect(0, 0, 9, 13);
+        g.generateTexture('conf', 9, 13); g.destroy();
+        var bt = document.getElementById('boot'); if (bt) bt.style.display = 'none';
+        if (state) this.scene.start('home');
+        else DOMScreens.showSetup(this.scene.start.bind(this.scene, 'home'));
+    }
+}
+
+/* ---------- helpers ---------- */
+function addCloud(scene, key, y, dur, scale, delay) {
+    var c = scene.add.image(-180, y, key).setScale(scale).setAlpha(.95).setDepth(0);
+    scene.tweens.add({ targets: c, x: W + 200, duration: dur, delay: delay || 0, repeat: -1 });
+    return c;
+}
+function makeSquish(scene, img, base) {
+    base = base || 1;
+    scene.tweens.add({
+        targets: img, scaleX: base * 1.04, scaleY: base * .96, duration: 900,
+        yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+    });
+}
+function mascotWithFace(scene, x, y, size) {
+    var t = theme();
+    var c = scene.add.container(x, y);
+    var img = scene.add.image(0, 0, 'theme_' + ((state && state.theme) || setupSel.theme));
+    img.setScale(size / img.width);
+    c.add(img);
+    if (state && state.photo) {
+        var w = img.displayWidth, h = img.displayHeight;
+        var fx = -w / 2 + (t.fx / 100) * w, fy = -h / 2 + (t.fy / 100) * h, fr = (t.fr / 100) * w / 2;
+        var photo = scene.add.image(fx, fy, 'kidface');
+        var pr = Math.min(fr * 2 / photo.width, fr * 2 / photo.height) * (state.faceTf ? state.faceTf.s : 1);
+        photo.setScale(pr);
+        if (state.faceTf) { photo.x += (state.faceTf.x / 100) * w; photo.y += (state.faceTf.y / 100) * h; photo.setRotation((state.faceTf.r || 0) * Math.PI / 180); }
+        var mask = scene.make.graphics({ x: 0, y: 0, add: false });
+        mask.fillStyle(0xffffff); mask.fillCircle(x + fx, y + fy, fr);
+        photo.setMask(mask.createGeometryMask());
+        c.add(photo);
+    }
+    return c;
+}
+
+/* ---------- Home scene ---------- */
+class HomeScene extends Phaser.Scene {
+    constructor() { super('home'); }
+    create() {
+        var s = this;
+        if (state && state.photo && !this.textures.exists('kidface')) {
+            this.textures.once('addtexture', function (key) { if (key === 'kidface') s.scene.restart(); });
+            this.textures.addBase64('kidface', state.photo);
+            return;
+        }
+        /* world */
+        var bg = this.add.image(W / 2, H / 2, 'bg_grass');
+        bg.setScale(Math.max(W / bg.width, H / bg.height) * 1.02);
+        var sun = this.add.image(W - 60, 74, 'sun').setScale(.5);
+        this.tweens.add({ targets: sun, angle: 360, duration: 30000, repeat: -1 });
+        addCloud(this, 'cloud1', 90, 46000, .45);
+        addCloud(this, 'cloud3', 170, 68000, .5, -26000);
+        addCloud(this, 'cloud4', 250, 56000, .42, -12000).setAlpha(.75);
+        this.add.image(34, H - 190, 'tree').setScale(.4).setDepth(0);
+        this.add.image(W - 30, H - 230, 'treePine').setScale(.34).setDepth(0);
+        this.add.image(120, H - 60, 'bush1').setScale(.5).setDepth(0);
+        this.add.image(W - 110, H - 40, 'bush2').setScale(.55).setDepth(0);
+
+        /* top bar */
+        var pill = this.add.graphics();
+        pill.fillStyle(0xffb03d, 1).fillRoundedRect(14, 16, 92, 44, 22);
+        this.add.image(38, 38, 'tile_star').setScale(.24);
+        this.starTxt = this.add.text(56, 38, String((state && state.stars) || 0), { fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
+        this.muteBtn = this.add.text(W - 116, 38, (state && state.muted) ? '🔇' : '🔊', { fontSize: '26px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+        this.muteBtn.on('pointerdown', function () {
+            state.muted = !state.muted; save();
+            if (state.muted) VO.stop();
+            s.muteBtn.setText(state.muted ? '🔇' : '🔊');
+        });
+        this.gear = this.add.text(W - 56, 38, '⚙️', { fontSize: '26px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+        var holdT = null, taps = 0;
+        this.gear.on('pointerdown', function () {
+            holdT = s.time.delayedCall(1200, function () { holdT = null; DOMScreens.showParents(); });
+        });
+        this.gear.on('pointerup', function () {
+            if (holdT) { holdT.remove(); holdT = null; taps++; if (taps >= 3) { taps = 0; DOMScreens.showParents(); } else s.time.delayedCall(800, function () { taps = 0; }); }
+        });
+        this.gear.on('pointerout', function () { if (holdT) { holdT.remove(); holdT = null; } });
+
+        /* mascot + bubble */
+        var m = mascotWithFace(this, 92, 190, 130);
+        makeSquish(this, m, 1);
+        var bb = this.add.graphics();
+        bb.fillStyle(0xffffff, 1).fillRoundedRect(168, 130, 206, 96, 20);
+        bb.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(168, 130, 206, 96, 20);
+        bb.fillStyle(0xffd93d, 1).fillTriangle(168, 196, 168, 170, 148, 186);
+        this.add.text(182, 150, 'Hi, ' + kidName() + '! 👋', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
+        this.add.text(182, 182, "Let's play and learn\nwith " + charName() + '!', { fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
+
+        /* game spots */
+        var ids = Object.keys(GAMES);
+        ids.forEach(function (id, i) {
+            var g = GAMES[id];
+            var col = SPOTCOLORS[i % SPOTCOLORS.length];
+            var cx = (i % 2 === 0) ? 102 : 288, cy = 330 + Math.floor(i / 2) * 168;
+            var btn = s.add.container(cx, cy);
+            var bg2 = s.add.graphics();
+            bg2.fillStyle(col[1], 1).fillRoundedRect(-88, -72, 176, 152, 28); /* shadow lip */
+            bg2.fillStyle(col[0], 1).fillRoundedRect(-88, -80, 176, 152, 28);
+            btn.add(bg2);
+            var circ = s.add.graphics();
+            circ.fillStyle(0xffffff, 1).fillCircle(0, -34, 30);
+            btn.add(circ);
+            var ico = s.add.image(0, -34, g.ico).setScale(g.icos || .4);
+            if (g.icoTint) ico.setTint(g.icoTint);
+            btn.add(ico);
+            btn.add(s.add.text(0, 8, g.title, { fontSize: '17px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+            btn.add(s.add.text(0, 30, g.sub, { fontSize: '11.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
+            var lv = (state.levels && state.levels[id]) || 1;
+            btn.add(s.add.text(0, 52, 'Level ' + lv, { fontSize: '11px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 8, y: 2 } }).setOrigin(.5));
+            btn.setSize(176, 152);
+            btn.setInteractive({ useHandCursor: true });
+            btn.on('pointerdown', function () {
+                s.tweens.add({ targets: btn, scaleX: .93, scaleY: .93, duration: 90, yoyo: true });
+                s.time.delayedCall(140, function () { startGameScene(s, id); });
+            });
+            /* entrance bounce + idle sway */
+            btn.setScale(0);
+            s.tweens.add({ targets: btn, scaleX: 1, scaleY: 1, duration: 500, delay: 80 + i * 90, ease: 'Back.easeOut' });
+            s.tweens.add({ targets: btn, angle: i % 2 ? 1.4 : -1.4, duration: 2400 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        });
+        VO.say('instr_welcome');
+    }
+}
+var SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8], [0xff9f43, 0xe07f1a], [0x2ecc71, 0x22a355], [0x9b59f5, 0x7a3fd4], [0xff5f57, 0xe03e36]];
+
+function startGameScene(scene, id) {
+    var key = GAMES[id] && GAMES[id].scene;
+    if (key && scene.scene.get(key)) scene.scene.start(key);
+}
