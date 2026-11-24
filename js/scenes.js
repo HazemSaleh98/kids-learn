@@ -60,6 +60,50 @@ function makeSquish(scene, img, base) {
         yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
     });
 }
+
+/* ---------- play buddy: the kid's buddy joins gameplay ----------
+   Breathing idle + periodic hops; reacts to correct ('yay'), wrong ('no') and 'win'. */
+function makePlayBuddy(scene, x, y, size) {
+    var k = (state && state.theme) || 'bear';
+    var key = 'theme_' + k, ck = key + '_cheer';
+    if (!scene.textures.exists(key)) return null;
+    var c = scene.add.container(x, y).setDepth(25);
+    var sh = scene.add.graphics();
+    sh.fillStyle(0x1e2a5e, .14);
+    sh.fillEllipse(0, Math.round(size * .52), Math.round(size * .86), Math.round(size * .24));
+    c.add(sh);
+    var img = scene.add.image(0, 0, key);
+    var sc = size / Math.max(img.width, img.height);
+    img.setScale(sc);
+    c.add(img);
+    scene.tweens.add({ targets: img, scaleY: sc * .94, scaleX: sc * 1.03, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    var hop = scene.tweens.add({ targets: c, y: y - size * .16, duration: 300, yoyo: true, repeat: -1, repeatDelay: 3200, ease: 'Quad.easeOut' });
+    var busy = false;
+    function react(kind) {
+        if (!c.active || busy) return;
+        if (kind === 'no') {
+            busy = true;
+            scene.tweens.add({ targets: c, x: x - 10, duration: 65, yoyo: true, repeat: 3, onComplete: function () { c.x = x; busy = false; } });
+            scene.tweens.add({ targets: img, angle: -8, duration: 90, yoyo: true, repeat: 3, onComplete: function () { img.angle = 0; } });
+            return;
+        }
+        busy = true;
+        var swapped = false;
+        if (scene.textures.exists(ck)) { img.setTexture(ck); swapped = true; }
+        hop.pause();
+        scene.tweens.add({
+            targets: c, y: y - (kind === 'win' ? size * .5 : size * .3), duration: kind === 'win' ? 300 : 210,
+            yoyo: true, repeat: kind === 'win' ? 2 : 0, ease: 'Quad.easeOut',
+            onComplete: function () {
+                c.y = y;
+                if (swapped && c.active) img.setTexture(key);
+                hop.resume(); busy = false;
+            }
+        });
+    }
+    return { c: c, react: react };
+}
+
 function mascotWithFace(scene, x, y, size) {
     var t = theme();
     var c = scene.add.container(x, y);

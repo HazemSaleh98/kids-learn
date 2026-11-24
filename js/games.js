@@ -193,6 +193,11 @@ class GameBase extends Phaser.Scene {
     }
     lvl() { return (state.levels && state.levels[this.gameId]) || 1; }
     track(o) { this.roundObjs.push(o); return o; }
+    addPlayBuddy(x, y, size) {
+        var pb = makePlayBuddy(this, x, y, size || 92);
+        if (pb) { this.playBuddy = pb; this.track(pb.c); }
+        return pb;
+    }
     newRound() {
         this.cur = GAMES[this.gameId].gen(this.lvl(), (state && state.kg) || 'kg1');
         this.promptTxt.setText(this.cur.instr);
@@ -239,6 +244,7 @@ class GameBase extends Phaser.Scene {
             tint: [0xf472b6, 0x38bdf8, 0x4ade80, 0xffd93d, 0xc084fc, 0xfb923c], emitting: false
         });
         conf.explode(36);
+        if (this.playBuddy) this.playBuddy.react('win');
         /* celebrating buddy */
         var ck = 'theme_' + ((state && state.theme) || 'monster_blue') + '_cheer';
         if (this.textures.exists(ck)) {
@@ -265,6 +271,7 @@ class GameBase extends Phaser.Scene {
         this.levelUpMaybe(false); save();
         if (targets) this.tweens.add({ targets: targets, x: '+=8', duration: 60, yoyo: true, repeat: 3, onComplete: function () { } });
         SFX.play('buzz');
+        if (this.playBuddy) this.playBuddy.react('no');
         if (!(state && state.muted)) VO.oops();
     }
     popParticles(x, y, tint) {
@@ -285,6 +292,7 @@ class LettersScene extends GameBase {
     constructor() { super('g_letters', 'letters'); }
     buildRound(cur) {
         var s = this;
+        s.addPlayBuddy(W - 64, 752, 92);
         var tintPool = [0xffc7dd, 0xbfe6ff, 0xc7f9cc, 0xfff3b0, 0xe5ccff, 0xffd9b3];
         var cols = 3, rows = 3;
         cur.chars.forEach(function (ch, i) {
@@ -310,6 +318,7 @@ class LettersScene extends GameBase {
                     s.tweens.add({ targets: c, scaleX: 1.5, scaleY: 1.5, alpha: 0, duration: 220, onComplete: function () { c.destroy(); } });
                     if (!(state && state.muted)) VO.mini();
                     cur.hits++;
+                    if (s.playBuddy) s.playBuddy.react('yay');
                     if (cur.hits >= cur.need) s.win();
                 } else s.oopsAt(c);
             });
@@ -382,6 +391,7 @@ class TrainScene extends GameBase {
     constructor() { super('g_train', 'spelling'); }
     buildRound(cur) {
         var s = this;
+        s.addPlayBuddy(60, 762, 84);
         var word = cur.word, graphs = cur.graphs, L = graphs.length;
         /* word picture (if one exists) */
         if (this.textures.exists('w_' + word)) {
@@ -448,6 +458,7 @@ class TrainScene extends GameBase {
                     SFX.play('note', s.placedCount);
                     if (!(state && state.muted)) VO.say(phKey(tile.g));
                     s.placedCount++;
+                    if (s.playBuddy) s.playBuddy.react('yay');
                     if (s.placedCount >= L) {
                         SFX.play('whoosh');
                         /* then the whole word */
@@ -572,6 +583,7 @@ class RocketScene extends GameBase {
     constructor() { super('g_rocket', 'math'); }
     buildRound(cur) {
         var s = this;
+        s.addPlayBuddy(W - 62, 372, 96);
         /* equation */
         var eqG = this.add.graphics();
         eqG.fillStyle(0x1e2a5e, .92).fillRoundedRect(W / 2 - 130, 165, 260, 76, 24);
@@ -611,6 +623,7 @@ class RocketScene extends GameBase {
                     });
                     s.track(blast);
                     SFX.play('whoosh');
+                    if (s.playBuddy) s.playBuddy.react('yay');
                     s.tweens.killTweensOf(r);
                     s.tweens.add({ targets: r, y: -220, duration: 850, ease: 'Quad.easeIn' });
                     if (!(state && state.muted)) VO.mini();
@@ -630,6 +643,7 @@ class SortScene extends GameBase {
     constructor() { super('g_sort', 'shapes'); }
     buildRound(cur) {
         var s = this;
+        s.addPlayBuddy(64, 770, 82);
         var holes = [];
         /* holes (homes) at bottom */
         cur.holes.forEach(function (h, i) {
@@ -681,6 +695,7 @@ class SortScene extends GameBase {
                     SFX.play('chime');
                     s.popParticles(hit.x, hit.y, [0xffffff, 0xffd93d]);
                     if (!(state && state.muted)) VO.mini();
+                    if (s.playBuddy) s.playBuddy.react('yay');
                     s.sortFilled++;
                     if (s.sortFilled >= holes.length) s.win();
                 } else {
@@ -699,6 +714,7 @@ class PatternScene extends GameBase {
     constructor() { super('g_pattern', 'pattern'); }
     buildRound(cur) {
         var s = this;
+        s.addPlayBuddy(64, 742, 92);
         /* engine + cars row */
         var n = cur.mode === 'num' ? cur.seq.length : cur.seq.length + 1;
         var gap = 8;
@@ -763,6 +779,7 @@ class PatternScene extends GameBase {
                         targets: c, x: s.missPos.x, y: s.missPos.y, scaleX: .55, scaleY: .55, duration: 350, ease: 'Back.easeOut',
                         onComplete: function () {
                             SFX.play('pop');
+                            if (s.playBuddy) s.playBuddy.react('yay');
                             s.popParticles(s.missPos.x, s.missPos.y, [0x2ecc71, 0xffd93d]);
                             if (!(state && state.muted) && cur.mode === 'num') VO.say('num_' + cur.answer);
                             /* train chugs off */
