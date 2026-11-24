@@ -339,7 +339,7 @@ class GameBase extends Phaser.Scene {
         this.starTxt = this.add.text(W - 66, 36, String((state && state.stars) || 0), { fontFamily: FONT_MAIN, fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
         /* prompt bar */
         candyPanel(this, 20, 74, W - 40, 64, 22, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
-        this.promptTxt = this.add.text(W / 2 - 16, 106, '', { fontFamily: FONT_MAIN, fontSize: '19px', fontStyle: '900', color: '#3b2a5e', align: 'center', wordWrap: { width: W - 130 } }).setOrigin(.5);
+        this.promptTxt = this.add.text(W / 2 - 16, 106, '', { fontFamily: FONT_MAIN, fontSize: '21px', fontStyle: '900', color: '#3b2a5e', align: 'center', wordWrap: { width: W - 130 } }).setOrigin(.5);
         this.sayBtn = this.add.container(W - 48, 106);
         this.sayBtn.add(drawSpeakerIcon(this, 0, 0, 1.05, 0x3b2a5e, true));
         this.sayBtn.setSize(46, 46).setInteractive({ useHandCursor: true });
@@ -352,9 +352,13 @@ class GameBase extends Phaser.Scene {
     lvl() { return (state.levels && state.levels[this.gameId]) || 1; }
     track(o) { this.roundObjs.push(o); return o; }
     addPlayBuddy(x, y, size) {
-        var pb = makePlayBuddy(this, x, y, size || 92);
+        var pb = makePlayBuddy(this, x, y, Math.round((size || 92) * 1.12));
         if (pb) { this.playBuddy = pb; this.track(pb.c); }
         return pb;
+    }
+    buddySay(kind) {
+        if (this.playBuddy && this.playBuddy.say) this.playBuddy.say(kind);
+        else if (this._mascotSay) this._mascotSay(kind);
     }
     newRound() {
         this.cur = GAMES[this.gameId].gen(this.lvl(), (state && state.kg) || 'kg1');
@@ -364,6 +368,7 @@ class GameBase extends Phaser.Scene {
         this.buildRound(this.cur);
         this.addTapSparkle();
         this.sayRound();
+        if (Math.random() < .55) this.time.delayedCall(600, function () { this.buddySay('go'); }, [], this);
     }
     addTapSparkle() {
         var s = this;
@@ -420,6 +425,7 @@ class GameBase extends Phaser.Scene {
         });
         conf.explode(36);
         if (this.playBuddy) this.playBuddy.react('win');
+        this.buddySay('yay');
         /* celebrating buddy */
         var ck = 'theme_' + ((state && state.theme) || 'monster_blue') + '_cheer';
         if (this.textures.exists(ck)) {
@@ -447,6 +453,7 @@ class GameBase extends Phaser.Scene {
         if (targets) this.tweens.add({ targets: targets, x: '+=8', duration: 60, yoyo: true, repeat: 3, onComplete: function () { } });
         SFX.play('buzz');
         if (this.playBuddy) this.playBuddy.react('no');
+        this.buddySay('no');
         if (!(state && state.muted)) VO.oops();
     }
     popParticles(x, y, tint) {
@@ -508,7 +515,7 @@ class FeedScene extends GameBase {
     buildRound(cur) {
         var s = this;
         /* hungry mascot */
-        var m = mascotWithFace(this, W / 2, H - 210, 190);
+        var m = mascotWithFace(this, W / 2, H - 210, 190); s._mascotSay = m.say;
         this.track(m);
         makeSquish(this, m, 1);
         this.tweens.add({ targets: m, y: H - 216, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -699,7 +706,7 @@ class CountScene extends GameBase {
             return;
         }
         /* ---- count & feed ---- */
-        var m = mascotWithFace(this, W - 96, 210, 136);
+        var m = mascotWithFace(this, W - 96, 210, 136); s._mascotSay = m.say;
         this.track(m);
         makeSquish(this, m, 1);
         this.cntTxt = this.add.text(90, 205, '0', { fontFamily: FONT_MAIN, fontSize: '54px', fontStyle: '900', color: '#e07f1a' }).setOrigin(.5);
@@ -1090,7 +1097,7 @@ class BalloonScene extends GameBase {
         this.spawnIn = 0;
         this.balloons = [];
         /* the buddy catcher */
-        var m = mascotWithFace(this, W / 2, H - 158, 140);
+        var m = mascotWithFace(this, W / 2, H - 158, 140); s._mascotSay = m.say;
         this.catcher = m;
         this.track(m);
         makeSquish(this, m, 1);
@@ -1182,7 +1189,7 @@ class RunScene extends GameBase {
         var sh = this.add.ellipse(92, this.gy + 2, 74, 16, 0x2a1f4d, .22);
         this.track(sh);
         /* runner buddy (the kid's buddy runs) */
-        var m = mascotWithFace(this, 92, this.gy - 54, 110);
+        var m = mascotWithFace(this, 92, this.gy - 54, 110); s._mascotSay = m.say;
         this.runner = m; this.baseY = this.gy - 50; this.jumping = false;
         this.track(m);
         this.tweens.add({ targets: m, scaleY: .93, scaleX: 1.04, duration: 140, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -1380,7 +1387,7 @@ class HopScene extends GameBase {
         });
         /* buddy stands on the start pad */
         var sp2 = this.startPad || this.pads[0];
-        var m = mascotWithFace(this, sp2.x, sp2.y - 56, 96);
+        var m = mascotWithFace(this, sp2.x, sp2.y - 56, 96); s._mascotSay = m.say;
         this.hopper = m;
         this.track(m);
         makeSquish(this, m, 1);

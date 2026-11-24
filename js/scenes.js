@@ -66,6 +66,49 @@ function makeSquish(scene, img, base) {
 
 /* ---------- play buddy: the kid's buddy joins gameplay ----------
    Breathing idle + periodic hops; reacts to correct ('yay'), wrong ('no') and 'win'. */
+/* buddy speech bubbles: buddies talk to the kid (encouragement + instructions) */
+var BUDDY_LINES = {
+    go: ['يلا بينا!', 'ركز معايا!', 'انت تقدر!', 'جاهز؟ يلا!'],
+    yay: ['برافو عليك!', 'شاطر اوي!', 'عاش يا بطل!', 'جميل جدا!'],
+    no: ['حاول تاني!', 'معلش، كمل!', 'قريب! ركز شوية'],
+    idle: ['انا معاك!', 'يلا نكمل!', 'انت احسن واحد!', 'بحب اللعب معاك!']
+};
+function attachBuddyTalk(scene, c, x, y, size, idle) {
+    var bubble = null;
+    function say(kind) {
+        if (!c.active) return;
+        if (bubble) { bubble.destroy(); bubble = null; }
+        var arr = BUDDY_LINES[kind] || BUDDY_LINES.idle;
+        var msg = arr[Math.floor(Math.random() * arr.length)];
+        var side = x < 195 ? 1 : -1;
+        var bw = 132, bh = 42;
+        var wx = x + side * (size * .58 + bw / 2 - 6);
+        wx = Math.max(bw / 2 + 8, Math.min(390 - bw / 2 - 8, wx));
+        var wy = y - size * .52;
+        if (wy - bh / 2 < 150) wy = y + size * .60;
+        var b = scene.add.container(wx - x, wy - y);
+        var tx = Math.max(-bw / 2 + 10, Math.min(bw / 2 - 10, x - wx));
+        var g2 = scene.add.graphics();
+        g2.fillStyle(0x2a1f4d, .14).fillRoundedRect(-bw / 2 + 2, -bh / 2 + 4, bw, bh, 14);
+        g2.fillStyle(0xffffff, .97).fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 14);
+        g2.lineStyle(2, 0xffd93d, 1).strokeRoundedRect(-bw / 2, -bh / 2, bw, bh, 14);
+        var tailDir = wy < y ? 1 : -1;
+        g2.fillStyle(0xffffff, .97).fillTriangle(tx - 7, tailDir * (bh / 2 - 2), tx + 7, tailDir * (bh / 2 - 2), tx, tailDir * (bh / 2 + 10));
+        b.add(g2);
+        b.add(scene.add.text(0, 0, msg, { fontFamily: FONT_MAIN, fontSize: '15px', fontStyle: '900', color: '#3b2a5e', align: 'center', wordWrap: { width: bw - 14 } }).setOrigin(.5));
+        c.add(b);
+        bubble = b;
+        b.setScale(0);
+        scene.tweens.add({ targets: b, scaleX: 1, scaleY: 1, duration: 260, ease: 'Back.easeOut' });
+        scene.time.delayedCall(2400, function () {
+            if (!b.active) return;
+            scene.tweens.add({ targets: b, scaleX: 0, scaleY: 0, duration: 180, onComplete: function () { if (b.active) b.destroy(); if (bubble === b) bubble = null; } });
+        });
+    }
+    if (idle !== false) scene.time.addEvent({ delay: 9000, loop: true, callback: function () { if (c.active && !scene.roundLock) say('idle'); } });
+    return say;
+}
+
 function makePlayBuddy(scene, x, y, size) {
     var k = (state && state.theme) || 'bear';
     var key = 'theme_' + k, ck = key + '_cheer';
@@ -82,6 +125,7 @@ function makePlayBuddy(scene, x, y, size) {
     scene.tweens.add({ targets: img, scaleY: sc * .94, scaleX: sc * 1.03, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     var hop = scene.tweens.add({ targets: c, y: y - size * .16, duration: 300, yoyo: true, repeat: -1, repeatDelay: 3200, ease: 'Quad.easeOut' });
     var busy = false;
+    var say = attachBuddyTalk(scene, c, x, y, size, true);
     function react(kind) {
         if (!c.active) return;
         if (kind === 'peek') {
@@ -110,15 +154,18 @@ function makePlayBuddy(scene, x, y, size) {
             }
         });
     }
-    return { c: c, react: react };
+    return { c: c, react: react, say: say };
 }
 
-function mascotWithFace(scene, x, y, size) {
+function mascotWithFace(scene, x, y, size, noIdle) {
     var t = theme();
     var c = scene.add.container(x, y);
     var img = scene.add.image(0, 0, 'theme_' + ((state && state.theme) || setupSel.theme));
-    img.setScale(size / img.width);
+    var msc = size / img.width;
+    img.setScale(msc);
     c.add(img);
+    scene.tweens.add({ targets: img, scaleY: msc * .95, scaleX: msc * 1.02, duration: 1000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    c.say = attachBuddyTalk(scene, c, x, y, size, !noIdle);
     if (state && state.photo) {
         var w = img.displayWidth, h = img.displayHeight;
         var fx = -w / 2 + (t.fx / 100) * w, fy = -h / 2 + (t.fy / 100) * h, fr = (t.fr / 100) * w / 2;
@@ -185,26 +232,24 @@ class HomeScene extends Phaser.Scene {
         this.gear.on('pointerout', function () { if (holdT) { holdT.remove(); holdT = null; } });
 
         /* mascot + bubble */
-        var m = mascotWithFace(this, 64, 140, 96);
+        var m = mascotWithFace(this, 66, 142, 104, true);
         makeSquish(this, m, 1);
-        this.tweens.add({ targets: m, y: 130, duration: 420, yoyo: true, repeat: -1, repeatDelay: 2600, ease: 'Quad.easeOut' });
-        candyPanel(this, 148, 96, 228, 84, 18, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
+        this.tweens.add({ targets: m, y: 132, duration: 420, yoyo: true, repeat: -1, repeatDelay: 2600, ease: 'Quad.easeOut' });
+        candyPanel(this, 148, 94, 228, 92, 18, 0xffffff, { border: 0xffd93d, borderW: 3, top: 0xffffff, bottom: 0xfff3d0 });
         var bb = this.add.graphics();
         bb.fillStyle(0xffd93d, 1).fillTriangle(150, 156, 150, 134, 132, 146);
-        this.add.text(162, 116, 'Hi, ' + kidName() + '!', { fontFamily: FONT_MAIN, fontSize: '20px', fontStyle: '900', color: '#3b2a5e' });
-        this.add.text(162, 146, "Let's play and learn\nwith " + charName() + '!', { fontFamily: FONT_MAIN, fontSize: '13.5px', fontStyle: '700', color: '#7a7194' });
+        this.add.text(162, 116, 'Hi, ' + kidName() + '!', { fontFamily: FONT_MAIN, fontSize: '22px', fontStyle: '900', color: '#3b2a5e' });
+        this.add.text(162, 148, "Let's play and learn\nwith " + charName() + '!', { fontFamily: FONT_MAIN, fontSize: '15px', fontStyle: '700', color: '#7a7194' });
 
-        /* game spots: scrollable grid */
+        /* game spots: horizontal paged carousel, 4 per page */
         var world = this.add.container(0, 0);
         var ids = Object.keys(GAMES);
-        var lastRow = Math.floor((ids.length - 1) / 2);
-        var contentBottom = 258 + lastRow * 106 + 50;
-        var minY = Math.min(0, H - contentBottom - 20);
         ids.forEach(function (id, i) {
             var g = GAMES[id];
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
             var modern = KLSTYLE === 'modern';
-            var cx = (i % 2 === 0) ? 102 : 288, cy = 258 + Math.floor(i / 2) * 106;
+            var pg = Math.floor(i / 4), slot = i % 4;
+            var cx = pg * W + ((slot % 2 === 0) ? 107 : 283), cy = 336 + Math.floor(slot / 2) * 152;
             var btn = s.add.container(cx, cy);
             btn.add(candyPanel(s, -78, -50, 156, 102, 22, modern ? 0xffffff : col[0], modern ? { lip: 0, sheen: false, border: 0xe5e1f0, borderW: 2, shadowA: .10 } : { lipColor: col[1], border: mixCol(col[1], 0x000000, .18), lip: KLSTYLE === 'bubblegum' ? 8 : 5, borderW: KLSTYLE === 'bubblegum' ? 3 : 2, borderA: .6 }));
             var circ = s.add.graphics();
@@ -221,12 +266,12 @@ class HomeScene extends Phaser.Scene {
                 btn.add(ico);
                 if (g.icoText) btn.add(s.add.text(0, -26, g.icoText, { fontFamily: FONT_MAIN, fontSize: '18px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             }
-            var pastel = KLSTYLE === 'pastel';
+            var pastel = KLSTYLE !== 'modern' && KLSTYLE !== 'bubblegum' && KLSTYLE !== 'candy';
             var pStroke = pastel ? ('#' + ('00000' + mixCol(col[1], 0x000000, .25).toString(16)).slice(-6)) : undefined;
-            btn.add(s.add.text(0, 2, g.title, { fontFamily: FONT_MAIN, fontSize: '14.5px', fontStyle: '900', color: modern ? ('#' + ('00000' + col[1].toString(16)).slice(-6)) : '#fff', stroke: pStroke, strokeThickness: pastel ? 4 : 0 }).setOrigin(.5));
-            btn.add(s.add.text(0, 20, g.sub, { fontFamily: FONT_MAIN, fontSize: '10px', fontStyle: '700', color: modern ? '#8a84a3' : 'rgba(255,255,255,.95)', stroke: pStroke, strokeThickness: pastel ? 3 : 0 }).setOrigin(.5));
+            btn.add(s.add.text(0, 2, g.title, { fontFamily: FONT_MAIN, fontSize: '16.5px', fontStyle: '900', color: modern ? ('#' + ('00000' + col[1].toString(16)).slice(-6)) : '#fff', stroke: pStroke, strokeThickness: pastel ? 4 : 0 }).setOrigin(.5));
+            btn.add(s.add.text(0, 20, g.sub, { fontFamily: FONT_MAIN, fontSize: '11.5px', fontStyle: '700', color: modern ? '#8a84a3' : 'rgba(255,255,255,.95)', stroke: pStroke, strokeThickness: pastel ? 3 : 0 }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: modern ? ('#' + ('00000' + col[0].toString(16)).slice(-6)) : 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
+            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontFamily: FONT_MAIN, fontSize: '10.5px', fontStyle: '900', color: '#fff', backgroundColor: modern ? ('#' + ('00000' + col[0].toString(16)).slice(-6)) : 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
             btn.setSize(156, 100);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerup', function () {
@@ -241,34 +286,69 @@ class HomeScene extends Phaser.Scene {
             s.tweens.add({ targets: btn, angle: i % 2 ? 1.4 : -1.4, duration: 2400 + i * 130, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             world.add(btn);
         });
-        /* drag-to-scroll */
+        /* horizontal swipe pager: one page per swipe, smooth snap */
         this._scrolled = false;
+        this.page = 0;
+        var maxPage = Math.ceil(ids.length / 4) - 1;
         var drag = null;
-        this.input.on('pointerdown', function (p) { drag = { y: p.y, wy: world.y }; s._scrolled = false; });
+        var dotsG = this.add.graphics();
+        function drawDots() {
+            dotsG.clear();
+            for (var d = 0; d <= maxPage; d++) {
+                var dx0 = W / 2 + (d - maxPage / 2) * 24;
+                if (d === s.page) {
+                    dotsG.fillStyle(0xffffff, 1).fillCircle(dx0, 604, 6);
+                    dotsG.lineStyle(2, 0x3b2a5e, .3).strokeCircle(dx0, 604, 6);
+                } else dotsG.fillStyle(0xffffff, .55).fillCircle(dx0, 604, 4);
+            }
+        }
+        function goToPage(p2) {
+            p2 = Math.max(0, Math.min(maxPage, p2));
+            s.page = p2;
+            drawDots();
+            s.tweens.add({ targets: world, x: -p2 * W, duration: 300, ease: 'Cubic.easeOut' });
+        }
+        drawDots();
+        this.input.on('pointerdown', function (p) {
+            s.tweens.killTweensOf(world);
+            drag = { x: p.x, wx: world.x, page: s.page };
+            s._scrolled = false;
+        });
         this.input.on('pointermove', function (p) {
             if (!drag || !p.isDown) return;
-            var dy = p.y - drag.y;
-            if (Math.abs(dy) > 10) s._scrolled = true;
-            if (s._scrolled) world.y = Math.max(minY, Math.min(0, drag.wy + dy));
+            var dx = p.x - drag.x;
+            if (Math.abs(dx) > 10) s._scrolled = true;
+            if (s._scrolled) {
+                var nx = drag.wx + dx, minX = -maxPage * W;
+                if (nx > 0) nx = nx * .3;
+                if (nx < minX) nx = minX + (nx - minX) * .3;
+                world.x = nx;
+            }
         });
-        this.input.on('pointerup', function () { drag = null; s.time.delayedCall(60, function () { s._scrolled = false; }); });
-        /* scroll hint arrow when content overflows */
-        if (minY < 0) {
-            var sa = this.add.triangle(W / 2, H - 16, 0, 0, 10, 0, 5, 10, 0xffffff, .9);
-            this.tweens.add({ targets: sa, y: H - 26, alpha: .4, duration: 700, yoyo: true, repeat: -1 });
-            this.tweens.add({ targets: sa, alpha: 0, delay: 4000, duration: 600, onComplete: function () { sa.destroy(); } });
-        }
+        this.input.on('pointerup', function (p) {
+            if (!drag) return;
+            var dx = p.x - drag.x, p3 = drag.page;
+            if (dx <= -50) p3++; else if (dx >= 50) p3--;
+            drag = null;
+            goToPage(p3);
+            s.time.delayedCall(60, function () { s._scrolled = false; });
+        });
+        /* first-visit swipe hint */
+        var sa = this.add.triangle(W - 22, 412, 0, 5, 10, 0, 10, 10, 0xffffff, .9);
+        this.tweens.add({ targets: sa, x: W - 30, alpha: .35, duration: 600, yoyo: true, repeat: 3 });
+        this.tweens.add({ targets: sa, alpha: 0, delay: 3200, duration: 500, onComplete: function () { sa.destroy(); } });
         VO.hello();
         /* unlock WebAudio on first touch */
         this.input.once('pointerdown', function () { SFX.unlock(); });
     }
 }
-var SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8], [0xff9f43, 0xe07f1a], [0x2ecc71, 0x22a355], [0x9b59f5, 0x7a3fd4], [0xff5f57, 0xe03e36]];
-/* art-direction variants for style mockups (?style=bubblegum|pastel|modern) */
+/* Soft Storybook (pastel) is the default theme - Hazem's pick */
+var SPOTCOLORS = [[0xf498bd, 0xd975a2], [0x8fb8ee, 0x6a93d4], [0xf6bd82, 0xe09a4e], [0x93d8ab, 0x6bb589], [0xc2a3ea, 0x9a7bcc], [0xee9d95, 0xd0756c]];
+/* art-direction variants (?style=candy|bubblegum|modern) */
 var KLSTYLE = '';
 try { KLSTYLE = new URLSearchParams(window.location.search).get('style') || ''; } catch (e) {}
+if (KLSTYLE === 'candy') SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8], [0xff9f43, 0xe07f1a], [0x2ecc71, 0x22a355], [0x9b59f5, 0x7a3fd4], [0xff5f57, 0xe03e36]];
 if (KLSTYLE === 'bubblegum') SPOTCOLORS = [[0xff4d8d, 0xd92662], [0x3d7bff, 0x1e54e0], [0xff8f1f, 0xe06a00], [0x17c964, 0x0a9e4c], [0x8a3ffc, 0x6920d8], [0xff4d4d, 0xd92b2b]];
-if (KLSTYLE === 'pastel') SPOTCOLORS = [[0xf498bd, 0xd975a2], [0x8fb8ee, 0x6a93d4], [0xf6bd82, 0xe09a4e], [0x93d8ab, 0x6bb589], [0xc2a3ea, 0x9a7bcc], [0xee9d95, 0xd0756c]];
 
 function startGameScene(scene, id) {
     var key = GAMES[id] && GAMES[id].scene;
