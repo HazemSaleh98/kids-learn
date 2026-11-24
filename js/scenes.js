@@ -12,6 +12,7 @@ class BootScene extends Phaser.Scene {
         Object.keys(THEMES).forEach(function (k) { var t = THEMES[k]; this.load.image('theme_' + k, t.img); if (t.imgCheer) this.load.image('theme_' + k + '_cheer', t.imgCheer); }, this);
         ['owl', 'frog'].forEach(function (a) { this.load.image('an_' + a, 'animals/' + a + '.png'); }, this);
         this.load.image('bg_grass', 'bg/grass.png');
+        ['run', 'pond', 'space', 'workshop'].forEach(function (b) { this.load.image('bg_' + b, 'bg/' + b + '.jpg'); }, this);
         this.load.image('sun', 'bg/sun.png');
         ['cloud1', 'cloud3', 'cloud4'].forEach(function (c) { this.load.image(c, 'bg/' + c + '.png'); }, this);
         this.load.image('tree', 'bg/tree.png');

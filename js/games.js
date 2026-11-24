@@ -318,10 +318,14 @@ class GameBase extends Phaser.Scene {
         this.roundLock = false;
         this.roundObjs = [];
         /* world */
-        var bg = this.add.image(W / 2, H / 2, 'bg_grass');
+        var bgKey2 = this.bgKey || 'bg_grass';
+        var bg = this.add.image(W / 2, H / 2, bgKey2);
         bg.setScale(Math.max(W / bg.width, H / bg.height) * 1.02);
-        addCloud(this, 'cloud3', 210, 62000, .4);
-        addCloud(this, 'cloud4', 300, 52000, .34, -20000).setAlpha(.7);
+        if (bgKey2 === 'bg_grass') {
+            addCloud(this, 'cloud3', 210, 62000, .4);
+            addCloud(this, 'cloud4', 300, 52000, .34, -20000).setAlpha(.7);
+        }
+
         fadeSceneIn(this, 180);
         /* header */
         candyPanel(this, 14, 12, 50, 48, 15, 0xffffff, { border: 0xe3d9f7, borderW: 2, lip: 4 });
@@ -355,8 +359,25 @@ class GameBase extends Phaser.Scene {
     newRound() {
         this.cur = GAMES[this.gameId].gen(this.lvl(), (state && state.kg) || 'kg1');
         this.promptTxt.setText(this.cur.instr);
+        this.promptTxt.setScale(.6);
+        this.tweens.add({ targets: this.promptTxt, scaleX: 1, scaleY: 1, duration: 280, ease: 'Back.easeOut' });
         this.buildRound(this.cur);
+        this.addTapSparkle();
         this.sayRound();
+    }
+    addTapSparkle() {
+        var s = this;
+        if (this._sparkFn) this.input.off('pointerdown', this._sparkFn);
+        this._sparkFn = function (p) {
+            var pts = s.add.particles(p.worldX, p.worldY, 'dot', {
+                speed: { min: 50, max: 150 }, scale: { start: .45, end: 0 },
+                lifespan: 340, tint: [0xffffff, 0xffd93d, 0xfff6c9], emitting: false
+            });
+            pts.setDepth(60);
+            pts.explode(6);
+            s.time.delayedCall(450, function () { if (pts && pts.destroy) pts.destroy(); });
+        };
+        this.input.on('pointerdown', this._sparkFn);
     }
     sayRound() { if (this.cur && this.cur.keys && !(state && state.muted)) VO.say.apply(VO, this.cur.keys); }
     clearRound() {
@@ -734,7 +755,7 @@ class CountScene extends GameBase {
 
 /* ================= 5) Rocket Math ================= */
 class RocketScene extends GameBase {
-    constructor() { super('g_rocket', 'math'); }
+    constructor() { super('g_rocket', 'math'); this.bgKey = 'bg_space'; }
     buildRound(cur) {
         var s = this;
         s.addPlayBuddy(W - 62, 372, 96);
@@ -1147,18 +1168,15 @@ class BalloonScene extends GameBase {
 
 /* ================= 10) Letter Run: tap-to-jump letter runner ================= */
 class RunScene extends GameBase {
-    constructor() { super('g_run', 'run'); }
+    constructor() { super('g_run', 'run'); this.bgKey = 'bg_run'; }
     buildRound(cur) {
         var s = this;
         this.input.off('pointerdown');
-        this.gy = H - 210;
-        /* dirt track */
-        var g = this.add.graphics();
-        g.fillStyle(0xd7a05e, 1).fillRect(-10, this.gy, W + 20, 170);
-        g.fillStyle(0xc08b4d, 1).fillRect(-10, this.gy, W + 20, 10);
-        this.track(g);
+        this.gy = H - 195;
         this.dashes = [];
-        for (var i = 0; i < 7; i++) { var d = this.add.rectangle(i * 78, this.gy + 56, 42, 8, 0xffffff, .55); this.dashes.push(d); this.track(d); }
+        /* runner shadow */
+        var sh = this.add.ellipse(92, this.gy + 2, 74, 16, 0x2a1f4d, .22);
+        this.track(sh);
         /* runner buddy (the kid's buddy runs) */
         var m = mascotWithFace(this, 92, this.gy - 50, 92);
         this.runner = m; this.baseY = this.gy - 50; this.jumping = false;
@@ -1187,10 +1205,7 @@ class RunScene extends GameBase {
         var air = rnd(2) === 1;
         var c = this.add.container(W + 60, air ? this.gy - 205 : this.gy - 58);
         var tintPool = [0xff6b9d, 0x4f8ef7, 0xff9f43, 0x9b59f5, 0xff5f57];
-        var g = this.add.graphics();
-        g.fillStyle(tintPool[rnd(tintPool.length)], 1).fillRoundedRect(-34, -34, 68, 68, 20);
-        g.fillStyle(0xffffff, .3).fillRoundedRect(-34, -34, 68, 20, { tl: 20, tr: 20, bl: 0, br: 0 });
-        c.add(g);
+        c.add(candyPanel(this, -34, -36, 68, 72, 20, tintPool[rnd(tintPool.length)], { lip: 4 }));
         var fs = label.length > 2 ? '19px' : label.length > 1 ? '25px' : '34px';
         c.add(this.add.text(0, 1, label, { fontFamily: FONT_MAIN, fontSize: fs, fontStyle: '900', color: '#fff' }).setOrigin(.5));
         c.label = label;
@@ -1328,14 +1343,10 @@ class TraceScene extends GameBase {
 
 /* ================= 12) Number Hop: tap the next number, buddy hops ================= */
 class HopScene extends GameBase {
-    constructor() { super('g_hop', 'hop'); }
+    constructor() { super('g_hop', 'hop'); this.bgKey = 'bg_pond'; }
     buildRound(cur) {
         var s = this;
-        /* pond */
-        var pond = this.add.graphics();
-        pond.fillStyle(0x4fc3f7, 1).fillRoundedRect(16, 220, W - 32, 500, 30);
-        pond.fillStyle(0x81d4fa, 1).fillRoundedRect(24, 228, W - 48, 484, 26);
-        this.track(pond);
+
         /* lily pads on a loose zigzag grid */
         var spots = [];
         var rows = [320, 450, 580];
@@ -1475,7 +1486,7 @@ class BuildScene extends GameBase {
 
 /* ================= 14) Word Machine scene ================= */
 class MachineScene extends GameBase {
-    constructor() { super('g_machine', 'machine'); }
+    constructor() { super('g_machine', 'machine'); this.bgKey = 'bg_workshop'; }
     buildRound(cur) {
         var s = this;
         /* machine body */
