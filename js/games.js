@@ -475,7 +475,7 @@ class LettersScene extends GameBase {
             var gy = 240 + Math.floor(i / cols) * 185 + rnd(20) - 10;
             var c = s.add.container(gx, gy);
             var bub = s.add.image(0, 0, 'bubble').setScale(.62).setTint(tintPool[i % tintPool.length]);
-            var fs = ch.length > 2 ? '22px' : ch.length > 1 ? '30px' : '44px';
+            var fs = ch.length > 2 ? '28px' : ch.length > 1 ? '38px' : '54px';
             var txt = s.add.text(0, -4, ch, { fontFamily: FONT_MAIN, fontSize: fs, fontStyle: '900', color: '#2d2340' }).setOrigin(.5);
             c.add([bub, txt]);
             c.setSize(110, 110);
@@ -525,9 +525,9 @@ class FeedScene extends GameBase {
                 var im = s.add.image(0, -18, 'w_' + opt);
                 im.setScale(Math.min(80 / im.width, 80 / im.height));
                 card.add(im);
-                card.add(s.add.text(0, 38, opt, { fontFamily: FONT_MAIN, fontSize: '17px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                card.add(s.add.text(0, 38, opt, { fontFamily: FONT_MAIN, fontSize: '21px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             } else {
-                card.add(s.add.text(0, -6, opt, { fontFamily: FONT_MAIN, fontSize: '30px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                card.add(s.add.text(0, -6, opt, { fontFamily: FONT_MAIN, fontSize: '38px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             }
             card.setSize(164, 128);
             card.setInteractive({ useHandCursor: true });
@@ -576,7 +576,8 @@ class TrainScene extends GameBase {
             this.bobTween(pic, 8, 1600);
         } else {
             /* show the word itself as the goal */
-            this.track(this.add.text(W / 2, 225, word, { fontFamily: FONT_MAIN, fontSize: '46px', fontStyle: '900', color: '#3b2a5e', backgroundColor: 'rgba(255,255,255,.9)', padding: { x: 22, y: 10 } }).setOrigin(.5));
+            this.track(candyPanel(this, W / 2 - 118, 178, 236, 92, 22, 0xffffff, { border: 0xffd93d, borderW: 3 }));
+            this.track(this.add.text(W / 2, 224, word, { fontFamily: FONT_MAIN, fontSize: '54px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
         }
         /* slots (train cars) */
         var slotW = Math.min(66, (W - 70) / L - 6), gap = 6;
@@ -586,11 +587,11 @@ class TrainScene extends GameBase {
         for (var i = 0; i < L; i++) {
             (function (i) {
                 var sx = x0 + i * (slotW + gap), sy = 400;
-                var car = s.add.graphics();
-                car.fillStyle(0xffffff, .95).fillRoundedRect(sx - slotW / 2, sy - 34, slotW, 68, 14);
-                car.lineStyle(3, 0x9b59f5, 1).strokeRoundedRect(sx - slotW / 2, sy - 34, slotW, 68, 14);
-                car.fillStyle(0x3b2a5e, 1).fillCircle(sx - 16, sy + 42, 8).fillCircle(sx + 16, sy + 42, 8);
-                s.track(car);
+                s.track(candyPanel(s, sx - slotW / 2, sy - 34, slotW, 74, 14, 0xffffff, { lip: 4, lipColor: 0xd9d2f0, border: 0x9b59f5, borderW: 3, shadowA: .12 }));
+                var wh2 = s.add.graphics();
+                wh2.fillStyle(0x3b2a5e, 1).fillCircle(sx - 16, sy + 46, 8).fillCircle(sx + 16, sy + 46, 8);
+                wh2.fillStyle(0x8b77b8, 1).fillCircle(sx - 16, sy + 46, 3.5).fillCircle(sx + 16, sy + 46, 3.5);
+                s.track(wh2);
                 slots.push({ x: sx, y: sy, filled: false });
             })(i);
         }
@@ -608,7 +609,7 @@ class TrainScene extends GameBase {
                 card.fillStyle(0xffd93d, 1).fillRoundedRect(-42, -34, 84, 68, 14);
                 card.lineStyle(3, 0xe07f1a, 1).strokeRoundedRect(-42, -34, 84, 68, 14);
                 t.add(card);
-                t.add(s.add.text(0, 0, phDisp(tile.g), { fontFamily: FONT_MAIN, fontSize: tile.g.length > 2 ? '20px' : '26px', fontStyle: '900', color: '#4a2c00' }).setOrigin(.5));
+                t.add(s.add.text(0, 0, phDisp(tile.g), { fontFamily: FONT_MAIN, fontSize: tile.g.length > 2 ? '26px' : '32px', fontStyle: '900', color: '#4a2c00' }).setOrigin(.5));
             }
             t.setSize(84, 84);
             t.setInteractive({ useHandCursor: true });
@@ -772,7 +773,7 @@ class RocketScene extends GameBase {
             var ship = s.add.image(0, 0, 'ship_' + cur.ships[i]);
             ship.setScale(88 / Math.max(ship.width, ship.height));
             ship.setAngle(0);
-            var label = s.add.text(0, 76, opt, { fontFamily: FONT_MAIN, fontSize: '27px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(30,42,94,.85)', padding: { x: 10, y: 3 } }).setOrigin(.5);
+            var label = s.add.text(0, 76, opt, { fontFamily: FONT_MAIN, fontSize: '34px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(30,42,94,.85)', padding: { x: 10, y: 3 } }).setOrigin(.5);
             r.add([ship, label]);
             r.setSize(90, 160);
             r.setInteractive({ useHandCursor: true });
@@ -824,9 +825,14 @@ class SortScene extends GameBase {
         cur.holes.forEach(function (h, i) {
             var hx = 75 + i * 120, hy = 640;
             var c = s.add.container(hx, hy);
+            var colObj = SORTCOLORS.filter(function (x) { return x[0] === h.color; })[0];
+            var colHex = colObj ? colObj[1] : 0x9b59f5;
             var ring = s.add.graphics();
-            ring.lineStyle(4, 0xffffff, .9).strokeCircle(0, 0, 52);
-            ring.fillStyle(0x000000, .12).fillCircle(0, 0, 52);
+            ring.fillStyle(0x2a1f4d, .15).fillCircle(2, 5, 54);
+            ring.fillStyle(colHex, .22).fillCircle(0, 0, 56);
+            ring.fillStyle(colHex, .34).fillCircle(0, 3, 50);
+            ring.lineStyle(4, 0xffffff, .95).strokeCircle(0, 0, 52);
+            ring.lineStyle(2, colHex, .8).strokeCircle(0, 0, 59);
             c.add(ring);
             var sil = s.add.image(0, 0, shapeKey(h.shape, h.color));
             sil.setScale(92 / Math.max(sil.width, sil.height)).setAlpha(.35);
@@ -904,18 +910,19 @@ class PatternScene extends GameBase {
             (function (i) {
                 var cx = x0 + i * (carW + gap);
                 var isMiss = i === missIdx;
-                var car = s.add.graphics();
-                car.fillStyle(isMiss ? 0xfff1c7 : 0xffffff, .96).fillRoundedRect(cx - carW / 2, y0 - 34, carW, 68, 14);
-                car.lineStyle(3, isMiss ? 0xe07f1a : 0x9b59f5, 1).strokeRoundedRect(cx - carW / 2, y0 - 34, carW, 68, 14);
-                var wx = Math.min(14, carW / 4);
-                car.fillStyle(0x3b2a5e, 1).fillCircle(cx - wx, y0 + 42, 7).fillCircle(cx + wx, y0 + 42, 7);
+                var car = candyPanel(s, cx - carW / 2, y0 - 34, carW, 74, 14, isMiss ? 0xffe9b0 : 0xffffff, { lip: 4, lipColor: isMiss ? 0xe0b45a : 0xd9d2f0, border: isMiss ? 0xe07f1a : 0x9b59f5, borderW: 3, shadowA: .12 });
                 s.track(car);
+                var wx = Math.min(14, carW / 4);
+                var wh = s.add.graphics();
+                wh.fillStyle(0x3b2a5e, 1).fillCircle(cx - wx, y0 + 46, 8).fillCircle(cx + wx, y0 + 46, 8);
+                wh.fillStyle(0x8b77b8, 1).fillCircle(cx - wx, y0 + 46, 3.5).fillCircle(cx + wx, y0 + 46, 3.5);
+                s.track(wh);
                 var inner = Math.min(40, carW - 14);
                 if (isMiss) {
                     s.missPos = { x: cx, y: y0 };
-                    s.track(s.add.text(cx, y0, '?', { fontFamily: FONT_MAIN, fontSize: '30px', fontStyle: '900', color: '#e07f1a' }).setOrigin(.5));
+                    s.track(s.add.text(cx, y0, '?', { fontFamily: FONT_MAIN, fontSize: '38px', fontStyle: '900', color: '#e07f1a' }).setOrigin(.5));
                 } else if (cur.mode === 'num') {
-                    s.track(s.add.text(cx, y0, String(cur.seq[i]), { fontFamily: FONT_MAIN, fontSize: (cur.seq[i] > 99 ? '17px' : '22px'), fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                    s.track(s.add.text(cx, y0, String(cur.seq[i]), { fontFamily: FONT_MAIN, fontSize: (cur.seq[i] > 99 ? '22px' : '28px'), fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
                 } else {
                     var im = s.add.image(cx, y0, shapeKey(cur.shape, cur.seq[i]));
                     im.setScale(Math.min(inner / im.width, inner / im.height));
@@ -929,12 +936,9 @@ class PatternScene extends GameBase {
         opts.forEach(function (opt, i) {
             var ox = W / 2 + (i - (opts.length - 1) / 2) * 120;
             var c = s.add.container(ox, oy);
-            var card = s.add.graphics();
-            card.fillStyle(0xffffff, 1).fillRoundedRect(-52, -52, 104, 104, 20);
-            card.lineStyle(4, 0x2ecc71, 1).strokeRoundedRect(-52, -52, 104, 104, 20);
-            c.add(card);
+            c.add(candyPanel(s, -52, -52, 104, 108, 20, 0xffffff, { border: 0x2ecc71, borderW: 4, shadowA: .14 }));
             if (cur.mode === 'num') {
-                c.add(s.add.text(0, 0, String(opt), { fontFamily: FONT_MAIN, fontSize: '30px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+                c.add(s.add.text(0, 0, String(opt), { fontFamily: FONT_MAIN, fontSize: '38px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             } else {
                 var im2 = s.add.image(0, 0, shapeKey(cur.shape, opt));
                 im2.setScale(Math.min(64 / im2.width, 64 / im2.height));
@@ -1011,7 +1015,7 @@ class MemoryScene extends GameBase {
                 var im = s.add.image(0, -8, 'w_' + cd.word);
                 im.setScale(Math.min(50 / im.width, 50 / im.height));
                 front.add(im);
-                front.add(s.add.text(0, 27, cd.word, { fontFamily: FONT_MAIN, fontSize: '13px', fontStyle: '900', color: '#7a7194' }).setOrigin(.5));
+                front.add(s.add.text(0, 27, cd.word, { fontFamily: FONT_MAIN, fontSize: '15px', fontStyle: '900', color: '#7a7194' }).setOrigin(.5));
             }
             front.setVisible(false);
             c.add([back, backMotif, front]);
@@ -1114,7 +1118,7 @@ class BalloonScene extends GameBase {
         g.lineStyle(2, 0xffffff, .8);
         g.beginPath(); g.moveTo(0, 50); g.lineTo(0, 78); g.strokePath();
         c.add(g);
-        var fs = label.length > 2 ? '20px' : label.length > 1 ? '26px' : '34px';
+        var fs = label.length > 2 ? '26px' : label.length > 1 ? '32px' : '42px';
         c.add(this.add.text(0, -4, label, { fontFamily: FONT_MAIN, fontSize: fs, fontStyle: '900', color: '#fff' }).setOrigin(.5));
         c.label = label;
         c.speed = 55 + rnd(35) + (this.lvl() - 1) * 8;
@@ -1206,7 +1210,7 @@ class RunScene extends GameBase {
         var c = this.add.container(W + 60, air ? this.gy - 205 : this.gy - 58);
         var tintPool = [0xff6b9d, 0x4f8ef7, 0xff9f43, 0x9b59f5, 0xff5f57];
         c.add(candyPanel(this, -34, -36, 68, 72, 20, tintPool[rnd(tintPool.length)], { lip: 4 }));
-        var fs = label.length > 2 ? '19px' : label.length > 1 ? '25px' : '34px';
+        var fs = label.length > 2 ? '24px' : label.length > 1 ? '32px' : '42px';
         c.add(this.add.text(0, 1, label, { fontFamily: FONT_MAIN, fontSize: fs, fontStyle: '900', color: '#fff' }).setOrigin(.5));
         c.label = label;
         this.items.push(c);
@@ -1262,7 +1266,7 @@ class TraceScene extends GameBase {
         this.track(card);
         var cx = W / 2, cy = 388;
         var fs = L.length > 1 ? 190 : 300;
-        var guide = this.add.text(cx, cy, L, { fontFamily: 'Arial', fontSize: fs + 'px', fontStyle: '900', color: '#e8e2f8' }).setOrigin(.5);
+        var guide = this.add.text(cx, cy, L, { fontFamily: FONT_MAIN, fontSize: fs + 'px', fontStyle: '900', color: '#e8e2f8' }).setOrigin(.5);
         this.track(guide);
         /* sample the letter shape into target points with the same font */
         var cw = 340, chh = 340;
@@ -1364,7 +1368,7 @@ class HopScene extends GameBase {
             g.fillStyle(0x2ea85c, 1).fillEllipse(0, 0, 96, 44);
             g.fillStyle(0x54c878, 1).fillEllipse(0, -4, 84, 34);
             c.add(g);
-            c.add(s.add.text(0, -4, String(n), { fontFamily: FONT_MAIN, fontSize: '26px', fontStyle: '900', color: '#fff', stroke: '#1b7a43', strokeThickness: 4 }).setOrigin(.5));
+            c.add(s.add.text(0, -4, String(n), { fontFamily: FONT_MAIN, fontSize: '34px', fontStyle: '900', color: '#fff', stroke: '#1b7a43', strokeThickness: 4 }).setOrigin(.5));
             c.num = n;
             c.setSize(96, 50);
             c.setInteractive({ useHandCursor: true });
@@ -1434,7 +1438,7 @@ class BuildScene extends GameBase {
             g.fillStyle(0xffffff, 1).fillCircle(0, 0, 17);
             g.lineStyle(3, 0xffb03d, 1).strokeCircle(0, 0, 17);
             d.add(g);
-            d.add(s.add.text(0, 1, String(i + 1), { fontFamily: FONT_MAIN, fontSize: '15px', fontStyle: '900', color: '#b45309' }).setOrigin(.5));
+            d.add(s.add.text(0, 1, String(i + 1), { fontFamily: FONT_MAIN, fontSize: '18px', fontStyle: '900', color: '#b45309' }).setOrigin(.5));
             d.setSize(42, 42);
             d.setInteractive({ useHandCursor: true });
             d.on('pointerdown', function () { s.tryDot(i); });
@@ -1519,23 +1523,23 @@ class MachineScene extends GameBase {
         /* word row with missing slot(s) */
         var chars = cur.word.split('');
         var blankIdx = {}; for (var bi = 0; bi < cur.missing.length; bi++) blankIdx[cur.at + bi] = true;
-        var step = Math.min(40, 300 / chars.length);
+        var step = Math.min(48, 326 / chars.length);
         var x0 = W / 2 - (chars.length - 1) * step / 2;
         this.slotObjs = []; this.slotPos = null;
         chars.forEach(function (ch, i) {
             var x = x0 + i * step, y = 505;
             if (blankIdx[i]) {
                 var slot = s.add.graphics();
-                slot.fillStyle(0xfff6c9, 1).fillRoundedRect(x - 15, y - 22, 30, 40, 8);
-                slot.lineStyle(3, 0x3b2a5e, .9).strokeRoundedRect(x - 15, y - 22, 30, 40, 8);
+                slot.fillStyle(0xfff6c9, 1).fillRoundedRect(x - 17, y - 24, 34, 46, 9);
+                slot.lineStyle(3, 0x3b2a5e, .9).strokeRoundedRect(x - 17, y - 24, 34, 46, 9);
                 s.track(slot);
                 s.slotObjs.push(slot);
                 if (!s.slotPos) s.slotPos = { x: x, y: y };
-                var q = s.add.text(x, y - 1, '?', { fontFamily: FONT_MAIN, fontSize: '24px', fontStyle: '900', color: '#c98a00' }).setOrigin(.5);
+                var q = s.add.text(x, y - 1, '?', { fontFamily: FONT_MAIN, fontSize: '30px', fontStyle: '900', color: '#c98a00' }).setOrigin(.5);
                 s.track(q); s.slotObjs.push(q);
                 s.tweens.add({ targets: q, alpha: .35, duration: 500, yoyo: true, repeat: -1 });
             } else {
-                var lt = s.add.text(x, y, ch, { fontFamily: FONT_MAIN, fontSize: '34px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5);
+                var lt = s.add.text(x, y, ch, { fontFamily: FONT_MAIN, fontSize: '42px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5);
                 s.track(lt); s.slotObjs.push(lt);
             }
         });
@@ -1553,7 +1557,7 @@ class MachineScene extends GameBase {
             cg.fillStyle(0xffffff, 1).fillRoundedRect(-42, -30, 84, 60, 16);
             cg.lineStyle(4, 0x3b2a5e, 1).strokeRoundedRect(-42, -30, 84, 60, 16);
             c.add(cg);
-            c.add(s.add.text(0, 0, o, { fontFamily: FONT_MAIN, fontSize: '30px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+            c.add(s.add.text(0, 0, o, { fontFamily: FONT_MAIN, fontSize: '36px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             c.setSize(84, 60);
             c.setInteractive({ useHandCursor: true });
             c.val = o;
@@ -1575,7 +1579,7 @@ class MachineScene extends GameBase {
             this.tweens.add({ targets: c, x: tp.x, y: tp.y, scale: .72, duration: 380, ease: 'Quad.easeIn', onComplete: function () {
                 SFX.play('ding');
                 s.slotObjs.forEach(function (o) { if (o && o.destroy) o.destroy(); });
-                var full = s.add.text(W / 2, 505, cur.word, { fontFamily: FONT_MAIN, fontSize: '38px', fontStyle: '900', color: '#1b7a43', stroke: '#ffffff', strokeThickness: 5 }).setOrigin(.5);
+                var full = s.add.text(W / 2, 505, cur.word, { fontFamily: FONT_MAIN, fontSize: '46px', fontStyle: '900', color: '#1b7a43', stroke: '#ffffff', strokeThickness: 5 }).setOrigin(.5);
                 s.track(full);
                 s.tweens.add({ targets: full, scale: 1.12, duration: 180, yoyo: true });
                 s.tweens.add({ targets: s.cameras.main, x: 5, duration: 40, yoyo: true, repeat: 3 });
@@ -1729,7 +1733,7 @@ class StoryScene extends Phaser.Scene {
         /* text inside the card */
         var isAr = st.lang === 'ar';
         this.layer.push(this.add.text(W / 2, 545, pg.text, {
-            fontFamily: FONT_MAIN, fontSize: isAr ? '23px' : '21px', fontStyle: '900', color: '#3b2a5e', align: 'center',
+            fontFamily: FONT_MAIN, fontSize: isAr ? '25px' : '23px', fontStyle: '900', color: '#3b2a5e', align: 'center',
             wordWrap: { width: W - 90 }, rtl: isAr, lineSpacing: 6
         }).setOrigin(.5));
         /* page dots */
