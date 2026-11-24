@@ -208,7 +208,7 @@ class HomeScene extends Phaser.Scene {
 
         fadeSceneIn(this, 180);
         /* top bar */
-        candyPanel(this, 14, 14, 94, 44, 22, 0xffb03d, { lipColor: 0xd17f1a });
+        candyPanel(this, 14, 14, 94, 44, 22, 0xf6bd82, { lipColor: 0xe09a4e });
         this.add.image(38, 36, 'tile_star').setScale(.24);
         this.starTxt = this.add.text(56, 36, String((state && state.stars) || 0), { fontFamily: FONT_MAIN, fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
         this.muteBtn = this.add.container(W - 116, 38);

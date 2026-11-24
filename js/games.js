@@ -334,7 +334,7 @@ class GameBase extends Phaser.Scene {
         triG.fillTriangle(39, 25, 39, 49, 23, 37);
         var back = this.add.zone(14, 12, 50, 48).setOrigin(0).setInteractive({ useHandCursor: true });
         back.on('pointerdown', function () { VO.stop(); SFX.play('tap'); goScene(s, 'home'); });
-        candyPanel(this, W - 108, 14, 94, 44, 22, 0xffb03d, { lipColor: 0xd17f1a });
+        candyPanel(this, W - 108, 14, 94, 44, 22, 0xf6bd82, { lipColor: 0xe09a4e });
         this.add.image(W - 84, 36, 'tile_star').setScale(.24);
         this.starTxt = this.add.text(W - 66, 36, String((state && state.stars) || 0), { fontFamily: FONT_MAIN, fontSize: '22px', fontStyle: '900', color: '#4a2c00' }).setOrigin(0, .5);
         /* prompt bar */
