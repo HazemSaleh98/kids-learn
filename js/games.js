@@ -384,7 +384,12 @@ class GameBase extends Phaser.Scene {
         };
         this.input.on('pointerdown', this._sparkFn);
     }
-    sayRound() { if (this.cur && this.cur.keys && !(state && state.muted)) VO.say.apply(VO, this.cur.keys); }
+    sayRound() {
+        if (!this.cur || !this.cur.keys || (state && state.muted)) return;
+        /* never cut a playing clip (Arabic praise/hype lines must finish) */
+        if (VO.busy()) { var s = this; this.time.delayedCall(700, function () { s.sayRound(); }); return; }
+        VO.say.apply(VO, this.cur.keys);
+    }
     clearRound() {
         this.roundObjs.forEach(function (o) { if (o && o.destroy) o.destroy(); });
         this.roundObjs = [];
@@ -1629,6 +1634,7 @@ class StoryScene extends Phaser.Scene {
         this.showPicker();
     }
     clearLayer() {
+        if (this._typeTimer) { this._typeTimer.remove(); this._typeTimer = null; }
         if (this.layer) this.layer.forEach(function (o) { if (o && o.destroy) o.destroy(); });
         this.layer = [];
     }
@@ -1702,29 +1708,37 @@ class StoryScene extends Phaser.Scene {
         var artKey = 'storyart_' + st.id + '_p' + (this.page + 1);
         var hasArt = STORY_ART_HAS[st.id] && this.textures.exists(artKey);
         if (hasArt) {
-            var im = this.add.image(W / 2, 330, artKey);
-            var sc0 = Math.min((W - 72) / im.width, 300 / im.height);
+            var im = this.add.image(W / 2, 322, artKey);
+            var sc0 = Math.min((W - 72) / im.width, 330 / im.height);
             im.setScale(sc0);
             var mw = im.displayWidth, mh = im.displayHeight;
             /* clip to the framed area, then Ken Burns inside it */
             var maskG = this.make.graphics({ x: 0, y: 0, add: false });
-            maskG.fillStyle(0xffffff, 1).fillRoundedRect(W / 2 - mw / 2, 330 - mh / 2, mw, mh, 16);
+            maskG.fillStyle(0xffffff, 1).fillRoundedRect(W / 2 - mw / 2, 322 - mh / 2, mw, mh, 16);
             im.setMask(maskG.createGeometryMask());
-            this.tweens.add({ targets: im, scaleX: sc0 * 1.13, scaleY: sc0 * 1.13, x: W / 2 - 12, y: 330 + 9, duration: 7000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            im._kb = true;
+            this.tweens.add({ targets: im, scaleX: sc0 * 1.16, scaleY: sc0 * 1.16, x: W / 2 - 14, y: 322 + 11, duration: 9000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             var frame = this.add.graphics();
-            frame.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(W / 2 - mw / 2 - 4, 330 - mh / 2 - 4, mw + 8, mh + 8, 18);
+            frame.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(W / 2 - mw / 2 - 4, 322 - mh / 2 - 4, mw + 8, mh + 8, 18);
             this.layer.push(im); this.layer.push(frame);
-            /* narrator buddy watching beside the art: breathing + idle hops */
-            var pb = makePlayBuddy(this, W - 68, 140, 50);
-            if (pb) this.layer.push(pb.c);
-            /* ambient sparkle drift over the scene */
-            var sp = this.add.particles(W / 2, 330, 'dot', {
+            /* narrator buddy on stage: big, breathing, hopping, and chatting about the story */
+            var pb = makePlayBuddy(this, W - 66, 158, 88);
+            if (pb) { this.layer.push(pb.c); this._storyBuddy = pb; }
+            /* ambient life over the scene: rising sparkles + drifting fireflies */
+            var sp = this.add.particles(W / 2, 322, 'dot', {
                 x: { min: -mw / 2 + 10, max: mw / 2 - 10 }, y: { min: -mh / 2 + 10, max: mh / 2 - 10 },
-                speedY: { min: -16, max: -5 }, speedX: { min: -6, max: 6 },
-                scale: { start: .7, end: 0 }, alpha: { start: .55, end: 0 },
-                lifespan: 2400, frequency: 420, tint: [0xffffff, 0xffe9a8], blendMode: 'ADD'
+                speedY: { min: -22, max: -7 }, speedX: { min: -8, max: 8 },
+                scale: { start: 1.0, end: 0 }, alpha: { start: .7, end: 0 },
+                lifespan: 3000, frequency: 260, tint: [0xffffff, 0xffe9a8, 0xfff6c9], blendMode: 'ADD'
             });
             this.layer.push(sp);
+            var ff = this.add.particles(W / 2, 322, 'dot', {
+                x: { min: -mw / 2 + 16, max: mw / 2 - 16 }, y: { min: -mh / 2 + 16, max: mh / 2 - 16 },
+                speedY: { min: -6, max: 6 }, speedX: { min: -10, max: 10 },
+                scale: { start: .5, end: .1 }, alpha: { start: .5, end: .1 },
+                lifespan: 4200, frequency: 700, tint: [0xaee9ff, 0xd9c8ff], blendMode: 'ADD'
+            });
+            this.layer.push(ff);
         } else {
             this.layer.push(this.add.text(W / 2 + 30, 250, STORY_ART[pg.art] || '✨', { fontFamily: FONT_MAIN, fontSize: '120px' }).setOrigin(.5));
         }
@@ -1738,12 +1752,23 @@ class StoryScene extends Phaser.Scene {
             this.layer.push(bm);
             this.layer.push(this.add.text(108, 440, 'بتحكي: ' + BUDDY_AR[st.buddy], { fontFamily: FONT_MAIN, fontSize: '12.5px', fontStyle: '700', color: '#7a7194' }).setOrigin(.5));
         }
-        /* text inside the card */
+        /* text inside the card: typewriter reveal so the page feels alive */
         var isAr = st.lang === 'ar';
-        this.layer.push(this.add.text(W / 2, 545, pg.text, {
+        var txtO = this.add.text(W / 2, 545, '', {
             fontFamily: FONT_MAIN, fontSize: isAr ? '25px' : '23px', fontStyle: '900', color: '#3b2a5e', align: 'center',
             wordWrap: { width: W - 90 }, rtl: isAr, lineSpacing: 6
-        }).setOrigin(.5));
+        }).setOrigin(.5);
+        this.layer.push(txtO);
+        if (this._typeTimer) { this._typeTimer.remove(); this._typeTimer = null; }
+        var full = pg.text, shown = 0;
+        this._typeTimer = this.time.addEvent({
+            delay: 26, repeat: Math.ceil(full.length / 2),
+            callback: function () {
+                shown = Math.min(full.length, shown + 2);
+                txtO.setText(full.slice(0, shown));
+                if (shown >= full.length && s._typeTimer) { s._typeTimer.remove(); s._typeTimer = null; }
+            }
+        });
         /* page dots */
         var dots = this.add.graphics();
         for (var i = 0; i < this.pages.length; i++) {
@@ -1773,7 +1798,7 @@ class StoryScene extends Phaser.Scene {
             if (s.finished) return;
             SFX.play('tap');
             if (last) { s.finished = true; nx.disableInteractive(); s.finishStory(); }
-            else { s.page++; s.showPage(); }
+            else { s.page++; s._pageDir = 1; s.showPage(); }
         });
         this.layer.push(nx);
         if (this.page > 0) {
@@ -1783,9 +1808,21 @@ class StoryScene extends Phaser.Scene {
             pvG.fillStyle(0x9b59f5, 1).fillTriangle(-6, -11, -6, 11, 10, 0);
             pv.add(pvG);
             pv.setSize(52, 52).setInteractive({ useHandCursor: true });
-            pv.on('pointerdown', function () { SFX.play('tap'); s.page--; s.showPage(); });
+            pv.on('pointerdown', function () { SFX.play('tap'); s.page--; s._pageDir = -1; s.showPage(); });
             this.layer.push(pv);
         }
+        /* cinematic page-turn: everything slides in from the travel direction */
+        var dir = this._pageDir == null ? 1 : this._pageDir;
+        this._pageDir = 1;
+        this.layer.forEach(function (o, idx) {
+            if (!o || o._kb) return;
+            if (o.setAlpha) o.setAlpha(0);
+            if (o.x != null) {
+                var tx = o.x;
+                o.x = tx + dir * 70;
+                s.tweens.add({ targets: o, x: tx, alpha: 1, duration: 420, delay: 20 + idx * 14, ease: 'Cubic.easeOut' });
+            } else s.tweens.add({ targets: o, alpha: 1, duration: 420, delay: 20 + idx * 14 });
+        });
         this.narrate();
     }
     narrate() {

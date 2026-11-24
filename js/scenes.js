@@ -105,7 +105,10 @@ function attachBuddyTalk(scene, c, x, y, size, idle) {
             scene.tweens.add({ targets: b, scaleX: 0, scaleY: 0, duration: 180, onComplete: function () { if (b.active) b.destroy(); if (bubble === b) bubble = null; } });
         });
     }
-    if (idle !== false) scene.time.addEvent({ delay: 9000, loop: true, callback: function () { if (c.active && !scene.roundLock) say('idle'); } });
+    if (idle !== false) {
+        var ev = scene.time.addEvent({ delay: 9000, loop: true, callback: function () { if (c.active && !scene.roundLock) say('idle'); } });
+        c.once('destroy', function () { if (ev) { ev.remove(); ev = null; } });
+    }
     return say;
 }
 

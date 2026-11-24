@@ -55,13 +55,15 @@ var VO = (function () {
     function buddyId() { return (state && state.theme && AR_BUDDY[state.theme]) || null; }
     function kidSlug() { return state && state.name ? String(state.name).toLowerCase().replace(/[^a-z0-9]/g, '') : null; }
 
+    var curKey = null;
     function playNext() {
         if (playing) return;
         var key = queue.shift();
         if (key == null) return;
         if (state && state.muted) { playNext(); return; }
         playing = true;
-        var done = function () { playing = false; setTimeout(playNext, 90); };
+        curKey = key;
+        var done = function () { playing = false; curKey = null; setTimeout(playNext, 90); };
         /* Arabic buddy banter clips: 'ar:<key>' from assets/audio/ar/; missing = skip quietly */
         if (key.indexOf('ar:') === 0) {
             var ak = key.slice(3);
@@ -98,6 +100,7 @@ var VO = (function () {
         if (cur) { try { cur.pause(); } catch (e) {} cur = null; }
         if (ttsOK) { try { speechSynthesis.cancel(); } catch (e) {} }
         playing = false;
+        curKey = null;
     }
 
     return {
@@ -151,6 +154,8 @@ var VO = (function () {
         },
         /* cancel-then-speak needs a beat on Android Chrome or the utterance is dropped */
         speak: function (text, lang) { stopAll(); setTimeout(function () { tts(text, lang); }, 80); },
+        busy: function () { return playing || queue.length > 0; },
+        currentKey: function () { return curKey; },
         hasClip: function (key) { return typeof VO_FILES !== 'undefined' && !!VO_FILES[key]; },
         hasArClip: function (key) { return typeof VO_AR_FILES !== 'undefined' && !!VO_AR_FILES[key]; },
         oops: function () { this.say('oops_' + (1 + rnd(3))); },
