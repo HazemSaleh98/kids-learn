@@ -50,6 +50,11 @@ var VO = (function () {
         return l ? l.t : null;
     }
 
+    /* buddy id for the Arabic banter bundle */
+    var AR_BUDDY = { monster_blue: 'fuzzy', monster_green: 'blinky', hero: 'captain', caped: 'luna', princess: 'princess', fairy: 'fairy' };
+    function buddyId() { return (state && state.theme && AR_BUDDY[state.theme]) || null; }
+    function kidSlug() { return state && state.name ? String(state.name).toLowerCase().replace(/[^a-z0-9]/g, '') : null; }
+
     function playNext() {
         if (playing) return;
         var key = queue.shift();
@@ -57,6 +62,22 @@ var VO = (function () {
         if (state && state.muted) { playNext(); return; }
         playing = true;
         var done = function () { playing = false; setTimeout(playNext, 90); };
+        /* Arabic buddy banter clips: 'ar:<key>' from assets/audio/ar/; missing = skip quietly */
+        if (key.indexOf('ar:') === 0) {
+            var ak = key.slice(3);
+            if (typeof VO_AR_FILES !== 'undefined' && VO_AR_FILES[ak]) {
+                try {
+                    cur = new Audio('assets/audio/ar/' + ak + '.mp3');
+                    cur.onended = done;
+                    cur.onerror = done;
+                    var ap = cur.play();
+                    if (ap && ap.catch) ap.catch(done);
+                    return;
+                } catch (e) {}
+            }
+            playing = false; setTimeout(playNext, 40);
+            return;
+        }
         if (VO_FILES[key]) {
             try {
                 cur = new Audio(base + key + '.mp3');
@@ -82,6 +103,35 @@ var VO = (function () {
     return {
         /* switch clip bundle (e.g. 'assets/audio/ar/'); resets to default when omitted */
         setBase: function (b) { base = b || 'assets/audio/'; },
+        /* home greeting: buddy's Arabic hello (name variant when available), then the English welcome */
+        hello: function () {
+            var b = buddyId(), slug = kidSlug(), keys = [];
+            if (b && typeof VO_AR_FILES !== 'undefined') {
+                var named = b + '_hello__' + slug;
+                if (slug && VO_AR_FILES[named]) keys.push('ar:' + named);
+                else if (VO_AR_FILES[b + '_hello']) keys.push('ar:' + b + '_hello');
+            }
+            keys.push('instr_welcome');
+            this.say.apply(this, keys);
+        },
+        /* win cheer: mixes English teacher cheers with the buddy's Arabic cheers;
+           named clips (either language) favored, both voices heard over time */
+        cheerMixed: function () {
+            var extra = Array.prototype.slice.call(arguments);
+            var n = 1 + rnd(6), slug = kidSlug();
+            var enNamed = slug ? 'cheer_' + n + '__' + slug : null;
+            var pool = [];
+            var b = buddyId();
+            if (enNamed && VO_FILES[enNamed]) pool.push(enNamed, enNamed);
+            if (b && slug && typeof VO_AR_FILES !== 'undefined' && VO_AR_FILES[b + '_cheer__' + slug]) pool.push('ar:' + b + '_cheer__' + slug, 'ar:' + b + '_cheer__' + slug);
+            if (b && typeof VO_AR_FILES !== 'undefined') {
+                if (VO_AR_FILES[b + '_cheer_1']) pool.push('ar:' + b + '_cheer_1');
+                if (VO_AR_FILES[b + '_cheer_2']) pool.push('ar:' + b + '_cheer_2');
+            }
+            pool.push('cheer_' + n);
+            var keys = [pick(pool)].concat(extra);
+            this.say.apply(this, keys);
+        },
         /* queue one or more keys */
         say: function () {
             stopAll();

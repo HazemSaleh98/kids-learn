@@ -180,13 +180,10 @@ class GameBase extends Phaser.Scene {
             this.tweens.add({ targets: cm, y: H / 2 - 66, duration: 300, yoyo: true, repeat: 2, delay: 450, ease: 'Quad.easeOut' });
             this.track(cm);
         }
-        /* cheer voice (+ level-up line) */
+        /* cheer voice (English teacher + buddy Arabic banter mix, + level-up line) */
         if (!(state && state.muted)) {
-            var n = 1 + rnd(6);
-            var named = state && state.name ? 'cheer_' + n + '__' + String(state.name).toLowerCase().replace(/[^a-z0-9]/g, '') : null;
-            var keys = [(named && VO_FILES[named]) ? named : 'cheer_' + n];
-            if (leveled) keys.push('instr_levelup');
-            VO.say.apply(VO, keys);
+            if (leveled) VO.cheerMixed('instr_levelup');
+            else VO.cheerMixed();
         }
         this.time.delayedCall(1800, function () {
             s.clearRound();
