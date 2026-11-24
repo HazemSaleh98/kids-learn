@@ -154,6 +154,120 @@ function sightPool(kg) {
     return SIGHT;
 }
 
+
+/* ================= story time: buddy-narrated decodable stories ================= */
+/* keys: narration clips story_<id>_p<n> (EN bundle) and ar/story_<id>_p<n> (AR bundle); tier 2 adds _t2_ */
+var STORIES = [
+    {
+        id: 'sam_cat', buddy: 'fuzzy', lang: 'en', em: '🐱',
+        title: { en: 'Sam and the Cat', ar: 'سام والقطة' },
+        t1: [
+            { text: 'Sam has a cat.', art: 'cat' },
+            { text: 'The cat is fat.', art: 'cat' },
+            { text: 'Sam pats the cat.', art: 'cat' },
+            { text: 'The cat can nap.', art: 'cat' },
+            { text: 'Sam naps too!', art: 'sleep' }
+        ],
+        t2: [
+            { text: 'Sam has a little cat. The cat is black and fat.', art: 'cat' },
+            { text: 'The cat sits on the mat. Sam pats the soft cat.', art: 'cat' },
+            { text: '"Meow!" says the cat. It jumps on Sam!', art: 'cat' },
+            { text: 'Sam gives the cat some milk. Sip, sip, sip!', art: 'milk' },
+            { text: 'Then the cat naps on his lap. Sam naps too!', art: 'sleep' }
+        ]
+    },
+    {
+        id: 'red_bus', buddy: 'captain', lang: 'en', em: '🚌',
+        title: { en: 'The Big Red Bus', ar: 'الأتوبيس الأحمر الكبير' },
+        t1: [
+            { text: 'The big red bus is here!', art: 'bus' },
+            { text: 'Hop on the bus, kids!', art: 'bus' },
+            { text: 'The bus goes up the hill.', art: 'hill' },
+            { text: 'The bus goes down the hill.', art: 'hill' },
+            { text: 'Beep, beep! We are home!', art: 'home' }
+        ],
+        t2: [
+            { text: 'The big red bus stops at the school. "Beep, beep!"', art: 'bus' },
+            { text: 'Six kids hop on the bus. They sit and chat.', art: 'bus' },
+            { text: 'The bus goes up the big hill. It goes very slow.', art: 'hill' },
+            { text: 'The bus goes down the hill. Zoom! It goes fast!', art: 'hill' },
+            { text: 'The bus stops at the park. "We are here!" they shout.', art: 'park' }
+        ]
+    },
+    {
+        id: 'fish_mom', buddy: 'fairy', lang: 'en', em: '🐟',
+        title: { en: 'A Fish for Mom', ar: 'سمكة لماما' },
+        t1: [
+            { text: 'Tim has a fishing rod.', art: 'fish' },
+            { text: 'He sits by the pond.', art: 'pond' },
+            { text: 'Splash! A big fish!', art: 'fish' },
+            { text: 'Tim runs home with it.', art: 'home' },
+            { text: '"A fish for you, Mom!"', art: 'gift' }
+        ],
+        t2: [
+            { text: 'Tim has a new fishing rod. He runs to the pond.', art: 'pond' },
+            { text: 'He sits on a rock and waits. The sun is hot.', art: 'pond' },
+            { text: 'Splash! The rod bends down. It is a big, strong fish!', art: 'fish' },
+            { text: 'Tim holds the fish with two hands. It jumps and flips!', art: 'fish' },
+            { text: 'He runs home fast. "A fish for you, Mom!" Mom smiles and claps.', art: 'gift' }
+        ]
+    },
+    {
+        id: 'fuzzy_apple', buddy: 'fuzzy', lang: 'ar', em: '🍎',
+        title: { en: 'Fuzzy and the Apple', ar: 'فزفز و التفاحة' },
+        t1: [
+            { text: 'فزفز وحش أزرق لطيف.', art: 'apple' },
+            { text: 'شاف تفاحة حمرا على الشجرة.', art: 'apple' },
+            { text: 'نط عالي عشان يمسكها.', art: 'jump' },
+            { text: 'التفاحة وقعت على راسه!', art: 'bonk' },
+            { text: 'ضحك و كالها كلها!', art: 'apple' }
+        ],
+        t2: [
+            { text: 'فزفز وحش أزرق لطيف و بيحب الأكل جدًا.', art: 'apple' },
+            { text: 'في يوم شاف تفاحة حمرا كبيرة على أعلى الشجرة.', art: 'apple' },
+            { text: 'نط عالي قوي عشان يمسكها، بس كانت بعيدة.', art: 'jump' },
+            { text: 'فجأة وقعت التفاحة على راسه! "أوه!" قالها و ضحك.', art: 'bonk' },
+            { text: 'خد التفاحة، غسلها، و كالها كلها. كانت حلوة أوي!', art: 'apple' }
+        ]
+    },
+    {
+        id: 'blinky_star', buddy: 'blinky', lang: 'ar', em: '⭐',
+        title: { en: 'Blinky and the Star', ar: 'بلينكي و النجمة' },
+        t1: [
+            { text: 'بلينكي بيحب السما.', art: 'star' },
+            { text: 'شاف نجمة صغيرة بتبرق.', art: 'star' },
+            { text: 'النجمة نزلت جنبه.', art: 'star' },
+            { text: 'لعبوا مع بعض طول الليل.', art: 'play' },
+            { text: 'وبقوا أحسن أصحاب.', art: 'friends' }
+        ],
+        t2: [
+            { text: 'بلينكي وحش أخضر بعين واحدة، بيحب يبص على السما بالليل.', art: 'star' },
+            { text: 'في ليلة شاف نجمة صغيرة بتبرق أكتر من كل النجوم.', art: 'star' },
+            { text: 'النجمة نزلت من السما و وقفت جنبه على العشب.', art: 'star' },
+            { text: 'لعبوا مستخبي و جري ورا بعض طول الليل.', art: 'play' },
+            { text: 'ومن يومها، النجمة بتنور لبلينكي كل ليلة. بقوا أحسن أصحاب!', art: 'friends' }
+        ]
+    },
+    {
+        id: 'princess_butterfly', buddy: 'princess', lang: 'ar', em: '🦋',
+        title: { en: 'The Princess and the Butterfly', ar: 'الأميرة و الفراشة' },
+        t1: [
+            { text: 'الأميرة في الجنينة.', art: 'garden' },
+            { text: 'شافت فراشة صفرا جميلة.', art: 'butterfly' },
+            { text: 'الفراشة طارت فوق الورد.', art: 'butterfly' },
+            { text: 'الأميرة جريت وراها بهدوء.', art: 'garden' },
+            { text: 'الفراشة وقفت على إيدها!', art: 'friends' }
+        ],
+        t2: [
+            { text: 'الأميرة الصغيرة كانت ماشية في جنينة القصر المليانة ورد.', art: 'garden' },
+            { text: 'فجأة شافت فراشة صفرا جميلة بتطير بين الزهور.', art: 'butterfly' },
+            { text: 'الفراشة طارت فوق الورد الأحمر و الورد الأصفر.', art: 'butterfly' },
+            { text: 'الأميرة جريت وراها بهدوء من غير ما تخوفها.', art: 'garden' },
+            { text: 'لما وقفت الأميرة ساكتة، الفراشة نزلت و وقفت على إيدها! يومها عرفت إن الهدوء بيكسب.', art: 'friends' }
+        ]
+    }
+];
+
 /* ================= game registry (meta; scenes attach .scene) ================= */
 var GAMES = {
     letters: { ico: 'bubble', icos: .55, icoTint: 0xff9ecb, em: '🫧', title: 'Letter Bubbles', sub: 'Pop the sounds!', scene: 'g_letters', kg: { kg1: 'الحروف الكبيرة ثم أصواتها بترتيب المنهج (ساتبين)', kg2: 'المركبات الصوتية sh ch th ng والقصور الطويلة ai ee igh oa', g1: 'الحروف الساكنة السحرية a-e i-e o-e u-e واللواحق ing ed' } },
@@ -162,5 +276,6 @@ var GAMES = {
     counting: { ico: 'food_carrot', icos: .62, em: '🧺', title: 'Picnic Count', sub: 'Feed me 4!', scene: 'g_count', kg: { kg1: 'العد حتى ١٠ + أكتر/أقل', kg2: 'العد حتى ٢٠ + أكتر/أقل', g1: 'العد حتى ٣٠ بالعشرات + أكتر/أقل' } },
     math: { ico: 'ship_red', icos: .6, em: '🚀', title: 'Rocket Math', sub: 'Launch the answer', scene: 'g_rocket', kg: { kg1: 'جمع وطرح في حدود ٥', kg2: 'تكوين العشرة + جمع وطرح حتى ٢٠', g1: 'جمع وطرح حتى ٢٠ والعشرات الكاملة' } },
     shapes: { ico: 'shape_red_circle', icos: .5, em: '🧩', title: 'Shape Sorter', sub: 'Sort the shapes', scene: 'g_sort', kg: { kg1: 'أسماء الأشكال والألوان', kg2: 'تمييز الشكل واللون مع بعض', g1: 'تمييز الشكل واللون مع بعض' } },
-    pattern: { ico: 'tile_heart', icos: .5, em: '🎨', title: 'Pattern Train', sub: 'What comes next?', scene: 'g_pattern', kg: { kg1: 'أنماط بسيطة AB بالألوان', kg2: 'أنماط ABB و ABC + أنماط الأعداد', g1: 'العد القفزي ٢ و ٥ و ١٠' } }
+    pattern: { ico: 'tile_heart', icos: .5, em: '🎨', title: 'Pattern Train', sub: 'What comes next?', scene: 'g_pattern', kg: { kg1: 'أنماط بسيطة AB بالألوان', kg2: 'أنماط ABB و ABC + أنماط الأعداد', g1: 'العد القفزي ٢ و ٥ و ١٠' } },
+    story: { ico: 'w_owl', icos: .95, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
 };

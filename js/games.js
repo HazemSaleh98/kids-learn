@@ -768,3 +768,168 @@ class PatternScene extends GameBase {
     }
 }
 
+/* ================= 8) Story Time: buddy-narrated stories ================= */
+var STORY_ART = { cat: '🐱', sleep: '😴', milk: '🥛', bus: '🚌', hill: '⛰️', home: '🏠', park: '🌳', fish: '🐟', pond: '🏞️', gift: '🎁', apple: '🍎', jump: '🤸', bonk: '💫', star: '⭐', play: '🎈', friends: '💛', garden: '🌷', butterfly: '🦋' };
+var BUDDY_THEME = { fuzzy: 'monster_blue', blinky: 'monster_green', captain: 'hero', luna: 'caped', princess: 'princess', fairy: 'fairy' };
+var BUDDY_AR = { fuzzy: 'فزفز', blinky: 'بلينكي', captain: 'كابتن ستار', luna: 'لونا', princess: 'الأميرة', fairy: 'الجنية' };
+class StoryScene extends Phaser.Scene {
+    constructor() { super('g_story'); }
+    create() {
+        var s = this;
+        this.add.image(W / 2, H / 2, 'bg_grass').setScale(Math.max(W / 390, H / 844) * 1.02);
+        addCloud(this, 'cloud3', 200, 62000, .4);
+        addCloud(this, 'cloud4', 320, 52000, .34, -20000).setAlpha(.7);
+        /* header */
+        var backG = this.add.graphics();
+        backG.fillStyle(0xffffff, .95).fillRoundedRect(14, 14, 48, 48, 16);
+        backG.fillStyle(0x3b2a5e, 1).fillTriangle(38, 26, 38, 50, 22, 38);
+        var back = this.add.zone(14, 14, 48, 48).setOrigin(0).setInteractive({ useHandCursor: true });
+        back.on('pointerdown', function () { VO.stop(); if (s.mode === 'read') s.showPicker(); else s.scene.start('home'); });
+        this.add.text(W / 2, 40, '📖 Story Time', { fontSize: '26px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5);
+        this.showPicker();
+    }
+    clearLayer() {
+        if (this.layer) this.layer.forEach(function (o) { if (o && o.destroy) o.destroy(); });
+        this.layer = [];
+    }
+    showPicker() {
+        var s = this;
+        this.mode = 'pick';
+        this.clearLayer();
+        STORIES.forEach(function (st, i) {
+            var cx = (i % 2 === 0) ? 102 : 288, cy = 170 + Math.floor(i / 2) * 190;
+            var c = s.add.container(cx, cy);
+            var col = SPOTCOLORS[i % SPOTCOLORS.length];
+            var g = s.add.graphics();
+            g.fillStyle(col[1], 1).fillRoundedRect(-88, -72, 176, 158, 24);
+            g.fillStyle(col[0], 1).fillRoundedRect(-88, -80, 176, 158, 24);
+            c.add(g);
+            c.add(s.add.text(0, -44, st.em, { fontSize: '40px' }).setOrigin(.5));
+            c.add(s.add.text(0, 2, st.title.ar, { fontSize: '17px', fontStyle: '900', color: '#fff', align: 'center', wordWrap: { width: 160 } }).setOrigin(.5));
+            var tk = BUDDY_THEME[st.buddy] || st.buddy;
+            if (s.textures.exists('theme_' + tk)) {
+                var bm = s.add.image(-58, 44, 'theme_' + tk);
+                bm.setScale(46 / Math.max(bm.width, bm.height));
+                c.add(bm);
+            }
+            c.add(s.add.text(12, 44, st.lang === 'ar' ? 'عربي 🎧' : 'English 🎧', { fontSize: '13px', fontStyle: '700', color: 'rgba(255,255,255,.95)' }).setOrigin(.5));
+            c.setSize(176, 158);
+            c.setInteractive({ useHandCursor: true });
+            c.setScale(0);
+            s.tweens.add({ targets: c, scaleX: 1, scaleY: 1, duration: 450, delay: 80 + i * 80, ease: 'Back.easeOut' });
+            c.on('pointerdown', function () { s.openStory(st); });
+            s.layer.push(c);
+        });
+        this.add && (this.pickHint = this.add.text(W / 2, H - 40, 'اختاروا قصة — الشخصية اللي عليها هي اللي هتحكيها!', { fontSize: '13.5px', fontStyle: '700', color: '#7a7194' }).setOrigin(.5));
+        this.layer.push(this.pickHint);
+    }
+    openStory(st) {
+        var s = this;
+        this.story = st;
+        this.finished = false;
+        this.mode = 'read';
+        /* tier by stage: kg1 tier 1, kg2/g1 tier 2 */
+        var tier = (state && state.kg && state.kg !== 'kg1') ? 't2' : 't1';
+        this.pages = st[tier];
+        this.page = 0;
+        this.showPage();
+    }
+    showPage() {
+        var s = this;
+        this.clearLayer();
+        var st = this.story, pg = this.pages[this.page];
+        /* sky card */
+        var card = this.add.graphics();
+        card.fillStyle(0xffffff, .96).fillRoundedRect(24, 88, W - 48, 560, 28);
+        card.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(24, 88, W - 48, 560, 28);
+        this.layer.push(card);
+        /* art: big emoji prop center stage */
+        this.layer.push(this.add.text(W / 2 + 30, 250, STORY_ART[pg.art] || '✨', { fontSize: '120px' }).setOrigin(.5));
+        /* narrator buddy on stage, breathing idle */
+        var tk2 = BUDDY_THEME[st.buddy] || st.buddy;
+        if (this.textures.exists('theme_' + tk2)) {
+            var bm = this.add.image(108, 350, 'theme_' + tk2);
+            bm.setScale(140 / Math.max(bm.width, bm.height));
+            var bs0 = bm.scaleX;
+            this.tweens.add({ targets: bm, scaleY: bm.scaleY * .955, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+            this.layer.push(bm);
+            this.layer.push(this.add.text(108, 440, 'بتحكي: ' + BUDDY_AR[st.buddy], { fontSize: '12.5px', fontStyle: '700', color: '#7a7194' }).setOrigin(.5));
+        }
+        /* text inside the card */
+        var isAr = st.lang === 'ar';
+        this.layer.push(this.add.text(W / 2, 545, pg.text, {
+            fontSize: isAr ? '23px' : '21px', fontStyle: '900', color: '#3b2a5e', align: 'center',
+            wordWrap: { width: W - 90 }, rtl: isAr, lineSpacing: 6
+        }).setOrigin(.5));
+        /* page dots */
+        var dots = this.add.graphics();
+        for (var i = 0; i < this.pages.length; i++) {
+            dots.fillStyle(i === this.page ? 0xff9f43 : 0xd9d3e8, 1).fillCircle(W / 2 + (i - (this.pages.length - 1) / 2) * 22, 676, i === this.page ? 7 : 5);
+        }
+        this.layer.push(dots);
+        /* buttons: replay, next/end */
+        var rp = this.add.text(96, 720, '🔊', { fontSize: '34px' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+        rp.on('pointerdown', function () { s.narrate(); });
+        this.layer.push(rp);
+        var last = this.page >= this.pages.length - 1;
+        var nx = this.add.container(W - 110, 720);
+        var ng = this.add.graphics();
+        ng.fillStyle(last ? 0x2ecc71 : 0xff9f43, 1).fillRoundedRect(-84, -34, 168, 68, 22);
+        nx.add(ng);
+        nx.add(this.add.text(0, 0, last ? 'النهاية! ⭐' : 'التالي ◀', { fontSize: '20px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        nx.setSize(168, 68); nx.setInteractive({ useHandCursor: true });
+        nx.on('pointerdown', function () {
+            if (s.finished) return;
+            if (last) { s.finished = true; nx.disableInteractive(); s.finishStory(); }
+            else { s.page++; s.showPage(); }
+        });
+        this.layer.push(nx);
+        if (this.page > 0) {
+            var pv = this.add.text(48, 720, '▶', { fontSize: '30px', color: '#9b59f5' }).setOrigin(.5).setInteractive({ useHandCursor: true });
+            pv.on('pointerdown', function () { s.page--; s.showPage(); });
+            this.layer.push(pv);
+        }
+        this.narrate();
+    }
+    narrate() {
+        var s = this, st = this.story;
+        var tier = (state && state.kg && state.kg !== 'kg1') ? 't2' : 't1';
+        var n = this.page + 1;
+        var pg = this.pages[this.page];
+        /* register line text so English TTS fallback can read it */
+        if (typeof VO_MANIFEST !== 'undefined') {
+            var ek = 'story_' + st.id + (tier === 't2' ? '_t2' : '') + '_p' + n;
+            VO_MANIFEST.lines[ek] = { t: pg.text, v: 'lily', d: 'story narration' };
+        }
+        if (st.lang === 'ar') {
+            var ak = 'story_' + st.id + (tier === 't2' ? '_t2' : '') + '_p' + n;
+            if (VO.hasArClip(ak)) VO.say('ar:' + ak);
+            else VO.speak(pg.text, 'ar-EG');
+        } else {
+            var ek2 = 'story_' + st.id + (tier === 't2' ? '_t2' : '') + '_p' + n;
+            if (VO.hasClip(ek2)) VO.say(ek2);
+            else VO.speak(pg.text, 'en-US');
+        }
+    }
+    finishStory() {
+        var s = this;
+        VO.stop();
+        state.stars = (state.stars || 0) + 1;
+        save();
+        var burst = this.add.particles(W / 2, H / 2 - 60, 'tile_star', {
+            speed: { min: 160, max: 420 }, angle: { min: 0, max: 360 },
+            scale: { start: .3, end: 0 }, lifespan: 900, gravityY: 300, emitting: false
+        });
+        burst.explode(14);
+        var ck = 'theme_' + this.story.buddy + '_cheer';
+        if (this.textures.exists(ck)) {
+            var cm = this.add.image(W / 2, H / 2 - 40, ck).setDepth(40);
+            cm.setScale(0);
+            var cs = 210 / Math.max(cm.width, cm.height);
+            this.tweens.add({ targets: cm, scaleX: cs, scaleY: cs, duration: 450, ease: 'Back.easeOut' });
+            this.tweens.add({ targets: cm, y: H / 2 - 66, duration: 300, yoyo: true, repeat: 2, delay: 450, ease: 'Quad.easeOut' });
+        }
+        if (!(state && state.muted)) VO.cheerMixed();
+        this.time.delayedCall(2000, function () { burst.destroy(); s.showPicker(); });
+    }
+}

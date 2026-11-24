@@ -35,12 +35,12 @@ var VO = (function () {
     }
     if (ttsOK) { pickTts(); try { speechSynthesis.onvoiceschanged = pickTts; } catch (e) {} }
 
-    function tts(text) {
+    function tts(text, lang) {
         if (!ttsOK || !text) return;
         try {
             var u = new SpeechSynthesisUtterance(text);
-            u.lang = 'en-US'; u.rate = 0.78; u.pitch = 1.28;
-            if (ttsVoice) u.voice = ttsVoice;
+            u.lang = lang || 'en-US'; u.rate = lang === 'ar-EG' ? 0.85 : 0.78; u.pitch = 1.28;
+            if (!lang && ttsVoice) u.voice = ttsVoice;
             speechSynthesis.speak(u);
         } catch (e) {}
     }
@@ -144,6 +144,9 @@ var VO = (function () {
             if (named && VO_FILES[named]) this.say(named);
             else this.say('cheer_' + n);
         },
+        speak: function (text, lang) { stopAll(); tts(text, lang); },
+        hasClip: function (key) { return typeof VO_FILES !== 'undefined' && !!VO_FILES[key]; },
+        hasArClip: function (key) { return typeof VO_AR_FILES !== 'undefined' && !!VO_AR_FILES[key]; },
         oops: function () { this.say('oops_' + (1 + rnd(3))); },
         mini: function () { this.say('mini_' + (1 + rnd(3))); },
         stop: stopAll
