@@ -167,6 +167,28 @@ GAMES.memory.gen = function (lvl, kg) {
     var ws = sample(picPool, n, []);
     return { mode: 'pic', words: ws, instr: 'Find all the matching pairs!', keys: ['instr_memory_pic'], answer: 'all' };
 };
+GAMES.balloon = GAMES.balloon || {};
+GAMES.balloon.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    if (kg === 'g1' || (kg === 'kg2' && lvl >= 4)) {
+        var t = kg === 'g1' ? 1 + rnd(20) : 1 + rnd(10);
+        var opts = {}; opts[t] = 1;
+        while (Object.keys(opts).length < 7) opts[Math.max(1, t + rnd(9) - 4)] = 1;
+        var poolN = shuffle([String(t), String(t), String(t)].concat(shuffle(Object.keys(opts)).filter(function (k) { return k !== String(t); })));
+        return { mode: 'num', target: String(t), pool: poolN, need: 3, hits: 0,
+            instr: 'Catch every ' + t + ' balloon!', keys: ['instr_balloon_1', 'num_' + t, 'instr_balloon_2'], answer: String(t) };
+    }
+    var groups = PHON[kg];
+    var gi = Math.min(lvl, groups.length) - 1;
+    var current = groups[gi].split(' ');
+    var unlocked = unlockedPhon(kg, lvl);
+    var target = pick(current);
+    var others = sample(unlocked, 6, [target]);
+    var disp = target.toUpperCase();
+    var pool = shuffle([disp, disp, disp].concat(others.map(function (g) { return g.length > 1 ? phDisp(g) : g.toUpperCase(); })));
+    return { mode: 'letter', target: disp, pool: pool, need: 3, hits: 0,
+        instr: 'Catch every ' + disp + ' balloon!', keys: ['instr_balloon_1', 'letter_' + target.toLowerCase(), 'instr_balloon_2'], answer: disp };
+};
 function cntKey(path) {
     var f = path.replace(/\.png$/, '');
     if (f.indexOf('food/') === 0) return 'food_' + f.slice(5);
@@ -917,7 +939,96 @@ class MemoryScene extends GameBase {
     }
 }
 
-/* ================= 9) Story Time: buddy-narrated stories ================= */
+/* ================= 9) Balloon Catch: drag the buddy to catch ================= */
+class BalloonScene extends GameBase {
+    constructor() { super('g_balloon', 'balloon'); }
+    buildRound(cur) {
+        var s = this;
+        this.spawnQueue = cur.pool.slice();
+        this.spawnIn = 0;
+        this.balloons = [];
+        /* the buddy catcher */
+        var m = mascotWithFace(this, W / 2, H - 150, 120);
+        this.catcher = m;
+        this.track(m);
+        makeSquish(this, m, 1);
+        m.setInteractive({ useHandCursor: true, draggable: true });
+        this.input.setDraggable(m);
+        m.on('drag', function (ptr, dx) { m.x = Math.max(52, Math.min(W - 52, dx)); });
+        m.on('pointerdown', function () { SFX.play('tap'); });
+        /* hint arrow */
+        var hint = this.add.text(W / 2, H - 60, 'drag me! ◀ ▶', { fontSize: '15px', fontStyle: '900', color: 'rgba(255,255,255,.95)', backgroundColor: 'rgba(59,42,94,.35)', padding: { x: 10, y: 4 } }).setOrigin(.5);
+        this.track(hint);
+        this.tweens.add({ targets: hint, alpha: .4, duration: 800, yoyo: true, repeat: -1 });
+    }
+    spawnBalloon() {
+        var s = this, cur = this.cur;
+        if (!this.spawnQueue.length || this.roundLock) return;
+        var label = this.spawnQueue.shift();
+        var bx = 68 + rnd(W - 136);
+        var c = this.add.container(bx, H + 70);
+        var tintPool = [0xff6b9d, 0x4f8ef7, 0xff9f43, 0x2ecc71, 0x9b59f5, 0xff5f57];
+        var tint = tintPool[rnd(tintPool.length)];
+        var g = this.add.graphics();
+        g.fillStyle(tint, 1).fillEllipse(0, 0, 64, 78);
+        g.fillStyle(0xffffff, .35).fillEllipse(-12, -16, 18, 26);
+        g.fillStyle(tint, 1).fillTriangle(-6, 40, 6, 40, 0, 50);
+        g.lineStyle(2, 0xffffff, .8);
+        g.beginPath(); g.moveTo(0, 50); g.lineTo(0, 78); g.strokePath();
+        c.add(g);
+        var fs = label.length > 2 ? '20px' : label.length > 1 ? '26px' : '34px';
+        c.add(this.add.text(0, -4, label, { fontSize: fs, fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        c.label = label;
+        c.speed = 55 + rnd(35) + (this.lvl() - 1) * 8;
+        c.swayPh = rnd(100) / 10;
+        c.baseX = bx;
+        this.balloons.push(c);
+        this.track(c);
+        /* entrance */
+        this.tweens.add({ targets: c, scaleX: 1.06, scaleY: .94, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+    update(time, delta) {
+        var s = this, cur = this.cur;
+        if (!cur || this.roundLock || !this.catcher) return;
+        var dt = delta / 1000;
+        this.spawnIn -= delta;
+        if (this.spawnIn <= 0) { this.spawnBalloon(); this.spawnIn = 950; }
+        var cy = this.catcher.y - 40;
+        for (var i = this.balloons.length - 1; i >= 0; i--) {
+            var b = this.balloons[i];
+            if (!b.active) { this.balloons.splice(i, 1); continue; }
+            b.y -= b.speed * dt;
+            b.x = b.baseX + Math.sin(time / 900 + b.swayPh) * 18;
+            /* caught? */
+            if (!b.dead && Math.abs(b.x - this.catcher.x) < 62 && b.y > cy - 70 && b.y < cy + 60) {
+                b.dead = true;
+                if (String(b.label) === String(cur.answer)) {
+                    SFX.play('pop');
+                    this.popParticles(b.x, b.y, [0xffd93d, 0xff6b9d, 0xffffff]);
+                    b.destroy();
+                    cur.hits++;
+                    if (!(state && state.muted)) VO.mini();
+                    this.tweens.add({ targets: this.catcher, y: H - 178, duration: 190, yoyo: true, ease: 'Quad.easeOut' });
+                    if (cur.hits >= cur.need) { this.win(); return; }
+                } else {
+                    SFX.play('buzz');
+                    this.tweens.add({ targets: this.catcher, x: this.catcher.x - 8, duration: 60, yoyo: true, repeat: 3 });
+                    this.tweens.add({ targets: b, y: b.y - 90, alpha: 0, duration: 350, onComplete: (function (bb) { return function () { bb.destroy(); }; })(b) });
+                }
+                continue;
+            }
+            /* escaped: targets come back */
+            if (b.y < -90) {
+                var wasTarget = String(b.label) === String(cur.answer);
+                b.destroy();
+                this.balloons.splice(i, 1);
+                if (wasTarget) this.spawnQueue.push(cur.answer);
+            }
+        }
+    }
+}
+
+/* ================= 10) Story Time: buddy-narrated stories ================= */
 var STORY_ART = { cat: '🐱', sleep: '😴', milk: '🥛', bus: '🚌', hill: '⛰️', home: '🏠', park: '🌳', fish: '🐟', pond: '🏞️', gift: '🎁', apple: '🍎', jump: '🤸', bonk: '💫', star: '⭐', play: '🎈', friends: '💛', garden: '🌷', butterfly: '🦋' };
 var BUDDY_THEME = { fuzzy: 'monster_blue', blinky: 'monster_green', captain: 'hero', luna: 'caped', princess: 'princess', fairy: 'fairy' };
 var BUDDY_AR = { fuzzy: 'فزفز', blinky: 'بلينكي', captain: 'كابتن ستار', luna: 'لونا', princess: 'الأميرة', fairy: 'الجنية' };

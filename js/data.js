@@ -278,5 +278,6 @@ var GAMES = {
     shapes: { ico: 'shape_blue_square', icos: .34, em: '🧩', title: 'Shape Sorter', sub: 'Sort the shapes', scene: 'g_sort', kg: { kg1: 'أسماء الأشكال والألوان', kg2: 'تمييز الشكل واللون مع بعض', g1: 'تمييز الشكل واللون مع بعض' } },
     pattern: { ico: 'tile_heart', icos: .5, em: '🎨', title: 'Pattern Train', sub: 'What comes next?', scene: 'g_pattern', kg: { kg1: 'أنماط بسيطة AB بالألوان', kg2: 'أنماط ABB و ABC + أنماط الأعداد', g1: 'العد القفزي ٢ و ٥ و ١٠' } },
     memory: { ico: 'w_heart', icos: .4, em: '🃏', title: 'Memory Match', sub: 'Find the pairs!', scene: 'g_memory', kg: { kg1: 'مطابقة الصور المتشابهة + تسميتها', kg2: 'مطابقة الحرف بصورة الكلمة اللي بتبدأ بيه', g1: 'مطابقة الحرف بالصورة بسرعة أكبر' } },
+    balloon: { ico: 'bubble', icos: .3, icoTint: 0xff6b9d, em: '🎈', title: 'Balloon Catch', sub: 'Catch them all!', scene: 'g_balloon', kg: { kg1: 'يمسك البالونات بالحرف المطلوب وهو يحرك صديقه', kg2: 'بالونات الأصوات المركبة + الأعداد', g1: 'بالونات الأعداد حتى ٢٠ بسرعة أكبر' } },
     story: { ico: 'w_owl', icos: .42, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
 };
