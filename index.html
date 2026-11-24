@@ -338,25 +338,32 @@ var THEMES = {
 
 /* ================= voice ================= */
 var voiceOK = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
-/* Female English voice, preference list with graceful fallback (iOS: Samantha, Ava, ...) */
+/* Female English voice. Scored picker: prefers iOS Enhanced/Premium voices (clearest),
+   then known female names, then any en voice. Always localService-first so it works offline. */
 var FEMALE_VOICES = ['Samantha', 'Ava', 'Allison', 'Zoe', 'Susan', 'Tessa', 'Karen', 'Moira', 'Fiona', 'Victoria', 'Google US English', 'Microsoft Zira', 'Microsoft Jenny', 'Microsoft Aria'];
 var pickedVoice = null;
+function voiceScore(v) {
+    var s = 0;
+    if (/enhanced|premium/i.test(v.name)) s += 100;
+    var idx = -1;
+    for (var i = 0; i < FEMALE_VOICES.length; i++) { if (v.name.indexOf(FEMALE_VOICES[i]) === 0) { idx = i; break; } }
+    if (idx >= 0) s += 60 - idx;
+    else if (/female/i.test(v.name)) s += 20;
+    if (v.localService) s += 10;
+    return s;
+}
 function pickVoice() {
     if (!voiceOK) return;
     var vs = speechSynthesis.getVoices();
     if (!vs || !vs.length) return;
-    var i;
-    for (i = 0; i < FEMALE_VOICES.length; i++) {
-        for (var j = 0; j < vs.length; j++) {
-            if (vs[j].name === FEMALE_VOICES[i] && vs[j].lang.toLowerCase().indexOf('en') === 0) { pickedVoice = vs[j]; return; }
-        }
+    var best = null, bestS = -1;
+    for (var i = 0; i < vs.length; i++) {
+        var v = vs[i];
+        if (v.lang.toLowerCase().indexOf('en') !== 0) continue;
+        var sc = voiceScore(v);
+        if (sc > bestS) { bestS = sc; best = v; }
     }
-    var fem = null;
-    for (i = 0; i < vs.length; i++) {
-        if (vs[i].lang.toLowerCase().indexOf('en') === 0 && /female|samantha|ava|zoe|susan|allison|karen|moira|fiona|victoria|zira|jenny|aria/i.test(vs[i].name)) { fem = vs[i]; break; }
-    }
-    if (!fem) for (i = 0; i < vs.length; i++) { if (vs[i].lang.toLowerCase().indexOf('en') === 0) { fem = vs[i]; break; } }
-    pickedVoice = fem;
+    pickedVoice = best;
 }
 if (voiceOK) {
     pickVoice();
@@ -367,7 +374,7 @@ function say(text) {
     try {
         speechSynthesis.cancel();
         var u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-US'; u.rate = 0.95; u.pitch = 1.2;
+        u.lang = 'en-US'; u.rate = 0.78; u.pitch = 1.28;
         if (pickedVoice) u.voice = pickedVoice;
         speechSynthesis.speak(u);
     } catch (e) {}
@@ -769,7 +776,7 @@ function parentsHtml() {
     h += '</div>';
     h += '<div class="kl-note">المستوى (L) بيترفع لوحده كل ما الطفل يجاوب صح جوه المرحلة.</div>';
     h += '<button type="button" class="kl-cta" data-act="photo-open" style="background:linear-gradient(135deg,#38bdf8,#6366f1)">صورة الطفل جوه الشخصية 📸</button>';
-    h += '<div class="kl-warn" style="background:#ecfeff;color:#155e75">🔊 صوت اللعبة (Miss Lily) بيستخدم أصوات الجهاز نفسه وشغال أوفلاين. زرار ' + (state.muted ? '🔇' : '🔊') + ' في الصفحة الرئيسية بيسكت الصوت والمؤثرات.</div>';
+    h += '<div class="kl-warn" style="background:#ecfeff;color:#155e75">🔊 صوت اللعبة (Miss Lily) بيستخدم أصوات الجهاز نفسه وشغال أوفلاين. زرار ' + (state.muted ? '🔇' : '🔊') + ' في الصفحة الرئيسية بيسكت الصوت والمؤثرات. عشان أوضح صوت على الآيفون: Settings ← Accessibility ← Spoken Content ← Voices ← English ← Samantha (Enhanced).</div>';
     h += '<button type="button" class="kl-cta" data-act="pasave">حفظ ✅</button>';
     h += '<button type="button" class="kl-ghost" data-act="backup">نسخ البيانات 📋</button>';
     h += '<button type="button" class="kl-ghost kl-danger" data-act="reset">مسح التقدم 🗑️</button>';
