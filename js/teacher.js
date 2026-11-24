@@ -3,7 +3,7 @@
    Game-based: bubbles to pop, combos, stars, stickers, daily streak, chest. No fail state.
    Voice: Shalabi's personalised clips (assets/audio/ar/fuzzy_*), Miss Lily's English clips for the
    words/letters themselves, and optional Shalabi teaching lines (assets/audio/sh/*, see SH_FILES). */
-var SH_FILES = (typeof SH_FILES !== 'undefined') ? SH_FILES : {};
+var SH_FILES = {"lesson_done": true, "letter_listen": true, "letters_party": true, "map_hello": true, "pick_letter": true, "pick_word": true, "sent_build": true, "sent_listen": true, "sent_pick": true, "try_again": true, "word_listen": true};
 var Teacher = (function () {
     var root = null, cur = null, seq = 0, L = null;
 
@@ -74,8 +74,10 @@ var Teacher = (function () {
     }
     function talk(on) { var s = root && root.querySelector('#sh'); if (s) s.classList[on ? 'add' : 'remove']('talk'); }
     function stop() { seq++; if (cur) { try { cur.pause(); } catch (e) {} cur = null; } try { VO.stop(); } catch (e) {} talk(false); }
+    var seenSh = {};
     function say(items, onEach, onEnd) {
         stop();
+        items = items.filter(function (k) { if (k.indexOf('sh:') !== 0 || k === 'sh:try_again' || k === 'sh:lesson_done' || k === 'sh:map_hello') return true; if (seenSh[k]) return false; seenSh[k] = 1; return true; });
         var id = seq, i = 0;
         talk(true);
         (function next() {
@@ -381,6 +383,7 @@ var Teacher = (function () {
     }
     function startLesson(i) {
         var l = LESSONS[i];
+        seenSh = {};
         L = { i: i, l: l, steps: buildSteps(l), p: 0, miss: 0, combo: 0, best: 0, tries: 0 };
         touchStreak();
         showStep();
