@@ -189,6 +189,43 @@ GAMES.balloon.gen = function (lvl, kg) {
     return { mode: 'letter', target: disp, pool: pool, need: 3, hits: 0,
         instr: 'Catch every ' + disp + ' balloon!', keys: ['instr_balloon_1', 'letter_' + target.toLowerCase(), 'instr_balloon_2'], answer: disp };
 };
+GAMES.run = GAMES.run || {};
+GAMES.run.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    if (kg === 'g1' || (kg === 'kg2' && lvl >= 4)) {
+        var t = kg === 'g1' ? 1 + rnd(20) : 1 + rnd(10);
+        var opts = {}; opts[t] = 1;
+        while (Object.keys(opts).length < 6) opts[Math.max(1, t + rnd(9) - 4)] = 1;
+        var poolN = shuffle([String(t), String(t), String(t), String(t)].concat(shuffle(Object.keys(opts)).filter(function (k) { return k !== String(t); })));
+        return { target: String(t), pool: poolN, need: 4, hits: 0, answer: String(t),
+            instr: 'Catch every ' + t + '!', keys: ['letterrun_catch', 'num_' + t] };
+    }
+    var groups = PHON[kg];
+    var gi = Math.min(lvl, groups.length) - 1;
+    var current = groups[gi].split(' ');
+    var unlocked = unlockedPhon(kg, lvl);
+    var target = pick(current);
+    var others = sample(unlocked, 5, [target]);
+    var disp = target.length > 1 ? phDisp(target) : target.toUpperCase();
+    var pool = shuffle([disp, disp, disp, disp].concat(others.map(function (g) { return g.length > 1 ? phDisp(g) : g.toUpperCase(); })));
+    var vk = target.length > 1 ? phKey(target) : 'letter_' + target.toLowerCase();
+    return { target: disp, pool: pool, need: 4, hits: 0, answer: disp,
+        instr: 'Catch every ' + disp + '!', keys: ['letterrun_catch', vk] };
+};
+GAMES.trace = GAMES.trace || {};
+GAMES.trace.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    if (kg === 'g1') { var n = String(rnd(10)); return { letter: n, instr: 'Trace the number ' + n + '!', keys: ['lettertrace_do', 'num_' + n] }; }
+    var groups = PHON[kg];
+    var gi = Math.min(lvl, groups.length) - 1;
+    var current = groups[gi].split(' ');
+    var target = pick(current);
+    var L = kg === 'kg1' ? target.toUpperCase() : target.toLowerCase();
+    var vk = target.length > 1 ? phKey(target) : 'letter_' + target.toLowerCase();
+    return { letter: L, instr: 'Trace the letter ' + L + '!', keys: ['lettertrace_do', vk] };
+};
+VO_MANIFEST.lines['letterrun_catch'] = { t: 'Run and catch every', v: 'lily', d: 'game instruction' };
+VO_MANIFEST.lines['lettertrace_do'] = { t: 'Trace with your finger', v: 'lily', d: 'game instruction' };
 function cntKey(path) {
     var f = path.replace(/\.png$/, '');
     if (f.indexOf('food/') === 0) return 'food_' + f.slice(5);
@@ -1024,6 +1061,187 @@ class BalloonScene extends GameBase {
                 this.balloons.splice(i, 1);
                 if (wasTarget) this.spawnQueue.push(cur.answer);
             }
+        }
+    }
+}
+
+/* ================= 10) Letter Run: tap-to-jump letter runner ================= */
+class RunScene extends GameBase {
+    constructor() { super('g_run', 'run'); }
+    buildRound(cur) {
+        var s = this;
+        this.input.off('pointerdown');
+        this.gy = H - 210;
+        /* dirt track */
+        var g = this.add.graphics();
+        g.fillStyle(0xd7a05e, 1).fillRect(-10, this.gy, W + 20, 170);
+        g.fillStyle(0xc08b4d, 1).fillRect(-10, this.gy, W + 20, 10);
+        this.track(g);
+        this.dashes = [];
+        for (var i = 0; i < 7; i++) { var d = this.add.rectangle(i * 78, this.gy + 56, 42, 8, 0xffffff, .55); this.dashes.push(d); this.track(d); }
+        /* runner buddy (the kid's buddy runs) */
+        var m = mascotWithFace(this, 92, this.gy - 50, 92);
+        this.runner = m; this.baseY = this.gy - 50; this.jumping = false;
+        this.track(m);
+        this.tweens.add({ targets: m, scaleY: .93, scaleX: 1.04, duration: 140, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        /* letter tokens */
+        this.items = [];
+        this.queue = cur.pool.slice();
+        this.spawnIn = 800;
+        this.speed = 165 + (this.lvl() - 1) * 14;
+        this.input.on('pointerdown', this.jump, this);
+        var hint = this.add.text(W / 2, this.gy + 108, 'tap to jump!', { fontSize: '15px', fontStyle: '900', color: 'rgba(255,255,255,.95)', backgroundColor: 'rgba(59,42,94,.35)', padding: { x: 10, y: 4 } }).setOrigin(.5);
+        this.track(hint);
+        this.tweens.add({ targets: hint, alpha: .4, duration: 800, yoyo: true, repeat: -1 });
+    }
+    jump() {
+        if (this.jumping || this.roundLock || !this.runner) return;
+        this.jumping = true;
+        SFX.play('whoosh');
+        var m = this.runner, s = this;
+        this.tweens.add({ targets: m, y: this.baseY - 152, duration: 340, yoyo: true, ease: 'Quad.easeOut', onComplete: function () { m.y = s.baseY; s.jumping = false; } });
+    }
+    spawnItem() {
+        if (!this.queue.length || this.roundLock) return;
+        var label = this.queue.shift();
+        var air = rnd(2) === 1;
+        var c = this.add.container(W + 60, air ? this.gy - 205 : this.gy - 58);
+        var tintPool = [0xff6b9d, 0x4f8ef7, 0xff9f43, 0x9b59f5, 0xff5f57];
+        var g = this.add.graphics();
+        g.fillStyle(tintPool[rnd(tintPool.length)], 1).fillRoundedRect(-34, -34, 68, 68, 20);
+        g.fillStyle(0xffffff, .3).fillRoundedRect(-34, -34, 68, 20, { tl: 20, tr: 20, bl: 0, br: 0 });
+        c.add(g);
+        var fs = label.length > 2 ? '19px' : label.length > 1 ? '25px' : '34px';
+        c.add(this.add.text(0, 1, label, { fontSize: fs, fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        c.label = label;
+        this.items.push(c);
+        this.track(c);
+        this.tweens.add({ targets: c, y: c.y - 6, duration: 300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+    update(time, delta) {
+        var cur = this.cur;
+        if (!cur || this.roundLock || !this.runner) return;
+        var dt = delta / 1000;
+        for (var di = 0; di < this.dashes.length; di++) { var d = this.dashes[di]; d.x -= this.speed * dt; if (d.x < -30) d.x += 7 * 78; }
+        this.spawnIn -= delta;
+        if (this.spawnIn <= 0) { this.spawnItem(); this.spawnIn = 880; }
+        for (var i = this.items.length - 1; i >= 0; i--) {
+            var b = this.items[i];
+            if (!b.active) { this.items.splice(i, 1); continue; }
+            b.x -= this.speed * dt;
+            if (!b.dead && Math.abs(b.x - this.runner.x) < 58 && Math.abs(b.y - this.runner.y) < 82) {
+                b.dead = true;
+                if (String(b.label) === String(cur.answer)) {
+                    SFX.play('pop');
+                    this.popParticles(b.x, b.y, [0xffd93d, 0xff6b9d, 0xffffff]);
+                    b.destroy();
+                    cur.hits++;
+                    if (!(state && state.muted)) VO.mini();
+                    if (cur.hits >= cur.need) { this.win(); return; }
+                } else {
+                    this.oopsAt([b]);
+                    this.tweens.add({ targets: b, y: b.y - 70, alpha: 0, duration: 300, onComplete: (function (bb) { return function () { bb.destroy(); }; })(b) });
+                }
+                continue;
+            }
+            if (b.x < -70) {
+                var wasTarget = String(b.label) === String(cur.answer);
+                b.destroy();
+                this.items.splice(i, 1);
+                if (wasTarget) this.queue.push(cur.answer);
+            }
+        }
+    }
+}
+
+/* ================= 11) Letter Tracing: finger tracing with coverage ================= */
+class TraceScene extends GameBase {
+    constructor() { super('g_trace', 'trace'); }
+    buildRound(cur) {
+        var s = this;
+        this.input.off('pointerdown'); this.input.off('pointermove'); this.input.off('pointerup');
+        var L = cur.letter;
+        var card = this.add.graphics();
+        card.fillStyle(0xffffff, .96).fillRoundedRect(26, 168, W - 52, 440, 28);
+        card.lineStyle(4, 0xffd93d, 1).strokeRoundedRect(26, 168, W - 52, 440, 28);
+        this.track(card);
+        var cx = W / 2, cy = 388;
+        var fs = L.length > 1 ? 190 : 300;
+        var guide = this.add.text(cx, cy, L, { fontFamily: 'Arial', fontSize: fs + 'px', fontStyle: '900', color: '#e8e2f8' }).setOrigin(.5);
+        this.track(guide);
+        /* sample the letter shape into target points with the same font */
+        var cw = 340, chh = 340;
+        var ct = this.textures.createCanvas('traceguide', cw, chh);
+        var ctx = ct.getContext();
+        ctx.font = '900 ' + (L.length > 1 ? 210 : 290) + 'px Arial';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#000';
+        ctx.fillText(L, cw / 2, chh / 2 + 12);
+        var img = ctx.getImageData(0, 0, cw, chh).data;
+        var raw = [], minx = cw, maxx = 0, miny = chh, maxy = 0;
+        for (var y = 0; y < chh; y += 8) for (var x = 0; x < cw; x += 8) {
+            if (img[(y * cw + x) * 4 + 3] > 110) {
+                raw.push({ x: x, y: y });
+                if (x < minx) minx = x; if (x > maxx) maxx = x; if (y < miny) miny = y; if (y > maxy) maxy = y;
+            }
+        }
+        ct.destroy();
+        var gb = guide.getBounds();
+        var sc = Math.min(gb.width / Math.max(1, maxx - minx), gb.height / Math.max(1, maxy - miny));
+        var ox = gb.x + gb.width / 2 - (minx + maxx) / 2 * sc;
+        var oy = gb.y + gb.height / 2 - (miny + maxy) / 2 * sc;
+        this.pts = raw.map(function (p) { return { x: ox + p.x * sc, y: oy + p.y * sc, hit: false }; });
+        this.total = Math.max(1, this.pts.length); this.hitCount = 0; this.milestone = 0;
+        /* pulsing start hint at the topmost point */
+        var sp = this.pts.length ? this.pts.reduce(function (a, b) { return (b.y < a.y || (b.y === a.y && b.x < a.x)) ? b : a; }) : null;
+        if (sp) {
+            this.hint = this.add.image(sp.x, sp.y, 'dot').setTint(0xff9f43).setScale(2.4);
+            this.track(this.hint);
+            this.tweens.add({ targets: this.hint, scale: 3.6, duration: 480, yoyo: true, repeat: -1 });
+        } else this.hint = null;
+        /* paint layer */
+        if (!this.textures.exists('tracebrush')) {
+            var br = this.add.graphics();
+            br.fillStyle(0x9b59f5, 1); br.fillCircle(16, 16, 16);
+            br.fillStyle(0xd8b4fe, 1); br.fillCircle(16, 16, 8);
+            br.generateTexture('tracebrush', 32, 32);
+            br.destroy();
+        }
+        this.rt = this.add.graphics();
+        this.track(this.rt);
+        this.lastP = null;
+        this.input.on('pointerdown', function (p) { s.paint(p); });
+        this.input.on('pointermove', function (p) { if (p.isDown) s.paint(p); });
+        this.input.on('pointerup', function () { s.lastP = null; });
+        this.addPlayBuddy(74, 690, 78);
+    }
+    paint(p) {
+        if (this.roundLock || !this.pts) return;
+        if (this.lastP) {
+            var dx = p.x - this.lastP.x, dy = p.y - this.lastP.y;
+            var steps = Math.max(1, Math.floor(Math.sqrt(dx * dx + dy * dy) / 10));
+            for (var i = 0; i <= steps; i++) {
+                var px = this.lastP.x + dx * i / steps, py = this.lastP.y + dy * i / steps;
+                this.rt.fillStyle(0x9b59f5, 1); this.rt.fillCircle(px, py, 16);
+                this.rt.fillStyle(0xd8b4fe, 1); this.rt.fillCircle(px, py, 7);
+            }
+        } else {
+            this.rt.fillStyle(0x9b59f5, 1); this.rt.fillCircle(p.x, p.y, 16);
+            this.rt.fillStyle(0xd8b4fe, 1); this.rt.fillCircle(p.x, p.y, 7);
+        }
+        this.lastP = { x: p.x, y: p.y };
+        if (this.hint) { this.hint.destroy(); this.hint = null; }
+        var r2 = 27 * 27, gained = 0;
+        for (var k = 0; k < this.pts.length; k++) {
+            var pt = this.pts[k];
+            if (!pt.hit) { var ddx = pt.x - p.x, ddy = pt.y - p.y; if (ddx * ddx + ddy * ddy < r2) { pt.hit = true; gained++; } }
+        }
+        if (gained) {
+            this.hitCount += gained;
+            var ratio = this.hitCount / this.total;
+            if (ratio >= .85) { SFX.play('sparkle'); this.win(); return; }
+            var ms = ratio >= .66 ? 3 : ratio >= .33 ? 2 : 1;
+            if (ms > this.milestone) { this.milestone = ms; SFX.play('pop'); if (ms >= 2 && !(state && state.muted)) VO.mini(); }
         }
     }
 }

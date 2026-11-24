@@ -279,5 +279,7 @@ var GAMES = {
     pattern: { ico: 'tile_heart', icos: .5, em: '🎨', title: 'Pattern Train', sub: 'What comes next?', scene: 'g_pattern', kg: { kg1: 'أنماط بسيطة AB بالألوان', kg2: 'أنماط ABB و ABC + أنماط الأعداد', g1: 'العد القفزي ٢ و ٥ و ١٠' } },
     memory: { ico: 'w_heart', icos: .4, em: '🃏', title: 'Memory Match', sub: 'Find the pairs!', scene: 'g_memory', kg: { kg1: 'مطابقة الصور المتشابهة + تسميتها', kg2: 'مطابقة الحرف بصورة الكلمة اللي بتبدأ بيه', g1: 'مطابقة الحرف بالصورة بسرعة أكبر' } },
     balloon: { ico: 'bubble', icos: .3, icoTint: 0xff6b9d, em: '🎈', title: 'Balloon Catch', sub: 'Catch them all!', scene: 'g_balloon', kg: { kg1: 'يمسك البالونات بالحرف المطلوب وهو يحرك صديقه', kg2: 'بالونات الأصوات المركبة + الأعداد', g1: 'بالونات الأعداد حتى ٢٠ بسرعة أكبر' } },
+    run: { ico: 'bubble', icos: .3, icoTint: 0x2ecc71, icoText: 'GO', em: '🏃', title: 'Letter Run', sub: 'Run & catch!', scene: 'g_run', kg: { kg1: 'يجري ويمسك الحرف المطلوب — كبير/صغير حسب المستوى', kg2: 'يمسك المركبات الصوتية وهو جاري', g1: 'يمسك الأعداد حتى ٢٠ بسرعة أكبر' } },
+    trace: { ico: 'bubble', icos: .3, icoTint: 0x9b59f5, icoText: 'abc', em: '✏️', title: 'Letter Tracing', sub: 'Trace with your finger', scene: 'g_trace', kg: { kg1: 'كتابة الحروف الكبيرة بالتتبع بالصباع', kg2: 'تتبع الحروف الصغيرة', g1: 'تتبع الأرقام' } },
     story: { ico: 'w_owl', icos: .42, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
 };

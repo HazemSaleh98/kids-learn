@@ -32,6 +32,7 @@ class BootScene extends Phaser.Scene {
         ['stand', 'walk1', 'walk2', 'jump', 'ready', 'hurt'].forEach(function (p) { this.load.image('bunny_' + p, 'bunny/bunny1_' + p + '.png'); }, this);
         Object.keys(WIMG).forEach(function (w) { this.load.image('w_' + w, WIMG[w]); }, this);
         Object.keys(STORY_ART_HAS).forEach(function (sid) { for (var pi = 1; pi <= 5; pi++) this.load.image('storyart_' + sid + '_p' + pi, 'story/' + sid + '_p' + pi + '.jpg'); }, this);
+        Object.keys(GAMES).forEach(function (gid) { this.load.image('icon_' + gid, 'icons/' + gid + '.jpg'); }, this);
         for (var d = 0; d <= 9; d++) this.load.image('tile_' + d, 'tiles/tile' + d + '.png');
         /* photo face (data URL) loads on demand in HomeScene */
     }
@@ -171,38 +172,48 @@ class HomeScene extends Phaser.Scene {
         this.gear.on('pointerout', function () { if (holdT) { holdT.remove(); holdT = null; } });
 
         /* mascot + bubble */
-        var m = mascotWithFace(this, 92, 190, 130);
+        var m = mascotWithFace(this, 78, 166, 96);
         makeSquish(this, m, 1);
         var bb = this.add.graphics();
-        bb.fillStyle(0xffffff, 1).fillRoundedRect(168, 130, 206, 96, 20);
-        bb.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(168, 130, 206, 96, 20);
-        bb.fillStyle(0xffd93d, 1).fillTriangle(168, 196, 168, 170, 148, 186);
-        this.add.text(182, 150, 'Hi, ' + kidName() + '!', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
-        this.add.text(182, 182, "Let's play and learn\nwith " + charName() + '!', { fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
+        bb.fillStyle(0xffffff, 1).fillRoundedRect(152, 106, 224, 96, 20);
+        bb.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(152, 106, 224, 96, 20);
+        bb.fillStyle(0xffd93d, 1).fillTriangle(152, 172, 152, 146, 132, 162);
+        this.add.text(166, 126, 'Hi, ' + kidName() + '!', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
+        this.add.text(166, 158, "Let's play and learn\nwith " + charName() + '!', { fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
 
         /* game spots */
         var ids = Object.keys(GAMES);
         ids.forEach(function (id, i) {
             var g = GAMES[id];
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
-            var cx = (i % 2 === 0) ? 104 : 286, cy = 288 + Math.floor(i / 2) * 124;
+            var cx = (i % 2 === 0) ? 102 : 288, cy = 248 + Math.floor(i / 2) * 106;
             var btn = s.add.container(cx, cy);
             var bg2 = s.add.graphics();
-            bg2.fillStyle(col[1], 1).fillRoundedRect(-82, -56, 164, 120, 24); /* shadow lip */
-            bg2.fillStyle(col[0], 1).fillRoundedRect(-82, -64, 164, 120, 24);
+            bg2.fillStyle(col[1], 1).fillRoundedRect(-78, -42, 156, 100, 22); /* shadow lip */
+            bg2.fillStyle(col[0], 1).fillRoundedRect(-78, -50, 156, 100, 22);
             btn.add(bg2);
             var circ = s.add.graphics();
-            circ.fillStyle(0xffffff, 1).fillCircle(0, -30, 22);
+            circ.fillStyle(0xffffff, 1).fillCircle(0, -26, 22);
             btn.add(circ);
-            var ico = s.add.image(0, -30, g.ico).setScale((g.icos || .4) * .78);
-            if (g.icoTint) ico.setTint(g.icoTint);
-            btn.add(ico);
-            if (g.icoText) btn.add(s.add.text(0, -30, g.icoText, { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
-            btn.add(s.add.text(0, 0, g.title, { fontSize: '15.5px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
-            btn.add(s.add.text(0, 20, g.sub, { fontSize: '10.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
+            var ik = 'icon_' + id;
+            if (s.textures.exists(ik)) {
+                var im = s.add.image(0, -26, ik);
+                im.setScale(42 / Math.max(im.width, im.height));
+                var imask = s.make.graphics({ x: 0, y: 0, add: false });
+                imask.fillStyle(0xffffff, 1).fillCircle(cx, cy - 26, 21);
+                im.setMask(imask.createGeometryMask());
+                btn.add(im);
+            } else {
+                var ico = s.add.image(0, -26, g.ico).setScale((g.icos || .4) * .68);
+                if (g.icoTint) ico.setTint(g.icoTint);
+                btn.add(ico);
+                if (g.icoText) btn.add(s.add.text(0, -26, g.icoText, { fontSize: '18px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+            }
+            btn.add(s.add.text(0, 2, g.title, { fontSize: '14.5px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+            btn.add(s.add.text(0, 20, g.sub, { fontSize: '10px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 39, 'Level ' + lv, { fontSize: '10px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 7, y: 2 } }).setOrigin(.5));
-            btn.setSize(164, 120);
+            btn.add(s.add.text(0, 36, 'Level ' + lv, { fontSize: '9.5px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 6, y: 2 } }).setOrigin(.5));
+            btn.setSize(156, 100);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerdown', function () {
                 SFX.play('tap');
