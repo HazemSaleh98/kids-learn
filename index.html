@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#2b1a5e">
-<title>Kids Learn — حضور الأبطال</title>
+<meta name="theme-color" content="#38b6ff">
+<title>Kids Learn — العب وتعلم</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -15,215 +15,241 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; min-height: 100%; }
 body { font-family: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif; }
-button { font-family: inherit; }
+button { font-family: inherit; cursor: pointer; }
 
+/* ======= scene (BabyBus-style bright world) ======= */
 .kl-root {
-    --bg1: #2b1a5e; --bg2: #4c2a85;
-    --accent: #ffcb3d; --onaccent: #3b2a00;
-    --card: #ffffff; --ink: #2d2340; --ink2: #6b6480;
-    --good: #22c55e; --bad: #ef4444;
-    background:
-        radial-gradient(circle at 85% 8%, rgba(255,255,255,.14) 0 60px, transparent 61px),
-        radial-gradient(circle at 12% 22%, rgba(255,203,61,.18) 0 42px, transparent 43px),
-        radial-gradient(circle at 92% 55%, rgba(255,255,255,.09) 0 80px, transparent 81px),
-        radial-gradient(circle at 8% 78%, rgba(56,189,248,.16) 0 55px, transparent 56px),
-        linear-gradient(160deg, var(--bg1), var(--bg2));
-    min-height: 100vh;
-    padding: 20px 16px 28px;
-    padding-top: max(20px, env(safe-area-inset-top));
-    padding-bottom: max(28px, env(safe-area-inset-bottom));
-    color: #fff;
-    overflow-x: hidden;
+    min-height: 100vh; position: relative; overflow-x: hidden;
+    background: linear-gradient(180deg, #2ea8f0 0%, #6ecdf5 42%, #b8ecff 60%, #8ed06e 60.4%, #64b84a 100%);
 }
-.kl-wrap { max-width: 480px; margin: 0 auto; position: relative; }
+.kl-scene { position: relative; min-height: 100vh; padding: 14px 16px 26px; padding-top: max(14px, env(safe-area-inset-top)); }
+.kl-sun { position: fixed; top: 18px; right: 22px; width: 74px; height: 74px; z-index: 0; animation: kl-sunspin 26s linear infinite; }
+@keyframes kl-sunspin { to { transform: rotate(360deg); } }
+.kl-cloud { position: fixed; background: #fff; border-radius: 999px; opacity: .92; z-index: 0; box-shadow: 22px 8px 0 2px #fff, -20px 10px 0 -2px #fff; animation: kl-drift linear infinite; }
+@keyframes kl-drift { from { transform: translateX(-140px); } to { transform: translateX(110vw); } }
+.kl-hill { position: fixed; border-radius: 50%; z-index: 0; }
+.kl-flower { position: fixed; z-index: 0; font-size: 22px; animation: kl-sway 4s ease-in-out infinite; }
+@keyframes kl-sway { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
 
-/* floating sparkles */
-.kl-spark { position: fixed; font-size: 22px; opacity: .35; pointer-events: none; z-index: 0; animation: kl-float 7s ease-in-out infinite; }
-@keyframes kl-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-26px) rotate(8deg); } }
+.kl-wrap { max-width: 480px; margin: 0 auto; position: relative; z-index: 2; }
+.kl-page { animation: kl-page-in .38s cubic-bezier(.2,.9,.3,1.12); }
+@keyframes kl-page-in { from { opacity: 0; transform: translateY(18px) scale(.985); } }
 
-/* top bar */
-.kl-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; position: relative; z-index: 2; }
-.kl-stars {
-    background: linear-gradient(135deg, #ffd93d, #ffb03d); color: #4a2c00;
-    border-radius: 999px; padding: 9px 16px; font-size: 18px; font-weight: 900;
-    box-shadow: 0 4px 0 rgba(0,0,0,.2); display: flex; align-items: center; gap: 5px;
-}
-.kl-stars-pop { animation: kl-starspop .45s ease; }
-@keyframes kl-starspop { 40% { transform: scale(1.25) rotate(-4deg); } }
-.kl-iconbtn {
-    background: rgba(255,255,255,.18); border: none; color: #fff; width: 46px; height: 46px;
-    border-radius: 16px; font-size: 21px; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.15);
-}
-.kl-iconbtn:active { transform: translateY(2px) scale(.95); box-shadow: 0 1px 0 rgba(0,0,0,.15); }
-
-/* hero */
-.kl-hero { text-align: center; margin: 4px 0 20px; position: relative; z-index: 2; }
-.kl-hero-art {
-    width: 158px; height: 158px; margin: 0 auto 10px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.32), rgba(255,255,255,.08));
-    border: 4px solid rgba(255,255,255,.35);
-    box-shadow: 0 10px 26px rgba(0,0,0,.28);
-    display: flex; align-items: center; justify-content: center;
-    animation: kl-bob 3.2s ease-in-out infinite;
-}
-.kl-hero-art svg { width: 82%; height: 82%; }
-@keyframes kl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-.kl-hi { font-size: 32px; font-weight: 900; margin: 4px 0; text-shadow: 0 3px 0 rgba(0,0,0,.18); }
-.kl-sub { font-size: 16px; font-weight: 700; opacity: .9; }
-
-/* menu buttons */
-.kl-menu { display: grid; gap: 14px; position: relative; z-index: 2; }
-.kl-gamebtn {
-    display: flex; align-items: center; gap: 14px; width: 100%;
-    color: #fff; border: none; border-radius: 24px;
-    padding: 15px 18px; cursor: pointer; text-align: start;
-    box-shadow: 0 7px 0 rgba(0,0,0,.22), inset 0 2px 0 rgba(255,255,255,.35);
-    background: linear-gradient(135deg, #64748b, #475569);
-    animation: kl-wig-in .4s ease backwards;
-}
-.kl-gamebtn:nth-child(2) { animation-delay: .05s; }
-.kl-gamebtn:nth-child(3) { animation-delay: .1s; }
-.kl-gamebtn:nth-child(4) { animation-delay: .15s; }
-.kl-gamebtn:nth-child(5) { animation-delay: .2s; }
-@keyframes kl-wig-in { 0% { transform: translateY(14px) scale(.96); opacity: 0; } 100% { transform: none; opacity: 1; } }
-.kl-gamebtn[data-game="letters"] { background: linear-gradient(135deg, #f472b6, #db2777); }
-.kl-gamebtn[data-game="words"] { background: linear-gradient(135deg, #38bdf8, #2563eb); }
-.kl-gamebtn[data-game="spelling"] { background: linear-gradient(135deg, #fb923c, #ea580c); }
-.kl-gamebtn[data-game="counting"] { background: linear-gradient(135deg, #4ade80, #16a34a); }
-.kl-gamebtn[data-game="math"] { background: linear-gradient(135deg, #c084fc, #7c3aed); }
-.kl-gamebtn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
-.kl-gamebtn .em {
-    font-size: 36px; background: rgba(255,255,255,.25); border-radius: 16px;
-    width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; flex: none;
-}
-.kl-gamebtn .tt { font-size: 21px; font-weight: 900; text-shadow: 0 2px 0 rgba(0,0,0,.15); }
-.kl-gamebtn .ss { font-size: 13px; font-weight: 700; opacity: .92; }
-.kl-gamebtn .lv {
-    margin-inline-start: auto; font-size: 12px; font-weight: 900;
-    background: rgba(0,0,0,.22); border-radius: 999px; padding: 5px 10px; flex: none;
-}
-
-/* game screen */
-.kl-backrow { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; position: relative; z-index: 2; }
-.kl-gtitle { font-size: 22px; font-weight: 900; text-shadow: 0 2px 0 rgba(0,0,0,.18); }
-.kl-lvlrow { display: flex; gap: 5px; justify-content: center; margin: 2px 0 10px; position: relative; z-index: 2; }
-.kl-dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,.28); }
-.kl-dot-on { background: #ffd93d; box-shadow: 0 0 8px rgba(255,217,61,.8); }
-.kl-prompt {
-    background: var(--card); color: var(--ink); border-radius: 28px; padding: 24px 18px;
-    text-align: center; margin: 8px 0 18px; min-height: 178px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-    box-shadow: 0 8px 0 rgba(0,0,0,.2), inset 0 3px 0 rgba(255,255,255,.9);
-    position: relative; z-index: 2;
-    border: 4px solid rgba(255,255,255,.5);
-}
-.kl-big-letter {
-    font-size: 92px; font-weight: 900; line-height: 1;
-    background: linear-gradient(135deg, #7c3aed, #db2777);
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-}
-.kl-big-emoji { font-size: 78px; line-height: 1.1; animation: kl-bob 2.6s ease-in-out infinite; }
-.kl-eq { font-size: 54px; font-weight: 900; direction: ltr; color: #4c1d95; }
-.kl-objs { font-size: 34px; line-height: 1.5; max-width: 310px; }
-.kl-instr { font-size: 18px; font-weight: 800; color: var(--ink2); }
-.kl-spell-row { display: flex; gap: 8px; direction: ltr; flex-wrap: wrap; justify-content: center; }
-.kl-slot {
-    width: 46px; height: 58px; border-radius: 14px; border: 3px dashed #c9c2dd;
-    display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900;
-    background: #faf9ff; color: #4c1d95;
-}
-.kl-slot-full { border-style: solid; border-color: var(--good); background: #f0fdf4; animation: kl-pop2 .25s ease; }
-@keyframes kl-pop2 { 0% { transform: scale(.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
-.kl-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; position: relative; z-index: 2; }
-.kl-opt {
-    background: var(--card); color: var(--ink); border: none; border-radius: 22px;
-    min-height: 80px; font-size: 28px; font-weight: 900; cursor: pointer;
-    box-shadow: 0 6px 0 rgba(0,0,0,.2), inset 0 2px 0 rgba(255,255,255,.85);
-    border: 4px solid rgba(255,255,255,.5);
-}
-.kl-opt:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.2); }
-.kl-opt-right { background: linear-gradient(135deg, #4ade80, #16a34a); color: #fff; animation: kl-pop2 .3s ease; }
-.kl-opt-wrong { background: linear-gradient(135deg, #f87171, #dc2626); color: #fff; animation: kl-shake .4s ease; }
-@keyframes kl-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-4px); } }
-.kl-tiles { display: flex; gap: 10px; direction: ltr; justify-content: center; flex-wrap: wrap; margin-top: 14px; position: relative; z-index: 2; }
-.kl-tile {
-    width: 56px; height: 64px; border-radius: 16px; border: none;
-    background: linear-gradient(135deg, var(--accent), #ffb03d); color: var(--onaccent);
-    font-size: 30px; font-weight: 900; cursor: pointer;
-    box-shadow: 0 5px 0 rgba(0,0,0,.25), inset 0 2px 0 rgba(255,255,255,.5);
-}
-.kl-tile:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
-.kl-tile:disabled { opacity: .22; box-shadow: none; }
-
-/* feedback overlay */
-.kl-fx {
-    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-    background: rgba(20,10,40,.5); z-index: 80; pointer-events: none; opacity: 0; transition: opacity .15s;
-}
-.kl-fx-on { opacity: 1; }
-.kl-fx-card { text-align: center; }
-.kl-fx-em { font-size: 100px; animation: kl-pop .55s ease; filter: drop-shadow(0 6px 14px rgba(0,0,0,.4)); }
-.kl-fx-txt { color: #fff; font-size: 25px; font-weight: 900; text-shadow: 0 3px 10px rgba(0,0,0,.5); margin-top: 8px; max-width: 320px; }
-@keyframes kl-pop { 0% { transform: scale(.1) rotate(-30deg); } 70% { transform: scale(1.2) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
-.kl-starfly { position: fixed; font-size: 30px; z-index: 81; animation: kl-fly 1.1s ease forwards; pointer-events: none; }
-@keyframes kl-fly { 0% { transform: translateY(0) scale(.5); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5) rotate(40deg); opacity: 0; } }
-.kl-conf { position: fixed; width: 12px; height: 12px; z-index: 81; pointer-events: none; border-radius: 3px; animation: kl-confall 1.15s ease-in forwards; }
-@keyframes kl-confall { 0% { transform: translateY(-10px) rotate(0); opacity: 1; } 100% { transform: translateY(240px) rotate(540deg); opacity: 0; } }
-
-/* setup + parents */
+/* ======= chunky toy UI ======= */
 .kl-card {
-    background: var(--card); color: var(--ink); border-radius: 26px; padding: 22px;
-    box-shadow: 0 8px 0 rgba(0,0,0,.2); border: 4px solid rgba(255,255,255,.5);
-    position: relative; z-index: 2;
+    background: #fff; border-radius: 28px; border: 4px solid #e6dfff;
+    box-shadow: 0 8px 0 rgba(60,40,120,.14); padding: 18px;
 }
-.kl-h1 { font-size: 25px; font-weight: 900; margin: 0 0 4px; }
-.kl-note { font-size: 14px; color: var(--ink2); margin-bottom: 12px; font-weight: 600; }
-.kl-label { display: block; font-size: 15px; font-weight: 800; margin: 12px 0 6px; }
+.kl-rtl { direction: rtl; }
+.kl-h1 { font-size: 30px; font-weight: 900; color: #3b2a5e; text-align: center; margin-bottom: 4px; }
+.kl-note { color: #7a7194; font-weight: 700; font-size: 14.5px; text-align: center; margin: 6px 0 12px; line-height: 1.7; }
+.kl-label { display: block; font-weight: 900; color: #3b2a5e; margin: 12px 0 6px; font-size: 16px; }
 .kl-input {
-    width: 100%; font-size: 20px; font-weight: 700; padding: 13px 14px; border-radius: 16px;
-    border: 3px solid #e3dfff; font-family: inherit; color: var(--ink); background: #faf9ff;
+    width: 100%; border: 3px solid #d9d2f0; border-radius: 18px; padding: 14px 16px;
+    font-size: 19px; font-weight: 800; color: #3b2a5e; background: #f8f6ff; outline: none;
 }
-.kl-input:focus { outline: none; border-color: #a78bfa; }
-.kl-themes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+.kl-input:focus { border-color: #7c5cff; background: #fff; }
+.kl-cta {
+    display: block; width: 100%; border: none; border-radius: 22px; margin-top: 14px;
+    padding: 16px; font-size: 21px; font-weight: 900; color: #5b3b00;
+    background: linear-gradient(135deg, #ffd93d, #ffb03d); box-shadow: 0 6px 0 #d98e1f;
+}
+.kl-cta:active { transform: translateY(4px); box-shadow: 0 2px 0 #d98e1f; }
+.kl-ghost {
+    display: block; width: 100%; border-radius: 18px; margin-top: 10px; padding: 13px;
+    background: #f1eeff; border: 3px solid #d9d2f0; color: #5b4b8a; font-weight: 900; font-size: 16px;
+}
+.kl-danger { background: #fff1f1; border-color: #ffc9c9; color: #c92a2a; }
+.kl-warn { margin-top: 12px; background: #fff7e6; border-radius: 16px; padding: 12px 14px; font-size: 13.5px; font-weight: 700; color: #9a5b00; line-height: 1.7; }
+.kl-themes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .kl-themebtn {
-    border: 3px solid #e3dfff; background: #faf9ff; border-radius: 18px; padding: 10px; cursor: pointer;
+    border: 3px solid #d9d2f0; background: #f8f6ff; border-radius: 20px; padding: 10px 6px;
     display: flex; flex-direction: column; align-items: center; gap: 4px;
 }
-.kl-themebtn svg { width: 74px; height: 74px; }
-.kl-themebtn-on { border-color: var(--accent); background: #fffbe8; box-shadow: 0 0 0 3px rgba(255,203,61,.35); }
-.kl-themebtn .tn { font-size: 15px; font-weight: 900; color: var(--ink); }
-.kl-cta {
-    width: 100%; margin-top: 18px; border: none; border-radius: 18px; padding: 17px;
-    background: linear-gradient(135deg, var(--accent), #ffb03d); color: var(--onaccent);
-    font-size: 22px; font-weight: 900; cursor: pointer;
-    box-shadow: 0 6px 0 rgba(0,0,0,.22), inset 0 2px 0 rgba(255,255,255,.5);
-}
-.kl-cta:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
-.kl-ghost {
-    width: 100%; margin-top: 10px; border: 3px solid #e3dfff; border-radius: 16px; padding: 13px;
-    background: #fff; color: var(--ink); font-size: 16px; font-weight: 800; cursor: pointer;
-}
-.kl-danger { border-color: #fecaca; color: var(--bad); }
-.kl-warn { font-size: 13px; color: #b45309; background: #fff7ed; border-radius: 14px; padding: 11px 13px; margin-top: 14px; line-height: 1.7; font-weight: 700; }
-.kl-rtl { direction: rtl; text-align: right; }
-.kl-footer { text-align: center; font-size: 11px; color: rgba(255,255,255,.55); margin-top: 26px; position: relative; z-index: 2; }
-/* v2: page transitions, mascot, costume, photo editor, KG chips */
-.kl-page { animation: kl-page-in .38s cubic-bezier(.2,.9,.3,1.12); }
-@keyframes kl-page-in { from { opacity: 0; transform: translateY(16px) scale(.985); } }
-.kl-blink { transform-box: fill-box; transform-origin: center; animation: kl-blink 4.6s ease-in-out infinite; }
-@keyframes kl-blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
-.kl-fx-art { width: 140px; height: 170px; margin: 0 auto; animation: kl-pop .55s ease; filter: drop-shadow(0 8px 16px rgba(0,0,0,.4)); }
-.kl-fx-art svg { width: 100%; height: 100%; }
-.kl-stage { width: 240px; margin: 10px auto; touch-action: none; border-radius: 28px; background: linear-gradient(160deg,#f5f3ff,#e0f2fe); padding: 12px; box-shadow: inset 0 0 0 3px rgba(99,102,241,.25); }
-.kl-stage svg { width: 100%; height: auto; display: block; }
-.kl-slider { width: 100%; accent-color: #7c3aed; margin: 4px 0 10px; }
+.kl-themebtn svg { width: 62px; height: 62px; }
+.kl-themebtn .tn { font-weight: 900; color: #3b2a5e; font-size: 15px; }
+.kl-themebtn-on { border-color: #ffb03d; background: #fff6df; box-shadow: 0 4px 0 #ffd93d; }
+.kl-kgbtn { padding: 10px 6px; }
 .kl-kg { background: #f5f3ff; border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; }
 .kl-kg-row { display: flex; justify-content: space-between; align-items: center; padding-top: 6px; font-weight: 800; color: #2d2340; font-size: 14px; }
 .kl-kg-chip { background: #ffd93d; color: #4a2c00; border-radius: 999px; padding: 2px 10px; font-size: 12px; white-space: nowrap; }
 .kl-kg-desc { font-size: 12.5px; color: #6b6480; font-weight: 700; text-align: right; padding: 2px 0 4px; }
-.kl-kgbtn { padding: 10px 6px; }
-.kl-opt-svg { padding: 10px; }
-.kl-opt-svg svg { display: block; margin: 0 auto; }
+.kl-slider { width: 100%; accent-color: #7c5cff; margin: 4px 0 10px; }
+.kl-stage { width: 240px; margin: 10px auto; touch-action: none; border-radius: 28px; background: linear-gradient(160deg,#f5f3ff,#e0f2fe); padding: 12px; box-shadow: inset 0 0 0 3px rgba(124,92,255,.25); }
+.kl-stage svg { width: 100%; height: auto; display: block; }
+.kl-footer { text-align: center; color: rgba(255,255,255,.95); font-size: 12.5px; font-weight: 700; margin-top: 18px; text-shadow: 0 1px 3px rgba(0,60,20,.35); }
+
+/* ======= top bar ======= */
+.kl-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; position: relative; z-index: 3; }
+.kl-stars {
+    background: linear-gradient(135deg, #ffd93d, #ffb03d); color: #4a2c00;
+    border-radius: 999px; padding: 9px 16px; font-size: 18px; font-weight: 900;
+    box-shadow: 0 4px 0 #d98e1f; display: flex; align-items: center; gap: 5px;
+}
+.kl-stars-pop { animation: kl-starspop .45s ease; }
+@keyframes kl-starspop { 40% { transform: scale(1.25) rotate(-4deg); } }
+.kl-iconbtn {
+    background: #fff; border: 3px solid #e6dfff; color: #5b4b8a; width: 48px; height: 48px;
+    border-radius: 16px; font-size: 21px; box-shadow: 0 4px 0 rgba(60,40,120,.18);
+}
+.kl-iconbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(60,40,120,.18); }
+.kl-gtitle { font-size: 21px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 rgba(0,80,140,.35); }
+
+/* ======= home: mascot + speech bubble + game spots ======= */
+.kl-hero { display: flex; align-items: flex-end; gap: 10px; margin: 2px 0 14px; }
+.kl-hero-art { width: 128px; height: 140px; flex: none; animation: kl-bob 3.2s ease-in-out infinite; filter: drop-shadow(0 8px 10px rgba(20,60,20,.25)); }
+.kl-hero-art svg { width: 100%; height: 100%; }
+@keyframes kl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.kl-bubble {
+    position: relative; background: #fff; border: 3px solid #ffd93d; border-radius: 20px;
+    padding: 12px 14px; margin-bottom: 18px; box-shadow: 0 5px 0 rgba(60,40,120,.12);
+}
+.kl-bubble:after {
+    content: ''; position: absolute; left: -14px; bottom: 14px; border: 8px solid transparent;
+    border-right-color: #ffd93d; border-left: none;
+}
+.kl-bubble .hi { font-size: 21px; font-weight: 900; color: #3b2a5e; }
+.kl-bubble .sub { font-size: 14.5px; font-weight: 700; color: #7a7194; margin-top: 2px; }
+.kl-spots { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.kl-spot {
+    border: none; border-radius: 30px; padding: 16px 10px 13px; color: #fff;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    box-shadow: 0 8px 0 rgba(0,0,0,.18), inset 0 3px 0 rgba(255,255,255,.4);
+    transition: transform .12s ease;
+}
+.kl-spot:active { transform: translateY(5px) scale(.97); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.kl-spot .em { font-size: 44px; line-height: 1; filter: drop-shadow(0 3px 3px rgba(0,0,0,.25)); }
+.kl-spot .tt { font-size: 19px; font-weight: 900; text-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.kl-spot .ss { font-size: 12.5px; font-weight: 700; opacity: .92; }
+.kl-spot .lv { font-size: 11.5px; font-weight: 900; background: rgba(255,255,255,.32); border-radius: 999px; padding: 2px 10px; margin-top: 3px; }
+.kl-spot:nth-child(odd) { animation: kl-sway2 5s ease-in-out infinite; }
+@keyframes kl-sway2 { 0%,100% { transform: rotate(-1deg); } 50% { transform: rotate(1.2deg); } }
+
+/* ======= game scenes ======= */
+.kl-play { position: relative; min-height: 480px; }
+.kl-coach { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+.kl-coach .mini { width: 74px; height: 82px; flex: none; }
+.kl-coach .mini svg { width: 100%; height: 100%; }
+.kl-coach .kl-bubble { flex: 1; margin-bottom: 0; }
+.kl-coach .kl-bubble:after { left: -14px; top: 22px; bottom: auto; }
+.kl-lvlrow { display: flex; gap: 7px; justify-content: center; margin: 2px 0 8px; }
+.kl-dot { width: 13px; height: 13px; border-radius: 50%; background: rgba(255,255,255,.45); }
+.kl-dot-on { background: #ffd93d; box-shadow: 0 2px 0 #d98e1f; }
+
+/* bubble pop (letters) */
+.kl-bubfield { position: relative; height: 430px; }
+.kl-bub {
+    position: absolute; width: 74px; height: 74px; border-radius: 50%; border: 3px solid rgba(255,255,255,.85);
+    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.25) 46%, rgba(140,210,255,.55));
+    color: #1d4ed8; font-size: 30px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: inset -4px -6px 0 rgba(90,160,230,.35), 0 6px 12px rgba(30,90,160,.2);
+    animation: kl-rise linear infinite;
+}
+.kl-bub.hit { animation: none; transform: scale(0); transition: transform .18s ease-in; opacity: 0; }
+.kl-bub.nope { animation: kl-shake .4s ease; }
+@keyframes kl-rise { from { transform: translateY(0); } to { transform: translateY(-26px); } }
+.kl-bub { animation: kl-bubfloat 2.6s ease-in-out infinite alternate; }
+@keyframes kl-bubfloat { from { transform: translateY(0); } to { transform: translateY(-22px); } }
+@keyframes kl-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+/* feed the bear (words) */
+.kl-bear-stage { display: flex; justify-content: center; margin: 4px 0 6px; }
+.kl-bear-stage .big { width: 190px; height: 205px; position: relative; }
+.kl-bear-stage svg { width: 100%; height: 100%; }
+.kl-foods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+.kl-food {
+    background: #fff; border: 4px solid #ffe08a; border-radius: 24px; padding: 14px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    box-shadow: 0 6px 0 #f0c453; font-size: 20px; font-weight: 900; color: #3b2a5e;
+}
+.kl-food .fem { font-size: 52px; line-height: 1.1; }
+.kl-food:active { transform: translateY(4px); box-shadow: 0 2px 0 #f0c453; }
+.kl-food.nope { animation: kl-shake .4s ease; }
+
+/* word train (spelling) */
+.kl-train-pic { text-align: center; font-size: 64px; line-height: 1.2; }
+.kl-train { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0 16px; }
+.kl-car {
+    min-width: 56px; height: 62px; border-radius: 16px; background: #fff;
+    border: 3px dashed #b3a8e0; display: flex; align-items: center; justify-content: center;
+    font-size: 27px; font-weight: 900; color: #3b2a5e; position: relative;
+}
+.kl-car.full { border: 3px solid #7c5cff; background: #ede9ff; box-shadow: 0 4px 0 #b3a8e0; }
+.kl-car:before { content: ''; position: absolute; bottom: -9px; left: 8px; width: 12px; height: 12px; border-radius: 50%; background: #4b3d78; box-shadow: 30px 0 0 #4b3d78; }
+.kl-tiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.kl-tile {
+    min-width: 58px; height: 58px; border: none; border-radius: 16px; font-size: 26px; font-weight: 900; color: #fff;
+    background: linear-gradient(135deg, #ff8a65, #f4511e); box-shadow: 0 5px 0 #c63d12;
+}
+.kl-tile:active { transform: translateY(3px); box-shadow: 0 2px 0 #c63d12; }
+.kl-tile:disabled { opacity: .25; }
+.kl-tile.nope { animation: kl-shake .4s ease; }
+
+/* counting picnic */
+.kl-items { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 12px; }
+.kl-item {
+    width: 64px; height: 64px; border-radius: 50%; background: #fff; border: 3px solid #cdeecb;
+    font-size: 36px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 5px 0 #9ed69a; transition: transform .15s ease, opacity .15s ease;
+}
+.kl-item.took { transform: scale(0); opacity: 0; }
+.kl-mouth { display: flex; justify-content: center; margin-top: 4px; }
+.kl-count-big { text-align: center; font-size: 40px; font-weight: 900; color: #fff; text-shadow: 0 3px 0 rgba(0,80,140,.35); min-height: 52px; }
+
+/* rocket math */
+.kl-eq {
+    text-align: center; background: #fff; border: 4px solid #bfe3ff; border-radius: 24px;
+    font-size: 42px; font-weight: 900; color: #1d4ed8; padding: 12px; margin: 6px 0 14px;
+    box-shadow: 0 6px 0 #8ec9f5; letter-spacing: 2px;
+}
+.kl-rockets { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.kl-rocket {
+    border: none; border-radius: 22px; padding: 12px 8px; color: #fff; font-size: 26px; font-weight: 900;
+    background: linear-gradient(135deg, #7c5cff, #4f3bd6); box-shadow: 0 6px 0 #3b2aa8;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.kl-rocket .rem { font-size: 34px; }
+.kl-rocket:active { transform: translateY(4px); box-shadow: 0 2px 0 #3b2aa8; }
+.kl-rocket.launch { animation: kl-launch .7s ease-in forwards; }
+.kl-rocket.nope { animation: kl-shake .4s ease; }
+@keyframes kl-launch { 30% { transform: translateY(6px) scale(1.04); } 100% { transform: translateY(-420px) scale(.7); opacity: 0; } }
+
+/* shape sorter */
+.kl-holes { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin: 10px 0 18px; }
+.kl-hole {
+    width: 96px; height: 96px; border-radius: 22px; background: rgba(255,255,255,.55);
+    border: 4px dashed rgba(70,50,120,.4); display: flex; align-items: center; justify-content: center;
+}
+.kl-hole.armed { border-color: #ffd93d; border-style: solid; background: #fffbe8; transform: scale(1.05); }
+.kl-hole.filled { border: 4px solid #7c5cff; background: #fff; box-shadow: 0 5px 0 #b3a8e0; }
+.kl-pieces { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.kl-piece {
+    width: 88px; height: 88px; border-radius: 22px; background: #fff; border: 4px solid #ffd93d;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 #f0c453;
+}
+.kl-piece.sel { transform: translateY(-8px) scale(1.08); border-color: #ff8a3d; box-shadow: 0 10px 0 #f0c453; }
+.kl-piece.took { opacity: .2; transform: scale(.85); }
+.kl-piece:active { transform: translateY(2px); }
+
+/* ======= fx overlay ======= */
+.kl-fx {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(20, 40, 90, .62); opacity: 0; pointer-events: none; transition: opacity .22s ease; z-index: 50;
+}
+.kl-fx-on { opacity: 1; pointer-events: none; }
+.kl-fx-card { text-align: center; background: #fff; border-radius: 34px; padding: 24px 28px; border: 5px solid #ffd93d; box-shadow: 0 12px 0 rgba(0,0,0,.28); }
+.kl-fx-art { width: 150px; height: 175px; margin: 0 auto; animation: kl-pop .55s ease; filter: drop-shadow(0 8px 16px rgba(0,0,0,.4)); }
+.kl-fx-art svg { width: 100%; height: 100%; }
+.kl-fx-txt { color: #3b2a5e; font-size: 23px; font-weight: 900; margin-top: 10px; max-width: 300px; }
+@keyframes kl-pop { 0% { transform: scale(.2); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+.kl-conf { position: fixed; width: 12px; height: 12px; z-index: 60; animation: kl-confall 1.4s ease-out forwards; pointer-events: none; border-radius: 3px; }
+@keyframes kl-confall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(65vh) rotate(540deg); opacity: 0; } }
+.kl-starfly { position: fixed; font-size: 30px; z-index: 60; animation: kl-starrise 1.3s ease-out forwards; pointer-events: none; }
+@keyframes kl-starrise { 0% { transform: translateY(0) scale(.4); opacity: 0; } 30% { opacity: 1; transform: translateY(-40px) scale(1.2); } 100% { transform: translateY(-150px) scale(.9); opacity: 0; } }
+.kl-blink { transform-box: fill-box; transform-origin: center; animation: kl-blink 4.6s ease-in-out infinite; }
+@keyframes kl-blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
+.kl-sun,.kl-cloud,.kl-hill,.kl-flower { pointer-events: none; }
 </style>
 </head>
 <body>
@@ -237,7 +263,54 @@ function loadLS(k, fb) { try { var v = localStorage.getItem(k); return v ? JSON.
 function saveLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 var state = loadLS(KEY, null);
 
-/* ================= themes (ORIGINAL art only; character names are text only) ================= */
+/* ================= Pip the bear (ORIGINAL mascot) ================= */
+function svgPip(mood) {
+    mood = mood || 'happy';
+    var eyes, mouth, arms;
+    if (mood === 'wow') {
+        eyes = '<g class="kl-blink"><circle cx="46" cy="46" r="7" fill="#fff"/><circle cx="46" cy="46" r="3.4" fill="#4a2c14"/>'
+            + '<circle cx="74" cy="46" r="7" fill="#fff"/><circle cx="74" cy="46" r="3.4" fill="#4a2c14"/></g>';
+        mouth = '<ellipse cx="60" cy="64" rx="8" ry="9" fill="#8a4520"/><ellipse cx="60" cy="67" rx="4.5" ry="4" fill="#f87171"/>';
+        arms = '<ellipse cx="16" cy="96" rx="12" ry="16" fill="#f2b65c" transform="rotate(-35 16 96)"/>'
+            + '<ellipse cx="104" cy="96" rx="12" ry="16" fill="#f2b65c" transform="rotate(35 104 96)"/>';
+    } else if (mood === 'oops') {
+        eyes = '<path d="M38 46 Q46 41 54 46" stroke="#4a2c14" stroke-width="4" fill="none" stroke-linecap="round"/>'
+            + '<path d="M66 46 Q74 41 82 46" stroke="#4a2c14" stroke-width="4" fill="none" stroke-linecap="round"/>';
+        mouth = '<path d="M50 66 Q55 62 60 66 Q65 70 70 66" stroke="#4a2c14" stroke-width="4" fill="none" stroke-linecap="round"/>';
+        arms = '<ellipse cx="24" cy="104" rx="12" ry="16" fill="#f2b65c"/><ellipse cx="96" cy="104" rx="12" ry="16" fill="#f2b65c"/>';
+    } else if (mood === 'eat') {
+        eyes = '<path d="M38 44 Q46 50 54 44" stroke="#4a2c14" stroke-width="4" fill="none" stroke-linecap="round"/>'
+            + '<path d="M66 44 Q74 50 82 44" stroke="#4a2c14" stroke-width="4" fill="none" stroke-linecap="round"/>';
+        mouth = '<ellipse cx="60" cy="64" rx="11" ry="10" fill="#8a4520"/><ellipse cx="60" cy="68" rx="6" ry="4.5" fill="#f87171"/>';
+        arms = '<ellipse cx="24" cy="104" rx="12" ry="16" fill="#f2b65c"/><ellipse cx="96" cy="104" rx="12" ry="16" fill="#f2b65c"/>';
+    } else {
+        eyes = '<g class="kl-blink"><circle cx="46" cy="46" r="6" fill="#fff"/><circle cx="47" cy="47" r="3" fill="#4a2c14"/>'
+            + '<circle cx="74" cy="46" r="6" fill="#fff"/><circle cx="75" cy="47" r="3" fill="#4a2c14"/></g>';
+        mouth = '<path d="M48 60 Q60 70 72 60 Q66 68 60 68 Q54 68 48 60 Z" fill="#8a4520"/>';
+        arms = '<ellipse cx="24" cy="104" rx="12" ry="16" fill="#f2b65c"/><ellipse cx="96" cy="104" rx="12" ry="16" fill="#f2b65c"/>';
+    }
+    return '<svg viewBox="0 0 120 132">'
+        + arms
+        + '<ellipse cx="60" cy="108" rx="34" ry="24" fill="#f7c873"/>'
+        + '<ellipse cx="60" cy="112" rx="20" ry="14" fill="#ffe9c9"/>'
+        + '<circle cx="32" cy="26" r="13" fill="#f2b65c"/><circle cx="32" cy="26" r="6.5" fill="#ffb3c1"/>'
+        + '<circle cx="88" cy="26" r="13" fill="#f2b65c"/><circle cx="88" cy="26" r="6.5" fill="#ffb3c1"/>'
+        + '<circle cx="60" cy="52" r="34" fill="#f7c873"/>'
+        + '<ellipse cx="60" cy="62" rx="16" ry="12" fill="#ffe9c9"/>'
+        + '<ellipse cx="60" cy="56" rx="5" ry="4" fill="#4a2c14"/>'
+        + '<ellipse cx="30" cy="58" rx="6" ry="4" fill="#ffb3c1" opacity=".8"/>'
+        + '<ellipse cx="90" cy="58" rx="6" ry="4" fill="#ffb3c1" opacity=".8"/>'
+        + eyes + mouth
+        + '<path d="M52 84 L60 90 L68 84 L68 92 L60 98 L52 92 Z" fill="#4f8ef7"/>'
+        + '</svg>';
+}
+/* bear face only (inside costume hole) */
+function svgPipFace(mood) {
+    var full = svgPip(mood);
+    return full.replace('<svg viewBox="0 0 120 132">', '<svg viewBox="14 6 92 92">');
+}
+
+/* ================= themes (ORIGINAL art; character names are text only) ================= */
 function svgHero(c1, c2) {
     return '<svg viewBox="0 0 100 100"><path d="M22 40 Q50 18 78 40 L74 88 Q50 74 26 88 Z" fill="' + c2 + '"/>'
         + '<circle cx="50" cy="34" r="17" fill="' + c1 + '"/>'
@@ -273,7 +346,7 @@ function svgSpace(c1, c2) {
 var THEMES = {
     superhero: {
         ar: 'بطل خارق', en: 'Superhero', charDef: 'Captain Star', em: '🦸',
-        bg1: '#1e3a8a', bg2: '#7f1d1d', accent: '#ffcb3d', onaccent: '#3b2a00',
+        accent: '#ef4444',
         art: function () { return svgHero('#ef4444', '#1d4ed8'); },
         costumeBack: function () { return '<path d="M18 62 Q6 138 34 148 L86 148 Q114 138 102 62 Q80 78 60 78 Q40 78 18 62 Z" fill="#1d4ed8"/>'; },
         costumeFront: function () {
@@ -288,7 +361,7 @@ var THEMES = {
     },
     princess: {
         ar: 'أميرة', en: 'Princess', charDef: 'Princess Star', em: '👸',
-        bg1: '#9d174d', bg2: '#6d28d9', accent: '#ffd93d', onaccent: '#4a2c00',
+        accent: '#ec4899',
         art: function () { return svgPrincess('#ffd9c0', '#ec4899'); },
         costumeBack: function () {
             return '<circle cx="60" cy="46" r="34" fill="#fbbf24"/>'
@@ -307,7 +380,7 @@ var THEMES = {
     },
     dino: {
         ar: 'ديناصور', en: 'Dinosaur', charDef: 'Dino', em: '🦖',
-        bg1: '#14532d', bg2: '#0f766e', accent: '#a3e635', onaccent: '#1a2e05',
+        accent: '#22c55e',
         art: function () { return svgDino('#22c55e', '#fbbf24'); },
         costumeBack: function () { return ''; },
         costumeFront: function () {
@@ -321,7 +394,7 @@ var THEMES = {
     },
     space: {
         ar: 'فضاء', en: 'Space', charDef: 'Astro', em: '🚀',
-        bg1: '#0f172a', bg2: '#312e81', accent: '#38bdf8', onaccent: '#082f49',
+        accent: '#38bdf8',
         art: function () { return svgSpace('#e5e7eb', '#312e81'); },
         costumeBack: function () { return '<rect x="18" y="84" width="84" height="66" rx="16" fill="#94a3b8"/>'; },
         costumeFront: function () {
@@ -336,10 +409,29 @@ var THEMES = {
     }
 };
 
-/* ================= voice ================= */
+/* ================= costume with face opening (photo feature) ================= */
+var faceUid = 0;
+function tfStr(tf) { return 'translate(60 42) translate(' + tf.x + ' ' + tf.y + ') rotate(' + tf.r + ') scale(' + tf.s + ') translate(-60 -42)'; }
+function photoStore() { return state || setupSel; }
+function applyTf() { var im = document.getElementById('face-img'); if (im && editTf) im.setAttribute('transform', tfStr(editTf)); }
+function costumeSvg(tk, mood, editor) {
+    var t = THEMES[tk] || THEMES.superhero;
+    var store = photoStore();
+    var tf = (editor && editTf) || store.faceTf || { x: 0, y: 0, s: 1, r: 0 };
+    var face;
+    if (store.photo) {
+        var id = 'fc' + (++faceUid);
+        face = '<defs><clipPath id="' + id + '"><circle cx="60" cy="42" r="25"/></clipPath></defs>'
+            + '<image ' + (editor ? 'id="face-img" ' : '') + 'href="' + store.photo + '" xlink:href="' + store.photo + '" x="34" y="16" width="52" height="52" preserveAspectRatio="xMidYMid slice" clip-path="url(#' + id + ')" transform="' + tfStr(tf) + '"/>';
+    } else {
+        face = '<g transform="translate(35 17) scale(0.5)">' + svgPipFace(mood || 'happy') + '</g>';
+    }
+    return '<svg viewBox="0 0 120 150">' + (t.costumeBack ? t.costumeBack() : '') + face + t.costumeFront() + '</svg>';
+}
+function heroArt(mood) { return costumeSvg((state && state.theme) || setupSel.theme || 'superhero', mood); }
+
+/* ================= voice (female, warm, slow teacher pace) ================= */
 var voiceOK = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
-/* Female English voice. Scored picker: prefers iOS Enhanced/Premium voices (clearest),
-   then known female names, then any en voice. Always localService-first so it works offline. */
 var FEMALE_VOICES = ['Samantha', 'Ava', 'Allison', 'Zoe', 'Susan', 'Tessa', 'Karen', 'Moira', 'Fiona', 'Victoria', 'Google US English', 'Microsoft Zira', 'Microsoft Jenny', 'Microsoft Aria'];
 var pickedVoice = null;
 function voiceScore(v) {
@@ -380,52 +472,7 @@ function say(text) {
     } catch (e) {}
 }
 
-/* ================= mascot (original star buddy) ================= */
-function svgMascot(mood) {
-    mood = mood || 'happy';
-    var eyes, mouth;
-    if (mood === 'wow') {
-        eyes = '<g class="kl-blink"><circle cx="40" cy="47" r="6.5" fill="#fff"/><circle cx="40" cy="47" r="3.2" fill="#43310a"/>'
-            + '<circle cx="60" cy="47" r="6.5" fill="#fff"/><circle cx="60" cy="47" r="3.2" fill="#43310a"/></g>';
-        mouth = '<ellipse cx="50" cy="63" rx="7" ry="8" fill="#7c2d12"/><ellipse cx="50" cy="66" rx="4" ry="3.4" fill="#f87171"/>';
-    } else if (mood === 'oops') {
-        eyes = '<path d="M33 47 Q40 42 47 47" stroke="#43310a" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
-            + '<path d="M53 47 Q60 42 67 47" stroke="#43310a" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
-        mouth = '<path d="M41 63 Q45.5 59 50 63 Q54.5 67 59 63" stroke="#43310a" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
-    } else {
-        eyes = '<g class="kl-blink"><circle cx="40" cy="47" r="5.5" fill="#fff"/><circle cx="40.8" cy="48" r="2.8" fill="#43310a"/>'
-            + '<circle cx="60" cy="47" r="5.5" fill="#fff"/><circle cx="60.8" cy="48" r="2.8" fill="#43310a"/></g>';
-        mouth = '<path d="M38 58 Q50 70 62 58 Q56 66 50 66 Q44 66 38 58 Z" fill="#7c2d12"/>';
-    }
-    return '<svg viewBox="0 0 100 100">'
-        + '<path d="M50 6 L60.5 36 L92 37 L67 56 L76.5 88 L50 69 L23.5 88 L33 56 L8 37 L39.5 36 Z" fill="#ffd93d" stroke="#f5b301" stroke-width="3" stroke-linejoin="round"/>'
-        + '<ellipse cx="30" cy="57" rx="5" ry="3.4" fill="#fb923c" opacity=".65"/>'
-        + '<ellipse cx="70" cy="57" rx="5" ry="3.4" fill="#fb923c" opacity=".65"/>'
-        + eyes + mouth + '</svg>';
-}
-
-/* ================= costume with face opening (original art per theme) ================= */
-var faceUid = 0;
-function tfStr(tf) { return 'translate(60 42) translate(' + tf.x + ' ' + tf.y + ') rotate(' + tf.r + ') scale(' + tf.s + ') translate(-60 -42)'; }
-function photoStore() { return state || setupSel; }
-function applyTf() { var im = document.getElementById('face-img'); if (im && editTf) im.setAttribute('transform', tfStr(editTf)); }
-function costumeSvg(tk, mood, editor) {
-    var t = THEMES[tk] || THEMES.superhero;
-    var store = photoStore();
-    var tf = (editor && editTf) || store.faceTf || { x: 0, y: 0, s: 1, r: 0 };
-    var face;
-    if (store.photo) {
-        var id = 'fc' + (++faceUid);
-        face = '<defs><clipPath id="' + id + '"><circle cx="60" cy="42" r="25"/></clipPath></defs>'
-            + '<image ' + (editor ? 'id="face-img" ' : '') + 'href="' + store.photo + '" xlink:href="' + store.photo + '" x="34" y="16" width="52" height="52" preserveAspectRatio="xMidYMid slice" clip-path="url(#' + id + ')" transform="' + tfStr(tf) + '"/>';
-    } else {
-        face = '<g transform="translate(35 17) scale(0.5)">' + svgMascot(mood || 'happy') + '</g>';
-    }
-    return '<svg viewBox="0 0 120 150">' + (t.costumeBack ? t.costumeBack() : '') + face + t.costumeFront() + '</svg>';
-}
-function heroArt(mood) { return costumeSvg((state && state.theme) || setupSel.theme || 'superhero', mood); }
-
-/* ================= sound effects (WebAudio synth, no assets, offline) ================= */
+/* ================= sound effects (WebAudio synth, offline) ================= */
 var SFX = {
     ctx: null,
     ac: function () {
@@ -451,38 +498,37 @@ var SFX = {
         } catch (e) {}
     },
     pop: function () { this.tone(500, 0, 0.09, 'triangle', 0.15, 900); },
+    bubble: function () { this.tone(700, 0, 0.12, 'sine', 0.18, 1400); },
+    chomp: function () { this.tone(300, 0, 0.09, 'square', 0.12, 140); this.tone(240, 0.12, 0.1, 'square', 0.12, 110); },
+    horn: function () { this.tone(392, 0, 0.18, 'square', 0.1); this.tone(523, 0.16, 0.3, 'square', 0.1); },
     correct: function () { var s = this;[523, 659, 784, 1047].forEach(function (f, i) { s.tone(f, i * 0.08, 0.2, 'sine', 0.2); }); },
-    wrong: function () { this.tone(220, 0, 0.24, 'sawtooth', 0.08, 150); },
+    wrong: function () { this.tone(220, 0, 0.24, 'sawtooth', 0.07, 150); },
     star: function () { this.tone(1568, 0, 0.25, 'sine', 0.16); this.tone(2093, 0.07, 0.3, 'sine', 0.1); },
     fanfare: function () { var s = this;[392, 523, 659, 784, 1047].forEach(function (f, i) { s.tone(f, i * 0.09, 0.24, 'triangle', 0.18); }); },
-    whoosh: function () { this.tone(900, 0, 0.16, 'sine', 0.05, 280); }
+    whoosh: function () { this.tone(900, 0, 0.16, 'sine', 0.05, 280); },
+    launch: function () { this.tone(200, 0, 0.5, 'sawtooth', 0.08, 900); },
+    snap: function () { this.tone(1200, 0, 0.07, 'triangle', 0.16, 800); }
 };
 
-/* ================= game content ================= */
+/* ================= KG curriculum content ================= */
 var LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-var WORDS1 = [
+var WORDS1 = [ /* KG1: simple picture words */
     ['cat', '🐱'], ['dog', '🐶'], ['sun', '☀️'], ['bus', '🚌'], ['egg', '🥚'], ['cow', '🐮'], ['pig', '🐷'], ['ant', '🐜'], ['box', '📦'], ['car', '🚗']
 ];
-var WORDS2 = [
+var WORDS2 = [ /* KG1+ : a little longer */
     ['fish', '🐟'], ['bird', '🐦'], ['star', '⭐'], ['moon', '🌙'], ['book', '📖'], ['tree', '🌳'], ['ball', '⚽'], ['cake', '🎂'], ['duck', '🦆'], ['frog', '🐸']
 ];
-var WORDS3 = [
+var WORDS3 = [ /* KG2 : longer words */
     ['apple', '🍎'], ['house', '🏠'], ['horse', '🐴'], ['sheep', '🐑'], ['tiger', '🐯'], ['pizza', '🍕'], ['banana', '🍌'], ['rabbit', '🐰'], ['monkey', '🐵'], ['flower', '🌸']
 ];
 var ALLWORDS = WORDS1.concat(WORDS2, WORDS3);
-
-function rnd(n) { return Math.floor(Math.random() * n); }
-function pick(arr) { return arr[rnd(arr.length)]; }
-function shuffle(a) { var x = a.slice(); for (var i = x.length - 1; i > 0; i--) { var j = rnd(i + 1); var t = x[i]; x[i] = x[j]; x[j] = t; } return x; }
-function sample(arr, n, excl) {
-    var pool = arr.filter(function (x) { return excl.indexOf(x) < 0; });
-    return shuffle(pool).slice(0, n);
-}
-
+var SIGHT = ['the', 'and', 'you', 'is', 'it', 'in', 'on', 'we', 'he', 'she', 'my', 'to', 'go', 'up', 'at', 'am', 'can', 'see', 'like', 'play']; /* KG2 sight words */
+var SOUNDS = { A: 'ah', B: 'buh', C: 'kuh', D: 'duh', E: 'eh', F: 'fff', G: 'guh', H: 'huh', I: 'ih', J: 'juh', K: 'kuh', L: 'lll', M: 'mmm', N: 'nnn', O: 'oh', P: 'puh', Q: 'kwuh', R: 'rrr', S: 'sss', T: 'tuh', U: 'uh', V: 'vvv', W: 'wuh', X: 'ks', Y: 'yuh', Z: 'zzz' }; /* KG2 phonics */
 var SHAPES = ['circle', 'square', 'triangle', 'star', 'heart', 'diamond'];
 var COLORS = [['red', '#ef4444'], ['blue', '#3b82f6'], ['green', '#22c55e'], ['yellow', '#facc15'], ['purple', '#a855f7'], ['orange', '#fb923c'], ['pink', '#f472b6']];
-var SIGHT = ['the', 'and', 'you', 'is', 'it', 'in', 'on', 'we', 'he', 'she', 'my', 'to', 'go', 'up', 'at', 'am', 'can', 'see', 'like', 'play'];
-var SOUNDS = { A: 'ah', B: 'buh', C: 'kuh', D: 'duh', E: 'eh', F: 'fff', G: 'guh', H: 'huh', I: 'ih', J: 'juh', K: 'kuh', L: 'lll', M: 'mmm', N: 'nnn', O: 'oh', P: 'puh', Q: 'kwuh', R: 'rrr', S: 'sss', T: 'tuh', U: 'uh', V: 'vvv', W: 'wuh', X: 'ks', Y: 'yuh', Z: 'zzz' };
+var COUNTEM = ['🍎', '🎈', '🍪', '🐥', '⭐', '🚗', '🐠', '🌸', '🍓', '🦋'];
+var NUMWORDS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
+
 function shapeSvg(name, color, size) {
     size = size || 80;
     var p = {
@@ -496,70 +542,111 @@ function shapeSvg(name, color, size) {
     return '<svg viewBox="0 0 100 100" style="width:' + size + 'px;height:' + size + 'px"><g fill="' + color + '" stroke="rgba(0,0,0,.18)" stroke-width="4" stroke-linejoin="round">' + p + '</g></svg>';
 }
 
-/* Game registry: each entry = {em,title,sub,kg:{kg1,kg2},gen(lvl,kg)->round}.
-   A future game type (e.g. a runner) registers here and appears on the home menu. */
+function rnd(n) { return Math.floor(Math.random() * n); }
+function pick(arr) { return arr[rnd(arr.length)]; }
+function shuffle(a) { var x = a.slice(); for (var i = x.length - 1; i > 0; i--) { var j = rnd(i + 1); var t = x[i]; x[i] = x[j]; x[j] = t; } return x; }
+function sample(arr, n, excl) {
+    var pool = arr.filter(function (x) { return excl.indexOf(x) < 0; });
+    return shuffle(pool).slice(0, n);
+}
+/* bubble grid positions (3 cols x 3 rows, jittered) */
+function bubbleSpots() {
+    var spots = [];
+    for (var r = 0; r < 3; r++) for (var c = 0; c < 3; c++) spots.push({ x: 6 + c * 32 + rnd(8), y: 4 + r * 30 + rnd(6) });
+    return shuffle(spots);
+}
+
+/* ================= game registry =================
+   Each entry: {em, title, sub, kg:{kg1,kg2}, gen(lvl,kg) -> round}.
+   A future game type (e.g. a runner) registers here and shows on the home scene. */
 var GAMES = {
     letters: {
-        em: '🔤', title: 'Letters', sub: 'Find the letter',
-        kg: { kg1: 'التعرف على الحروف الكبيرة A-Z', kg2: 'الحروف الصغيرة + أصوات الحروف (فونكس)' },
+        em: '🫧', title: 'Letter Bubbles', sub: 'Pop the letter!',
+        kg: { kg1: 'التعرف على الحروف الكبيرة A-Z (فقع الفقاعات)', kg2: 'الحروف الصغيرة + أصوات الحروف (فونكس)' },
         gen: function (lvl, kg) {
+            var target, pool, mode = 'upper';
             if (kg === 'kg2') {
-                if (lvl >= 3) {
-                    var ans2 = pick(LETTERS);
-                    var opts2 = shuffle([ans2].concat(sample(LETTERS, 3, [ans2])));
-                    return { kind: 'letter', instr: 'Which letter says "' + SOUNDS[ans2] + '"?', speak: 'Which letter says ' + SOUNDS[ans2] + '?', options: opts2, answer: ans2, hint: 'Tap the letter ' + ans2 };
-                }
-                var poolL = lvl < 2 ? LETTERS.slice(0, 10) : LETTERS;
-                var ansL = pick(poolL);
-                var optsL = shuffle([ansL].concat(sample(poolL, 3, [ansL])));
-                return { kind: 'letter', instr: 'Find the small letter', speak: 'Find the small letter. ' + ansL, options: optsL.map(function (l) { return l.toLowerCase(); }), answer: ansL.toLowerCase(), hint: 'Tap the small ' + ansL.toLowerCase() };
+                if (lvl >= 3) mode = 'phonics';
+                else { mode = 'lower'; pool = lvl < 2 ? LETTERS.slice(0, 10) : LETTERS; }
+            } else {
+                pool = lvl < 2 ? LETTERS.slice(0, 10) : lvl < 4 ? LETTERS.slice(0, 18) : LETTERS;
             }
-            var pool = lvl < 2 ? LETTERS.slice(0, 10) : lvl < 4 ? LETTERS.slice(0, 18) : LETTERS;
-            var ans = pick(pool);
-            var opts = shuffle([ans].concat(sample(pool, 3, [ans])));
-            return { kind: 'letter', instr: 'Find the letter', speak: 'Find the letter ' + ans, big: ans, options: opts, answer: ans, hint: 'Tap the letter ' + ans };
+            if (mode === 'phonics') { target = pick(LETTERS); pool = LETTERS; }
+            else target = pick(pool);
+            var disp = mode === 'lower' ? target.toLowerCase() : target;
+            var others = sample(pool, 8, [target]);
+            if (mode === 'lower') others = others.map(function (l) { return l.toLowerCase(); });
+            var nTargets = 3;
+            var chars = [disp, disp, disp].concat(others.slice(0, 6));
+            chars = shuffle(chars);
+            var spots = bubbleSpots();
+            var bubbles = chars.map(function (ch, i) {
+                return { ch: ch, x: spots[i].x, y: spots[i].y, delay: (rnd(20) / 10), dur: (22 + rnd(14)) / 10, popped: false };
+            });
+            var speak = mode === 'phonics' ? 'Pop the letter that says ' + SOUNDS[target] + '!'
+                : 'Pop all the bubbles with the letter ' + target + '!';
+            var instr = mode === 'phonics' ? 'Pop the letter that says "' + SOUNDS[target] + '"!'
+                : 'Pop every ' + disp + ' bubble!';
+            return { kind: 'bubble', target: disp, bubbles: bubbles, hits: 0, need: nTargets, instr: instr, speak: speak };
         }
     },
     words: {
-        em: '🖼️', title: 'Words', sub: 'Match the picture',
-        kg: { kg1: 'كلمات بسيطة مع صورها', kg2: 'كلمات النظر الشائعة (sight words) + كلمات أطول' },
+        em: '🍎', title: 'Feed the Bear', sub: 'Yummy words!',
+        kg: { kg1: 'كلمات بسيطة مع صورها (إطعام الدب)', kg2: 'كلمات النظر الشائعة (sight words) + كلمات أطول' },
         gen: function (lvl, kg) {
             if (kg === 'kg2' && lvl >= 3) {
                 var ansS = pick(SIGHT);
                 var optsS = shuffle([ansS].concat(sample(SIGHT, 3, [ansS])));
-                return { kind: 'word', instr: 'Listen! Find the word you hear 👂', speak: 'Find the word. ' + ansS, big: '🎧', options: optsS, answer: ansS };
+                return {
+                    kind: 'feed', mode: 'read', word: ansS,
+                    options: optsS.map(function (w) { return { v: w, em: '🍪' }; }),
+                    instr: 'Pip says: give me "' + ansS + '"!', speak: 'I want the word ' + ansS + '! Tap it!', answer: ansS
+                };
             }
             var pool = kg === 'kg2' ? WORDS2.concat(WORDS3) : (lvl < 2 ? WORDS1 : lvl < 4 ? WORDS1.concat(WORDS2) : ALLWORDS);
             var ans = pick(pool);
-            var others = sample(pool, 3, [ans]).map(function (w) { return w[0]; });
-            var opts = shuffle([ans[0]].concat(others));
-            return { kind: 'word', instr: 'What is this?', speak: 'What is this? Tap the right word', big: ans[1], options: opts, answer: ans[0] };
+            var others = sample(pool, 3, [ans]);
+            var opts = shuffle([ans].concat(others));
+            return {
+                kind: 'feed', mode: 'pic', word: ans[0],
+                options: opts.map(function (w) { return { v: w[0], em: w[1] }; }),
+                instr: 'Pip says: give me the ' + ans[0] + '!', speak: 'Yummy! I want the ' + ans[0] + '!', answer: ans[0]
+            };
         }
     },
     spelling: {
-        em: '✏️', title: 'Spelling', sub: 'Build the word',
-        kg: { kg1: 'تهجي كلمات من ٣ حروف', kg2: 'تهجي كلمات من ٤-٥ حروف' },
+        em: '🚂', title: 'Word Train', sub: 'Build the word',
+        kg: { kg1: 'تهجي كلمات من ٣ حروف (قطار الكلمات)', kg2: 'تهجي كلمات من ٤-٥ حروف' },
         gen: function (lvl, kg) {
             var pool = kg === 'kg2' ? WORDS2.concat(WORDS3) : (lvl < 2 ? WORDS1 : lvl < 4 ? WORDS2 : WORDS3);
             var ans = pick(pool);
-            return { kind: 'spell', instr: 'Spell the word!', speak: 'Let us spell ' + ans[0], big: ans[1], word: ans[0], tiles: shuffle(ans[0].split('')), placed: [], answer: ans[0] };
+            return {
+                kind: 'train', word: ans[0], pic: ans[1],
+                tiles: shuffle(ans[0].split('')), placed: [], usedIdx: [],
+                instr: 'Build the word!', speak: 'Let us build the word. ' + ans[0].split('').join('. ') + '. ' + ans[0] + '!', answer: ans[0]
+            };
         }
     },
     counting: {
-        em: '🍎', title: 'Counting', sub: 'How many?',
-        kg: { kg1: 'العد حتى ١٠', kg2: 'العد حتى ٢٠' },
+        em: '🧺', title: 'Picnic Count', sub: 'Feed me 4!',
+        kg: { kg1: 'العد حتى ١٠ (إطعام بالعد)', kg2: 'العد حتى ٢٠' },
         gen: function (lvl, kg) {
             var max = kg === 'kg2' ? (lvl < 2 ? 10 : lvl < 4 ? 15 : 20) : (lvl < 2 ? 5 : 10);
             var n = 1 + rnd(max);
-            var em = pick(['🍎', '🎈', '🍪', '🐥', '⭐', '🚗', '🐠', '🌸']);
-            var opts = new Set([n]);
-            while (opts.size < 4) opts.add(Math.max(1, n + rnd(5) - 2));
-            return { kind: 'count', instr: 'How many do you see?', speak: 'Count with me. How many do you see?', objs: new Array(n).fill(em), options: shuffle(Array.from(opts)).map(String), answer: String(n) };
+            var em = pick(COUNTEM);
+            var extra = Math.min(4, Math.ceil(n / 3));
+            var items = [];
+            for (var i = 0; i < n + extra; i++) items.push({ took: false });
+            return {
+                kind: 'count2', n: n, em: em, items: items, got: 0,
+                instr: 'Give Pip ' + n + ' ' + (n === 1 ? 'piece' : 'pieces') + '! Tap them one by one!',
+                speak: 'I am so hungry! Give me ' + n + '! Tap them one, by one!', answer: n
+            };
         }
     },
     math: {
-        em: '➕', title: 'Math', sub: 'Add & subtract',
-        kg: { kg1: 'جمع وطرح في حدود ٥', kg2: 'جمع وطرح في حدود ٢٠' },
+        em: '🚀', title: 'Rocket Math', sub: 'Launch the answer',
+        kg: { kg1: 'جمع وطرح في حدود ٥ (صواريخ)', kg2: 'جمع وطرح في حدود ٢٠' },
         gen: function (lvl, kg) {
             var max = kg === 'kg2' ? (lvl < 2 ? 10 : 20) : 5;
             var a = 1 + rnd(max), b = 1 + rnd(max), op = pick(['+', '-']);
@@ -567,33 +654,43 @@ var GAMES = {
             var ans = op === '+' ? a + b : a - b;
             var opts = new Set([ans]);
             while (opts.size < 4) opts.add(Math.max(0, ans + rnd(7) - 3));
-            return { kind: 'math', instr: 'Solve it!', speak: 'What is ' + a + ' ' + (op === '+' ? 'plus' : 'minus') + ' ' + b + '?', eq: a + ' ' + op + ' ' + b + ' = ?', options: shuffle(Array.from(opts)).map(String), answer: String(ans) };
+            return {
+                kind: 'rocket', eq: a + ' ' + op + ' ' + b + ' = ?',
+                options: shuffle(Array.from(opts)).map(String),
+                instr: 'Launch the right rocket!', speak: 'What is ' + a + ' ' + (op === '+' ? 'plus' : 'minus') + ' ' + b + '? Launch the right rocket!', answer: String(ans)
+            };
         }
     },
     shapes: {
-        em: '🟣', title: 'Shapes', sub: 'Shapes & colors',
-        kg: { kg1: 'أسماء الأشكال والألوان', kg2: 'تمييز الشكل واللون مع بعض' },
+        em: '🧩', title: 'Shape Sorter', sub: 'Sort the shapes',
+        kg: { kg1: 'أسماء الأشكال والألوان (ترتيب الأشكال)', kg2: 'تمييز الشكل واللون مع بعض' },
         gen: function (lvl, kg) {
             var mode = kg === 'kg2' ? (lvl < 3 ? 'color' : 'combo') : (lvl < 3 ? 'shape' : 'color');
+            var n = 3;
+            var holes = [], pieces = [];
             if (mode === 'combo') {
-                var cs = shuffle(COLORS).slice(0, 4), ss = shuffle(SHAPES).slice(0, 4);
-                var combos = [];
-                for (var i = 0; i < 4; i++) combos.push([cs[i], ss[i]]);
-                var target = pick(combos);
-                var ansTxt = target[0][0] + ' ' + target[1];
-                return {
-                    kind: 'shape', instr: 'Find the ' + ansTxt + '!', speak: 'Find the ' + ansTxt + '!',
-                    options: shuffle(combos.map(function (c) { return { v: c[0][0] + ' ' + c[1], h: shapeSvg(c[1], c[0][1], 52) }; })),
-                    answer: ansTxt
-                };
+                var cs = shuffle(COLORS).slice(0, n), ss = shuffle(SHAPES).slice(0, n);
+                for (var i = 0; i < n; i++) {
+                    holes.push({ key: cs[i][0] + '-' + ss[i], shape: ss[i], color: cs[i][1], filled: false });
+                    pieces.push({ key: cs[i][0] + '-' + ss[i], shape: ss[i], color: cs[i][1], took: false });
+                }
+            } else if (mode === 'color') {
+                var cs2 = shuffle(COLORS).slice(0, n);
+                var shp = pick(SHAPES);
+                for (var j = 0; j < n; j++) {
+                    holes.push({ key: cs2[j][0], shape: shp, color: cs2[j][1], filled: false });
+                    pieces.push({ key: cs2[j][0], shape: shp, color: cs2[j][1], took: false });
+                }
+            } else {
+                var ss2 = shuffle(SHAPES).slice(0, n);
+                var col = pick(COLORS);
+                for (var k = 0; k < n; k++) {
+                    holes.push({ key: ss2[k], shape: ss2[k], color: col[1], filled: false });
+                    pieces.push({ key: ss2[k], shape: ss2[k], color: col[1], took: false });
+                }
             }
-            var s = pick(SHAPES), c = pick(COLORS);
-            if (mode === 'color') {
-                var othersC = sample(COLORS, 3, [c]).map(function (x) { return x[0]; });
-                return { kind: 'shape', instr: 'What color is this?', speak: 'What color is this?', bigSvg: shapeSvg(s, c[1], 90), options: shuffle([c[0]].concat(othersC)), answer: c[0] };
-            }
-            var othersS = sample(SHAPES, 3, [s]);
-            return { kind: 'shape', instr: 'What shape is this?', speak: 'What shape is this?', bigSvg: shapeSvg(s, c[1], 90), options: shuffle([s].concat(othersS)), answer: s };
+            var speakMap = { shape: 'Sort the shapes! Put every shape in its home!', color: 'Sort by color! Put every piece in the matching color!', combo: 'Match the shape AND the color!' };
+            return { kind: 'sort', holes: holes, pieces: shuffle(pieces), sel: -1, instr: speakMap[mode], speak: speakMap[mode], answer: 'all' };
         }
     }
 };
@@ -604,28 +701,28 @@ var game = null, cur = null, fxLock = false;
 var setupSel = { theme: (state && state.theme) || 'superhero', name: (state && state.name) || '', char: (state && state.charName) || '', kg: (state && state.kg) || 'kg1' };
 var parentHold = null;
 var editTf = null, photoFrom = 'parents';
+var parentMsg = '';
+var SPOTCOLORS = [['#ff6b9d', '#e04a82'], ['#4f8ef7', '#3a6fd8'], ['#ff9f43', '#e07f1a'], ['#2ecc71', '#22a355'], ['#9b59f5', '#7a3fd4'], ['#ff5f57', '#e03e36']];
 
 function theme() { return THEMES[(state && state.theme) || 'superhero']; }
 function kidName() { return (state && state.name) || 'friend'; }
 function charName() { return (state && state.charName) || theme().charDef; }
 function cheer(arr) { return pick(arr).split('{n}').join(kidName()).split('{c}').join(charName()).split('{t}').join('Miss Lily'); }
 function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-
 function save() { saveLS(KEY, state); }
-
-function applyTheme() {
-    var t = theme();
-    var r = document.querySelector('.kl-root');
-    if (r) { r.style.setProperty('--bg1', t.bg1); r.style.setProperty('--bg2', t.bg2); r.style.setProperty('--accent', t.accent); r.style.setProperty('--onaccent', t.onaccent); }
-}
 
 /* ---------- screens ---------- */
 function render() {
-    var h = '<div class="kl-root">';
-    h += '<div class="kl-spark" style="top:12%;left:6%">✨</div>';
-    h += '<div class="kl-spark" style="top:26%;right:8%;animation-delay:1.2s;font-size:17px">⭐</div>';
-    h += '<div class="kl-spark" style="top:58%;left:4%;animation-delay:2.1s;font-size:15px">✦</div>';
-    h += '<div class="kl-spark" style="top:74%;right:6%;animation-delay:.6s;font-size:19px">✨</div>';
+    var h = '<div class="kl-root"><div class="kl-scene">';
+    h += '<div class="kl-sun"><svg viewBox="0 0 100 100"><g stroke="#ffe27a" stroke-width="7" stroke-linecap="round"><line x1="50" y1="2" x2="50" y2="16"/><line x1="50" y1="84" x2="50" y2="98"/><line x1="2" y1="50" x2="16" y2="50"/><line x1="84" y1="50" x2="98" y2="50"/><line x1="16" y1="16" x2="26" y2="26"/><line x1="74" y1="74" x2="84" y2="84"/><line x1="84" y1="16" x2="74" y2="26"/><line x1="26" y1="74" x2="16" y2="84"/></g><circle cx="50" cy="50" r="24" fill="#ffd93d" stroke="#f5b301" stroke-width="3"/><circle cx="43" cy="46" r="3" fill="#f5b301"/><circle cx="57" cy="46" r="3" fill="#f5b301"/><path d="M42 54 Q50 60 58 54" stroke="#f5b301" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div>';
+    h += '<div class="kl-cloud" style="width:64px;height:24px;top:9%;animation-duration:52s"></div>';
+    h += '<div class="kl-cloud" style="width:82px;height:28px;top:20%;animation-duration:74s;animation-delay:-30s"></div>';
+    h += '<div class="kl-cloud" style="width:54px;height:20px;top:32%;animation-duration:63s;animation-delay:-12s;opacity:.7"></div>';
+    h += '<div class="kl-hill" style="width:75vw;height:34vw;left:-18vw;bottom:-15vw;background:#7cc45e"></div>';
+    h += '<div class="kl-hill" style="width:85vw;height:38vw;right:-22vw;bottom:-18vw;background:#58a83e"></div>';
+    h += '<div class="kl-flower" style="left:8%;bottom:4%">🌼</div>';
+    h += '<div class="kl-flower" style="right:10%;bottom:8%;animation-delay:1.4s">🌷</div>';
+    h += '<div class="kl-flower" style="right:34%;bottom:2.5%;animation-delay:.7s;font-size:17px">🌼</div>';
     h += '<div class="kl-wrap"><div class="kl-page">';
     if (screen === 'setup') h += setupHtml();
     else if (screen === 'home') h += homeHtml();
@@ -633,9 +730,8 @@ function render() {
     else if (screen === 'parents') h += parentsHtml();
     else if (screen === 'photo') h += photoHtml();
     h += '</div><div class="kl-footer" dir="ltr">© Hazem Saleh</div>';
-    h += '</div></div><div class="kl-fx" id="fx"></div>';
+    h += '</div></div></div><div class="kl-fx" id="fx"></div>';
     document.getElementById('app').innerHTML = h;
-    applyTheme();
     wire();
 }
 
@@ -668,7 +764,6 @@ function setupHtml() {
 }
 
 function homeHtml() {
-    var t = theme();
     var h = '<div class="kl-topbar">';
     h += '<div class="kl-stars">⭐ ' + (state.stars || 0) + '</div>';
     h += '<div style="display:flex;gap:8px">';
@@ -676,14 +771,15 @@ function homeHtml() {
     h += '<button type="button" class="kl-iconbtn" data-act="parents" id="parents-btn" aria-label="parents">⚙️</button>';
     h += '</div></div>';
     h += '<div class="kl-hero"><div class="kl-hero-art">' + heroArt('happy') + '</div>';
-    h += '<div class="kl-hi">Hi, ' + esc(kidName()) + '! 👋</div>';
-    h += '<div class="kl-sub">' + esc(charName()) + ' is ready to play!</div></div>';
-    h += '<div class="kl-menu">';
-    Object.keys(GAMES).forEach(function (id) {
+    h += '<div class="kl-bubble"><div class="hi">Hi, ' + esc(kidName()) + '! 👋</div>';
+    h += '<div class="sub">Let\'s play and learn with ' + esc(charName()) + '!</div></div></div>';
+    h += '<div class="kl-spots">';
+    Object.keys(GAMES).forEach(function (id, i) {
         var g = GAMES[id];
+        var c = SPOTCOLORS[i % SPOTCOLORS.length];
         var lv = (state.levels && state.levels[id]) || 1;
-        h += '<button type="button" class="kl-gamebtn" data-game="' + id + '">';
-        h += '<span class="em">' + g.em + '</span><span><div class="tt">' + g.title + '</div><div class="ss">' + g.sub + '</div></span>';
+        h += '<button type="button" class="kl-spot" data-game="' + id + '" style="background:linear-gradient(135deg,' + c[0] + ',' + c[1] + ')">';
+        h += '<span class="em">' + g.em + '</span><span class="tt">' + g.title + '</span><span class="ss">' + g.sub + '</span>';
         h += '<span class="lv">Level ' + lv + '</span>';
         h += '</button>';
     });
@@ -691,51 +787,76 @@ function homeHtml() {
     return h;
 }
 
+function coachHtml() {
+    return '<div class="kl-coach"><div class="mini">' + svgPip('happy') + '</div>'
+        + '<div class="kl-bubble"><div class="hi" style="font-size:17px">' + esc(cur.instr) + '</div></div></div>';
+}
+
 function gameHtml() {
     var g = GAMES[game];
     var lv = (state.levels && state.levels[game]) || 1;
-    var h = '<div class="kl-backrow">';
+    var h = '<div class="kl-topbar">';
     h += '<button type="button" class="kl-iconbtn" data-act="home">🏠</button>';
     h += '<div class="kl-gtitle">' + g.em + ' ' + g.title + '</div>';
-    h += '<button type="button" class="kl-iconbtn" data-act="mute" style="margin-inline-start:auto" aria-label="sound">' + (state.muted ? '🔇' : '🔊') + '</button>';
+    h += '<button type="button" class="kl-iconbtn" data-act="mute" aria-label="sound">' + (state.muted ? '🔇' : '🔊') + '</button>';
     h += '<div class="kl-stars">⭐ ' + (state.stars || 0) + '</div>';
     h += '</div>';
     h += '<div class="kl-lvlrow">';
     for (var i = 1; i <= 5; i++) h += '<div class="kl-dot' + (i <= Math.min(5, lv) ? ' kl-dot-on' : '') + '"></div>';
     h += '</div>';
-    h += '<div class="kl-prompt">';
-    if (cur.kind === 'letter') h += '<div class="kl-big-letter">?</div><div class="kl-instr">' + esc(cur.instr) + ' 👇</div>';
-    else if (cur.kind === 'word') h += '<div class="kl-big-emoji">' + cur.big + '</div><div class="kl-instr">' + esc(cur.instr) + '</div>';
-    else if (cur.kind === 'count') h += '<div class="kl-objs">' + cur.objs.join(' ') + '</div><div class="kl-instr">' + esc(cur.instr) + '</div>';
-    else if (cur.kind === 'math') h += '<div class="kl-eq">' + esc(cur.eq) + '</div>';
-    else if (cur.kind === 'shape') { if (cur.bigSvg) h += '<div class="kl-big-emoji">' + cur.bigSvg + '</div>'; h += '<div class="kl-instr">' + esc(cur.instr) + '</div>'; }
-    else if (cur.kind === 'spell') {
-        h += '<div class="kl-big-emoji">' + cur.big + '</div>';
-        h += '<div class="kl-spell-row">';
-        for (var s = 0; s < cur.word.length; s++) {
-            var ch = cur.placed[s];
-            h += '<div class="kl-slot' + (ch ? ' kl-slot-full' : '') + '">' + (ch ? esc(ch.toUpperCase()) : '') + '</div>';
-        }
-        h += '</div>';
-    }
-    h += '</div>';
-    if (cur.kind === 'letter') {
-        h += '<div class="kl-instr" style="text-align:center;color:#fff;margin-bottom:8px">' + esc(cur.hint || ('Tap the letter ' + cur.answer)) + '</div>';
-        h += '<div class="kl-opts">';
-        cur.options.forEach(function (o) { h += '<button type="button" class="kl-opt" data-opt="' + esc(o) + '">' + esc(o) + '</button>'; });
-        h += '</div>';
-    } else if (cur.kind === 'spell') {
-        h += '<div class="kl-tiles">';
-        cur.tiles.forEach(function (ch, idx) {
-            var used = cur.usedIdx && cur.usedIdx.indexOf(idx) >= 0;
-            h += '<button type="button" class="kl-tile" data-tile="' + idx + '"' + (used ? ' disabled' : '') + '>' + esc(ch.toUpperCase()) + '</button>';
+    h += coachHtml();
+    if (cur.kind === 'bubble') {
+        h += '<div class="kl-bubfield">';
+        cur.bubbles.forEach(function (b, i) {
+            h += '<button type="button" class="kl-bub' + (b.popped ? ' hit' : '') + '" data-bub="' + i + '" style="left:' + b.x + '%;top:' + b.y + '%;animation-delay:-' + b.delay + 's;animation-duration:' + b.dur + 's">' + esc(b.ch) + '</button>';
         });
         h += '</div>';
-    } else {
-        h += '<div class="kl-opts">';
-        cur.options.forEach(function (o) {
-            if (o && typeof o === 'object') h += '<button type="button" class="kl-opt kl-opt-svg" data-opt="' + esc(o.v) + '">' + o.h + '</button>';
-            else h += '<button type="button" class="kl-opt" data-opt="' + esc(o) + '">' + esc(o) + '</button>';
+    } else if (cur.kind === 'feed') {
+        h += '<div class="kl-bear-stage"><div class="big" id="bear-stage">' + svgPip('eat') + '</div></div>';
+        h += '<div class="kl-foods">';
+        cur.options.forEach(function (o, i) {
+            var inner = cur.mode === 'read' ? '<span style="font-size:26px">' + esc(o.v) + '</span>' : '<span class="fem">' + o.em + '</span>';
+            h += '<button type="button" class="kl-food" data-food="' + i + '" data-v="' + esc(o.v) + '">' + inner + '</button>';
+        });
+        h += '</div>';
+    } else if (cur.kind === 'train') {
+        h += '<div class="kl-train-pic">' + cur.pic + '</div>';
+        h += '<div class="kl-train">';
+        for (var s = 0; s < cur.word.length; s++) {
+            var ch = cur.placed[s];
+            h += '<div class="kl-car' + (ch ? ' full' : '') + '">' + (ch ? esc(ch.toUpperCase()) : '') + '</div>';
+        }
+        h += '</div>';
+        h += '<div class="kl-tiles">';
+        cur.tiles.forEach(function (t, idx) {
+            var used = cur.usedIdx && cur.usedIdx.indexOf(idx) >= 0;
+            h += '<button type="button" class="kl-tile" data-tile="' + idx + '"' + (used ? ' disabled' : '') + '>' + esc(t.toUpperCase()) + '</button>';
+        });
+        h += '</div>';
+    } else if (cur.kind === 'count2') {
+        h += '<div class="kl-mouth"><div style="width:150px;height:163px" id="feed-mouth">' + svgPip('eat') + '</div></div>';
+        h += '<div class="kl-count-big"><span id="count-num">' + cur.got + '</span> / ' + cur.n + '</div>';
+        h += '<div class="kl-items">';
+        cur.items.forEach(function (it, i) {
+            h += '<button type="button" class="kl-item' + (it.took ? ' took' : '') + '" data-item="' + i + '">' + cur.em + '</button>';
+        });
+        h += '</div>';
+    } else if (cur.kind === 'rocket') {
+        h += '<div class="kl-eq">' + esc(cur.eq) + '</div>';
+        h += '<div class="kl-rockets">';
+        cur.options.forEach(function (o, i) {
+            h += '<button type="button" class="kl-rocket" data-rocket="' + i + '" data-v="' + esc(o) + '"><span class="rem">🚀</span>' + esc(o) + '</button>';
+        });
+        h += '</div>';
+    } else if (cur.kind === 'sort') {
+        h += '<div class="kl-holes">';
+        cur.holes.forEach(function (ho, i) {
+            h += '<button type="button" class="kl-hole' + (ho.filled ? ' filled' : '') + '" data-hole="' + i + '" data-key="' + esc(ho.key) + '"><div style="' + (ho.filled ? '' : 'opacity:.25') + '">' + shapeSvg(ho.shape, ho.color, 62) + '</div></button>';
+        });
+        h += '</div>';
+        h += '<div class="kl-pieces">';
+        cur.pieces.forEach(function (p, i) {
+            h += '<button type="button" class="kl-piece' + (cur.sel === i ? ' sel' : '') + (p.took ? ' took' : '') + '" data-piece="' + i + '" data-key="' + esc(p.key) + '"' + (p.took ? ' disabled' : '') + '>' + shapeSvg(p.shape, p.color, 58) + '</button>';
         });
         h += '</div>';
     }
@@ -775,7 +896,7 @@ function parentsHtml() {
     });
     h += '</div>';
     h += '<div class="kl-note">المستوى (L) بيترفع لوحده كل ما الطفل يجاوب صح جوه المرحلة.</div>';
-    h += '<button type="button" class="kl-cta" data-act="photo-open" style="background:linear-gradient(135deg,#38bdf8,#6366f1)">صورة الطفل جوه الشخصية 📸</button>';
+    h += '<button type="button" class="kl-cta" data-act="photo-open" style="background:linear-gradient(135deg,#38bdf8,#6366f1);color:#fff;box-shadow:0 6px 0 #4338ca">صورة الطفل جوه الشخصية 📸</button>';
     h += '<div class="kl-warn" style="background:#ecfeff;color:#155e75">🔊 صوت اللعبة (Miss Lily) بيستخدم أصوات الجهاز نفسه وشغال أوفلاين. زرار ' + (state.muted ? '🔇' : '🔊') + ' في الصفحة الرئيسية بيسكت الصوت والمؤثرات. عشان أوضح صوت على الآيفون: Settings ← Accessibility ← Spoken Content ← Voices ← English ← Samantha (Enhanced).</div>';
     h += '<button type="button" class="kl-cta" data-act="pasave">حفظ ✅</button>';
     h += '<button type="button" class="kl-ghost" data-act="backup">نسخ البيانات 📋</button>';
@@ -785,7 +906,6 @@ function parentsHtml() {
     h += '</div>';
     return h;
 }
-var parentMsg = '';
 
 function photoHtml() {
     var store = photoStore();
@@ -816,7 +936,6 @@ function photoHtml() {
 function startGame(id) {
     game = id;
     cur = GAMES[id].gen((state.levels && state.levels[id]) || 1, state.kg || 'kg1');
-    cur.usedIdx = [];
     screen = 'game';
     render();
     SFX.whoosh();
@@ -879,66 +998,157 @@ function nextRound(delay) {
         fxLock = false;
         if (screen === 'game') {
             cur = GAMES[game].gen((state.levels && state.levels[game]) || 1, state.kg || 'kg1');
-            cur.usedIdx = [];
             render();
             if (cur.speak) say(cur.speak);
         }
     }, delay);
 }
 
-function answer(val, btn) {
-    if (fxLock) return;
-    SFX.pop();
-    var right = String(val) === String(cur.answer);
-    if (right) {
-        if (btn) btn.classList.add('kl-opt-right');
-        state.stars = (state.stars || 0) + 1;
-        levelUpMaybe(game, true);
-        save();
-        var line = cheer(theme().cheers);
-        SFX.correct(); SFX.star(); fx('yay', line, line);
-        nextRound(1600);
+function winRound(customSpeak) {
+    state.stars = (state.stars || 0) + 1;
+    levelUpMaybe(game, true);
+    save();
+    var line = cheer(theme().cheers);
+    SFX.correct(); SFX.star();
+    fx('yay', line, customSpeak || line);
+    nextRound(1700);
+}
+
+function nope(el) {
+    if (el) {
+        el.classList.remove('nope'); void el.offsetWidth; el.classList.add('nope');
+        setTimeout(function () { el.classList.remove('nope'); }, 450);
+    }
+    SFX.wrong();
+    levelUpMaybe(game, false);
+    save();
+}
+
+function flyTo(el, targetSel, done) {
+    var t = document.querySelector(targetSel);
+    if (!t || !el || !el.animate) { if (done) done(); return; }
+    try {
+        var r1 = el.getBoundingClientRect(), r2 = t.getBoundingClientRect();
+        var dx = r2.left + r2.width / 2 - (r1.left + r1.width / 2);
+        var dy = r2.top + r2.height / 2 - (r1.top + r1.height / 2);
+        var an = el.animate([
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.15)', opacity: .5 }
+        ], { duration: 420, easing: 'ease-in' });
+        an.onfinish = function () { if (done) done(); };
+    } catch (e) { if (done) done(); }
+}
+
+/* ---------- mechanic handlers ---------- */
+function bubbleTap(i, el) {
+    if (fxLock || cur.bubbles[i].popped) return;
+    if (cur.bubbles[i].ch === cur.target) {
+        cur.bubbles[i].popped = true;
+        cur.hits++;
+        SFX.bubble();
+        el.classList.add('hit');
+        if (cur.hits >= cur.need) {
+            fxLock = true;
+            setTimeout(function () { fxLock = false; winRound(); }, 350);
+        } else {
+            say(NUMWORDS[cur.hits] + '!');
+        }
     } else {
-        if (btn) btn.classList.add('kl-opt-wrong');
-        levelUpMaybe(game, false);
-        save();
-        var line2 = cheer(theme().oops);
-        SFX.wrong(); fx('oops', line2, line2);
-        setTimeout(function () {
-            var el = document.getElementById('fx');
-            if (el) el.classList.remove('kl-fx-on');
-            if (btn) btn.classList.remove('kl-opt-wrong');
-        }, 1200);
+        nope(el);
     }
 }
 
-function spellTap(idx) {
+function feedTap(i, el) {
     if (fxLock) return;
-    SFX.pop();
+    var o = cur.options[i];
+    if (o.v === cur.answer) {
+        fxLock = true;
+        SFX.chomp();
+        flyTo(el, '#bear-stage', function () {
+            fxLock = false;
+            winRound('Yummy! ' + cheer(theme().cheers));
+        });
+    } else {
+        nope(el);
+        say('No no, I want the ' + cur.word + '!');
+    }
+}
+
+function trainTap(idx, el) {
+    if (fxLock) return;
     var ch = cur.tiles[idx];
     var expect = cur.word[cur.placed.length];
     if (ch === expect) {
         cur.placed.push(ch);
         cur.usedIdx.push(idx);
-        save();
+        SFX.pop();
         if (cur.placed.length === cur.word.length) {
-            state.stars = (state.stars || 0) + 1;
-            levelUpMaybe(game, true);
+            SFX.horn();
             save();
-            var line = cheer(theme().cheers);
             render();
-            SFX.correct(); SFX.star(); fx('yay', line, cur.word + '! ' + line);
-            nextRound(1800);
+            winRound(cur.word + '! ' + cheer(theme().cheers));
         } else {
             render();
         }
     } else {
-        var line2 = cheer(theme().oops);
-        SFX.wrong(); fx('oops', line2, line2);
-        setTimeout(function () {
-            var el = document.getElementById('fx');
-            if (el) el.classList.remove('kl-fx-on');
-        }, 1100);
+        nope(el);
+    }
+}
+
+function countTap(i, el) {
+    if (fxLock || cur.items[i].took) return;
+    if (cur.got >= cur.n) return;
+    cur.items[i].took = true;
+    cur.got++;
+    SFX.pop();
+    var numEl = document.getElementById('count-num');
+    if (numEl) numEl.textContent = cur.got;
+    say(NUMWORDS[cur.got] + '!');
+    flyTo(el, '#feed-mouth', function () { el.classList.add('took'); });
+    if (cur.got >= cur.n) {
+        fxLock = true;
+        setTimeout(function () { fxLock = false; winRound(); }, 650);
+    }
+}
+
+function rocketTap(i, el) {
+    if (fxLock) return;
+    var v = cur.options[i];
+    if (String(v) === String(cur.answer)) {
+        fxLock = true;
+        el.classList.add('launch');
+        SFX.launch();
+        setTimeout(function () { fxLock = false; winRound(); }, 600);
+    } else {
+        nope(el);
+    }
+}
+
+function pieceTap(i) {
+    if (fxLock || cur.pieces[i].took) return;
+    cur.sel = (cur.sel === i) ? -1 : i;
+    SFX.pop();
+    render();
+}
+
+function holeTap(i, el) {
+    if (fxLock) return;
+    if (cur.sel < 0) { SFX.pop(); return; }
+    var p = cur.pieces[cur.sel];
+    if (p.key === cur.holes[i].key && !cur.holes[i].filled) {
+        cur.holes[i].filled = true;
+        p.took = true;
+        cur.sel = -1;
+        SFX.snap();
+        if (cur.holes.every(function (h) { return h.filled; })) {
+            render();
+            winRound();
+        } else {
+            render();
+            say(pick(['Yes!', 'Nice!', 'Perfect!']));
+        }
+    } else {
+        nope(el);
     }
 }
 
@@ -969,11 +1179,26 @@ function wire() {
     document.querySelectorAll('[data-game]').forEach(function (b) {
         b.addEventListener('click', function () { startGame(b.getAttribute('data-game')); });
     });
-    document.querySelectorAll('[data-opt]').forEach(function (b) {
-        b.addEventListener('click', function () { answer(b.getAttribute('data-opt'), b); });
+    document.querySelectorAll('[data-bub]').forEach(function (b) {
+        b.addEventListener('click', function () { bubbleTap(Number(b.getAttribute('data-bub')), b); });
+    });
+    document.querySelectorAll('[data-food]').forEach(function (b) {
+        b.addEventListener('click', function () { feedTap(Number(b.getAttribute('data-food')), b); });
     });
     document.querySelectorAll('[data-tile]').forEach(function (b) {
-        b.addEventListener('click', function () { spellTap(Number(b.getAttribute('data-tile'))); });
+        b.addEventListener('click', function () { trainTap(Number(b.getAttribute('data-tile')), b); });
+    });
+    document.querySelectorAll('[data-item]').forEach(function (b) {
+        b.addEventListener('click', function () { countTap(Number(b.getAttribute('data-item')), b); });
+    });
+    document.querySelectorAll('[data-rocket]').forEach(function (b) {
+        b.addEventListener('click', function () { rocketTap(Number(b.getAttribute('data-rocket')), b); });
+    });
+    document.querySelectorAll('[data-piece]').forEach(function (b) {
+        b.addEventListener('click', function () { pieceTap(Number(b.getAttribute('data-piece'))); });
+    });
+    document.querySelectorAll('[data-hole]').forEach(function (b) {
+        b.addEventListener('click', function () { holeTap(Number(b.getAttribute('data-hole')), b); });
     });
     document.querySelectorAll('[data-act]').forEach(function (b) {
         b.addEventListener('click', function () {
@@ -986,6 +1211,7 @@ function wire() {
                 save();
                 screen = 'home';
                 render();
+                SFX.fanfare();
                 say('Hi ' + nm + '! Let us play and learn!');
             } else if (act === 'home') { SFX.whoosh(); screen = 'home'; render(); }
             else if (act === 'mute') {
