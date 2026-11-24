@@ -207,6 +207,23 @@ button { font-family: inherit; }
 .kl-warn { font-size: 13px; color: #b45309; background: #fff7ed; border-radius: 14px; padding: 11px 13px; margin-top: 14px; line-height: 1.7; font-weight: 700; }
 .kl-rtl { direction: rtl; text-align: right; }
 .kl-footer { text-align: center; font-size: 11px; color: rgba(255,255,255,.55); margin-top: 26px; position: relative; z-index: 2; }
+/* v2: page transitions, mascot, costume, photo editor, KG chips */
+.kl-page { animation: kl-page-in .38s cubic-bezier(.2,.9,.3,1.12); }
+@keyframes kl-page-in { from { opacity: 0; transform: translateY(16px) scale(.985); } }
+.kl-blink { transform-box: fill-box; transform-origin: center; animation: kl-blink 4.6s ease-in-out infinite; }
+@keyframes kl-blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
+.kl-fx-art { width: 140px; height: 170px; margin: 0 auto; animation: kl-pop .55s ease; filter: drop-shadow(0 8px 16px rgba(0,0,0,.4)); }
+.kl-fx-art svg { width: 100%; height: 100%; }
+.kl-stage { width: 240px; margin: 10px auto; touch-action: none; border-radius: 28px; background: linear-gradient(160deg,#f5f3ff,#e0f2fe); padding: 12px; box-shadow: inset 0 0 0 3px rgba(99,102,241,.25); }
+.kl-stage svg { width: 100%; height: auto; display: block; }
+.kl-slider { width: 100%; accent-color: #7c3aed; margin: 4px 0 10px; }
+.kl-kg { background: #f5f3ff; border-radius: 14px; padding: 10px 12px; margin-bottom: 8px; }
+.kl-kg-row { display: flex; justify-content: space-between; align-items: center; padding-top: 6px; font-weight: 800; color: #2d2340; font-size: 14px; }
+.kl-kg-chip { background: #ffd93d; color: #4a2c00; border-radius: 999px; padding: 2px 10px; font-size: 12px; white-space: nowrap; }
+.kl-kg-desc { font-size: 12.5px; color: #6b6480; font-weight: 700; text-align: right; padding: 2px 0 4px; }
+.kl-kgbtn { padding: 10px 6px; }
+.kl-opt-svg { padding: 10px; }
+.kl-opt-svg svg { display: block; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -258,6 +275,14 @@ var THEMES = {
         ar: 'بطل خارق', en: 'Superhero', charDef: 'Captain Star', em: '🦸',
         bg1: '#1e3a8a', bg2: '#7f1d1d', accent: '#ffcb3d', onaccent: '#3b2a00',
         art: function () { return svgHero('#ef4444', '#1d4ed8'); },
+        costumeBack: function () { return '<path d="M18 62 Q6 138 34 148 L86 148 Q114 138 102 62 Q80 78 60 78 Q40 78 18 62 Z" fill="#1d4ed8"/>'; },
+        costumeFront: function () {
+            return '<path d="M40 92 L80 92 L88 150 L32 150 Z" fill="#ef4444"/>'
+                + '<path d="M60 102 L70 112 L60 126 L50 112 Z" fill="#ffd93d"/>'
+                + '<rect x="36" y="136" width="48" height="8" rx="4" fill="#ffd93d"/>'
+                + '<path fill-rule="evenodd" d="M60 12 a30 30 0 1 0 .001 0 Z M60 17 a25 25 0 1 1 -.001 0 Z" fill="#ef4444"/>'
+                + '<path fill-rule="evenodd" d="M60 12 a30 30 0 1 0 .001 0 Z M60 17 a25 25 0 1 1 -.001 0 Z" fill="none" stroke="#b91c1c" stroke-width="2"/>';
+        },
         cheers: ['Great job, {n}! {c} is proud of you!', 'Boom! You did it, {n}!', 'You are a real hero, {n}!', 'Pow! Amazing, {n}!', '{c} says: WOW, {n}!', 'Your teacher Miss Lily is so happy, {n}!'],
         oops: ['Try again, {n}! Heroes never give up!', 'Almost, {n}! One more try!']
     },
@@ -265,6 +290,18 @@ var THEMES = {
         ar: 'أميرة', en: 'Princess', charDef: 'Princess Star', em: '👸',
         bg1: '#9d174d', bg2: '#6d28d9', accent: '#ffd93d', onaccent: '#4a2c00',
         art: function () { return svgPrincess('#ffd9c0', '#ec4899'); },
+        costumeBack: function () {
+            return '<circle cx="60" cy="46" r="34" fill="#fbbf24"/>'
+                + '<rect x="22" y="40" width="14" height="54" rx="7" fill="#fbbf24"/>'
+                + '<rect x="84" y="40" width="14" height="54" rx="7" fill="#fbbf24"/>';
+        },
+        costumeFront: function () {
+            return '<path d="M40 16 L47 28 L60 12 L73 28 L80 16 L80 30 L40 30 Z" fill="#ffd93d" stroke="#f5b301" stroke-width="2" stroke-linejoin="round"/>'
+                + '<path d="M35 32 Q60 10 85 32 L85 20 Q60 0 35 20 Z" fill="#fbbf24"/>'
+                + '<path d="M42 92 L78 92 L96 150 L24 150 Z" fill="#ec4899"/>'
+                + '<rect x="40" y="92" width="40" height="8" rx="4" fill="#f9a8d4"/>'
+                + '<circle cx="60" cy="114" r="5" fill="#ffd93d"/>';
+        },
         cheers: ['Great job, {n}! {c} is proud of you!', 'Sparkly and smart, {n}!', 'You shine like a star, {n}!', 'Wonderful, {n}!', '{c} says: WOW, {n}!', 'Your teacher Miss Lily is so happy, {n}!'],
         oops: ['Try again, {n}! You can do it!', 'Almost, {n}! One more try!']
     },
@@ -272,6 +309,13 @@ var THEMES = {
         ar: 'ديناصور', en: 'Dinosaur', charDef: 'Dino', em: '🦖',
         bg1: '#14532d', bg2: '#0f766e', accent: '#a3e635', onaccent: '#1a2e05',
         art: function () { return svgDino('#22c55e', '#fbbf24'); },
+        costumeBack: function () { return ''; },
+        costumeFront: function () {
+            return '<path d="M38 92 L82 92 L90 150 L30 150 Z" fill="#22c55e"/>'
+                + '<ellipse cx="60" cy="126" rx="18" ry="22" fill="#fef08a"/>'
+                + '<path fill-rule="evenodd" d="M60 11 a31 31 0 1 0 .001 0 Z M60 17 a25 25 0 1 1 -.001 0 Z" fill="#22c55e"/>'
+                + '<path d="M60 2 L67 16 L53 16 Z M36 12 L44 24 L31 22 Z M84 12 L89 22 L76 24 Z" fill="#fbbf24"/>';
+        },
         cheers: ['ROAR! Great job, {n}!', '{c} is stomping with joy, {n}!', 'Dino-mite, {n}!', 'You did it, {n}!', '{c} says: WOW, {n}!', 'Your teacher Miss Lily is so happy, {n}!'],
         oops: ['Try again, {n}! Big dino steps!', 'Almost, {n}! Stomp again!']
     },
@@ -279,6 +323,14 @@ var THEMES = {
         ar: 'فضاء', en: 'Space', charDef: 'Astro', em: '🚀',
         bg1: '#0f172a', bg2: '#312e81', accent: '#38bdf8', onaccent: '#082f49',
         art: function () { return svgSpace('#e5e7eb', '#312e81'); },
+        costumeBack: function () { return '<rect x="18" y="84" width="84" height="66" rx="16" fill="#94a3b8"/>'; },
+        costumeFront: function () {
+            return '<path d="M38 94 L82 94 L90 150 L30 150 Z" fill="#e5e7eb"/>'
+                + '<rect x="46" y="104" width="28" height="20" rx="4" fill="#38bdf8"/>'
+                + '<circle cx="52" cy="114" r="2.6" fill="#ef4444"/><circle cx="60" cy="114" r="2.6" fill="#22c55e"/><circle cx="68" cy="114" r="2.6" fill="#facc15"/>'
+                + '<path fill-rule="evenodd" d="M60 10 a32 32 0 1 0 .001 0 Z M60 17 a25 25 0 1 1 -.001 0 Z" fill="#e5e7eb"/>'
+                + '<path fill-rule="evenodd" d="M60 10 a32 32 0 1 0 .001 0 Z M60 17 a25 25 0 1 1 -.001 0 Z" fill="none" stroke="#64748b" stroke-width="2.5"/>';
+        },
         cheers: ['Blast off! Great job, {n}!', '{c} is over the moon, {n}!', 'You are a star, {n}!', 'To the stars, {n}!', '{c} says: WOW, {n}!', 'Your teacher Miss Lily is so happy, {n}!'],
         oops: ['Try again, {n}! Rockets need two tries!', 'Almost, {n}! One more launch!']
     }
@@ -311,7 +363,7 @@ if (voiceOK) {
     try { speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
 }
 function say(text) {
-    if (!voiceOK) return;
+    if (!voiceOK || (state && state.muted)) return;
     try {
         speechSynthesis.cancel();
         var u = new SpeechSynthesisUtterance(text);
@@ -320,6 +372,84 @@ function say(text) {
         speechSynthesis.speak(u);
     } catch (e) {}
 }
+
+/* ================= mascot (original star buddy) ================= */
+function svgMascot(mood) {
+    mood = mood || 'happy';
+    var eyes, mouth;
+    if (mood === 'wow') {
+        eyes = '<g class="kl-blink"><circle cx="40" cy="47" r="6.5" fill="#fff"/><circle cx="40" cy="47" r="3.2" fill="#43310a"/>'
+            + '<circle cx="60" cy="47" r="6.5" fill="#fff"/><circle cx="60" cy="47" r="3.2" fill="#43310a"/></g>';
+        mouth = '<ellipse cx="50" cy="63" rx="7" ry="8" fill="#7c2d12"/><ellipse cx="50" cy="66" rx="4" ry="3.4" fill="#f87171"/>';
+    } else if (mood === 'oops') {
+        eyes = '<path d="M33 47 Q40 42 47 47" stroke="#43310a" stroke-width="3.5" fill="none" stroke-linecap="round"/>'
+            + '<path d="M53 47 Q60 42 67 47" stroke="#43310a" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+        mouth = '<path d="M41 63 Q45.5 59 50 63 Q54.5 67 59 63" stroke="#43310a" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    } else {
+        eyes = '<g class="kl-blink"><circle cx="40" cy="47" r="5.5" fill="#fff"/><circle cx="40.8" cy="48" r="2.8" fill="#43310a"/>'
+            + '<circle cx="60" cy="47" r="5.5" fill="#fff"/><circle cx="60.8" cy="48" r="2.8" fill="#43310a"/></g>';
+        mouth = '<path d="M38 58 Q50 70 62 58 Q56 66 50 66 Q44 66 38 58 Z" fill="#7c2d12"/>';
+    }
+    return '<svg viewBox="0 0 100 100">'
+        + '<path d="M50 6 L60.5 36 L92 37 L67 56 L76.5 88 L50 69 L23.5 88 L33 56 L8 37 L39.5 36 Z" fill="#ffd93d" stroke="#f5b301" stroke-width="3" stroke-linejoin="round"/>'
+        + '<ellipse cx="30" cy="57" rx="5" ry="3.4" fill="#fb923c" opacity=".65"/>'
+        + '<ellipse cx="70" cy="57" rx="5" ry="3.4" fill="#fb923c" opacity=".65"/>'
+        + eyes + mouth + '</svg>';
+}
+
+/* ================= costume with face opening (original art per theme) ================= */
+var faceUid = 0;
+function tfStr(tf) { return 'translate(60 42) translate(' + tf.x + ' ' + tf.y + ') rotate(' + tf.r + ') scale(' + tf.s + ') translate(-60 -42)'; }
+function photoStore() { return state || setupSel; }
+function applyTf() { var im = document.getElementById('face-img'); if (im && editTf) im.setAttribute('transform', tfStr(editTf)); }
+function costumeSvg(tk, mood, editor) {
+    var t = THEMES[tk] || THEMES.superhero;
+    var store = photoStore();
+    var tf = (editor && editTf) || store.faceTf || { x: 0, y: 0, s: 1, r: 0 };
+    var face;
+    if (store.photo) {
+        var id = 'fc' + (++faceUid);
+        face = '<defs><clipPath id="' + id + '"><circle cx="60" cy="42" r="25"/></clipPath></defs>'
+            + '<image ' + (editor ? 'id="face-img" ' : '') + 'href="' + store.photo + '" xlink:href="' + store.photo + '" x="34" y="16" width="52" height="52" preserveAspectRatio="xMidYMid slice" clip-path="url(#' + id + ')" transform="' + tfStr(tf) + '"/>';
+    } else {
+        face = '<g transform="translate(35 17) scale(0.5)">' + svgMascot(mood || 'happy') + '</g>';
+    }
+    return '<svg viewBox="0 0 120 150">' + (t.costumeBack ? t.costumeBack() : '') + face + t.costumeFront() + '</svg>';
+}
+function heroArt(mood) { return costumeSvg((state && state.theme) || setupSel.theme || 'superhero', mood); }
+
+/* ================= sound effects (WebAudio synth, no assets, offline) ================= */
+var SFX = {
+    ctx: null,
+    ac: function () {
+        if (state && state.muted) return null;
+        try {
+            if (!this.ctx) { var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; this.ctx = new AC(); }
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+            return this.ctx;
+        } catch (e) { return null; }
+    },
+    tone: function (freq, t0, dur, type, vol, slide) {
+        var c = this.ac(); if (!c) return;
+        try {
+            var o = c.createOscillator(), g = c.createGain();
+            o.type = type || 'sine';
+            o.frequency.setValueAtTime(freq, c.currentTime + t0);
+            if (slide) o.frequency.exponentialRampToValueAtTime(slide, c.currentTime + t0 + dur);
+            g.gain.setValueAtTime(0.0001, c.currentTime + t0);
+            g.gain.exponentialRampToValueAtTime(vol || 0.18, c.currentTime + t0 + 0.015);
+            g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + t0 + dur);
+            o.connect(g); g.connect(c.destination);
+            o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
+        } catch (e) {}
+    },
+    pop: function () { this.tone(500, 0, 0.09, 'triangle', 0.15, 900); },
+    correct: function () { var s = this;[523, 659, 784, 1047].forEach(function (f, i) { s.tone(f, i * 0.08, 0.2, 'sine', 0.2); }); },
+    wrong: function () { this.tone(220, 0, 0.24, 'sawtooth', 0.08, 150); },
+    star: function () { this.tone(1568, 0, 0.25, 'sine', 0.16); this.tone(2093, 0.07, 0.3, 'sine', 0.1); },
+    fanfare: function () { var s = this;[392, 523, 659, 784, 1047].forEach(function (f, i) { s.tone(f, i * 0.09, 0.24, 'triangle', 0.18); }); },
+    whoosh: function () { this.tone(900, 0, 0.16, 'sine', 0.05, 280); }
+};
 
 /* ================= game content ================= */
 var LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -342,20 +472,57 @@ function sample(arr, n, excl) {
     return shuffle(pool).slice(0, n);
 }
 
+var SHAPES = ['circle', 'square', 'triangle', 'star', 'heart', 'diamond'];
+var COLORS = [['red', '#ef4444'], ['blue', '#3b82f6'], ['green', '#22c55e'], ['yellow', '#facc15'], ['purple', '#a855f7'], ['orange', '#fb923c'], ['pink', '#f472b6']];
+var SIGHT = ['the', 'and', 'you', 'is', 'it', 'in', 'on', 'we', 'he', 'she', 'my', 'to', 'go', 'up', 'at', 'am', 'can', 'see', 'like', 'play'];
+var SOUNDS = { A: 'ah', B: 'buh', C: 'kuh', D: 'duh', E: 'eh', F: 'fff', G: 'guh', H: 'huh', I: 'ih', J: 'juh', K: 'kuh', L: 'lll', M: 'mmm', N: 'nnn', O: 'oh', P: 'puh', Q: 'kwuh', R: 'rrr', S: 'sss', T: 'tuh', U: 'uh', V: 'vvv', W: 'wuh', X: 'ks', Y: 'yuh', Z: 'zzz' };
+function shapeSvg(name, color, size) {
+    size = size || 80;
+    var p = {
+        circle: '<circle cx="50" cy="50" r="38"/>',
+        square: '<rect x="14" y="14" width="72" height="72" rx="10"/>',
+        triangle: '<path d="M50 12 L90 84 L10 84 Z"/>',
+        star: '<path d="M50 8 L62 38 L94 39 L68 58 L78 90 L50 71 L22 90 L32 58 L6 39 L38 38 Z"/>',
+        heart: '<path d="M50 84 C20 60 12 38 26 26 C38 16 50 26 50 36 C50 26 62 16 74 26 C88 38 80 60 50 84 Z"/>',
+        diamond: '<path d="M50 10 L86 50 L50 90 L14 50 Z"/>'
+    }[name] || '';
+    return '<svg viewBox="0 0 100 100" style="width:' + size + 'px;height:' + size + 'px"><g fill="' + color + '" stroke="rgba(0,0,0,.18)" stroke-width="4" stroke-linejoin="round">' + p + '</g></svg>';
+}
+
+/* Game registry: each entry = {em,title,sub,kg:{kg1,kg2},gen(lvl,kg)->round}.
+   A future game type (e.g. a runner) registers here and appears on the home menu. */
 var GAMES = {
     letters: {
         em: '🔤', title: 'Letters', sub: 'Find the letter',
-        gen: function (lvl) {
+        kg: { kg1: 'التعرف على الحروف الكبيرة A-Z', kg2: 'الحروف الصغيرة + أصوات الحروف (فونكس)' },
+        gen: function (lvl, kg) {
+            if (kg === 'kg2') {
+                if (lvl >= 3) {
+                    var ans2 = pick(LETTERS);
+                    var opts2 = shuffle([ans2].concat(sample(LETTERS, 3, [ans2])));
+                    return { kind: 'letter', instr: 'Which letter says "' + SOUNDS[ans2] + '"?', speak: 'Which letter says ' + SOUNDS[ans2] + '?', options: opts2, answer: ans2, hint: 'Tap the letter ' + ans2 };
+                }
+                var poolL = lvl < 2 ? LETTERS.slice(0, 10) : LETTERS;
+                var ansL = pick(poolL);
+                var optsL = shuffle([ansL].concat(sample(poolL, 3, [ansL])));
+                return { kind: 'letter', instr: 'Find the small letter', speak: 'Find the small letter. ' + ansL, options: optsL.map(function (l) { return l.toLowerCase(); }), answer: ansL.toLowerCase(), hint: 'Tap the small ' + ansL.toLowerCase() };
+            }
             var pool = lvl < 2 ? LETTERS.slice(0, 10) : lvl < 4 ? LETTERS.slice(0, 18) : LETTERS;
             var ans = pick(pool);
             var opts = shuffle([ans].concat(sample(pool, 3, [ans])));
-            return { kind: 'letter', instr: 'Find the letter', speak: 'Find the letter ' + ans, big: ans, options: opts, answer: ans };
+            return { kind: 'letter', instr: 'Find the letter', speak: 'Find the letter ' + ans, big: ans, options: opts, answer: ans, hint: 'Tap the letter ' + ans };
         }
     },
     words: {
         em: '🖼️', title: 'Words', sub: 'Match the picture',
-        gen: function (lvl) {
-            var pool = lvl < 2 ? WORDS1 : lvl < 4 ? WORDS1.concat(WORDS2) : ALLWORDS;
+        kg: { kg1: 'كلمات بسيطة مع صورها', kg2: 'كلمات النظر الشائعة (sight words) + كلمات أطول' },
+        gen: function (lvl, kg) {
+            if (kg === 'kg2' && lvl >= 3) {
+                var ansS = pick(SIGHT);
+                var optsS = shuffle([ansS].concat(sample(SIGHT, 3, [ansS])));
+                return { kind: 'word', instr: 'Listen! Find the word you hear 👂', speak: 'Find the word. ' + ansS, big: '🎧', options: optsS, answer: ansS };
+            }
+            var pool = kg === 'kg2' ? WORDS2.concat(WORDS3) : (lvl < 2 ? WORDS1 : lvl < 4 ? WORDS1.concat(WORDS2) : ALLWORDS);
             var ans = pick(pool);
             var others = sample(pool, 3, [ans]).map(function (w) { return w[0]; });
             var opts = shuffle([ans[0]].concat(others));
@@ -364,16 +531,18 @@ var GAMES = {
     },
     spelling: {
         em: '✏️', title: 'Spelling', sub: 'Build the word',
-        gen: function (lvl) {
-            var pool = lvl < 2 ? WORDS1 : lvl < 4 ? WORDS2 : WORDS3;
+        kg: { kg1: 'تهجي كلمات من ٣ حروف', kg2: 'تهجي كلمات من ٤-٥ حروف' },
+        gen: function (lvl, kg) {
+            var pool = kg === 'kg2' ? WORDS2.concat(WORDS3) : (lvl < 2 ? WORDS1 : lvl < 4 ? WORDS2 : WORDS3);
             var ans = pick(pool);
             return { kind: 'spell', instr: 'Spell the word!', speak: 'Let us spell ' + ans[0], big: ans[1], word: ans[0], tiles: shuffle(ans[0].split('')), placed: [], answer: ans[0] };
         }
     },
     counting: {
         em: '🍎', title: 'Counting', sub: 'How many?',
-        gen: function (lvl) {
-            var max = lvl < 2 ? 5 : lvl < 4 ? 10 : 15;
+        kg: { kg1: 'العد حتى ١٠', kg2: 'العد حتى ٢٠' },
+        gen: function (lvl, kg) {
+            var max = kg === 'kg2' ? (lvl < 2 ? 10 : lvl < 4 ? 15 : 20) : (lvl < 2 ? 5 : 10);
             var n = 1 + rnd(max);
             var em = pick(['🍎', '🎈', '🍪', '🐥', '⭐', '🚗', '🐠', '🌸']);
             var opts = new Set([n]);
@@ -383,8 +552,9 @@ var GAMES = {
     },
     math: {
         em: '➕', title: 'Math', sub: 'Add & subtract',
-        gen: function (lvl) {
-            var max = lvl < 2 ? 5 : lvl < 4 ? 10 : 20;
+        kg: { kg1: 'جمع وطرح في حدود ٥', kg2: 'جمع وطرح في حدود ٢٠' },
+        gen: function (lvl, kg) {
+            var max = kg === 'kg2' ? (lvl < 2 ? 10 : 20) : 5;
             var a = 1 + rnd(max), b = 1 + rnd(max), op = pick(['+', '-']);
             if (op === '-' && b > a) { var t = a; a = b; b = t; }
             var ans = op === '+' ? a + b : a - b;
@@ -392,14 +562,41 @@ var GAMES = {
             while (opts.size < 4) opts.add(Math.max(0, ans + rnd(7) - 3));
             return { kind: 'math', instr: 'Solve it!', speak: 'What is ' + a + ' ' + (op === '+' ? 'plus' : 'minus') + ' ' + b + '?', eq: a + ' ' + op + ' ' + b + ' = ?', options: shuffle(Array.from(opts)).map(String), answer: String(ans) };
         }
+    },
+    shapes: {
+        em: '🟣', title: 'Shapes', sub: 'Shapes & colors',
+        kg: { kg1: 'أسماء الأشكال والألوان', kg2: 'تمييز الشكل واللون مع بعض' },
+        gen: function (lvl, kg) {
+            var mode = kg === 'kg2' ? (lvl < 3 ? 'color' : 'combo') : (lvl < 3 ? 'shape' : 'color');
+            if (mode === 'combo') {
+                var cs = shuffle(COLORS).slice(0, 4), ss = shuffle(SHAPES).slice(0, 4);
+                var combos = [];
+                for (var i = 0; i < 4; i++) combos.push([cs[i], ss[i]]);
+                var target = pick(combos);
+                var ansTxt = target[0][0] + ' ' + target[1];
+                return {
+                    kind: 'shape', instr: 'Find the ' + ansTxt + '!', speak: 'Find the ' + ansTxt + '!',
+                    options: shuffle(combos.map(function (c) { return { v: c[0][0] + ' ' + c[1], h: shapeSvg(c[1], c[0][1], 52) }; })),
+                    answer: ansTxt
+                };
+            }
+            var s = pick(SHAPES), c = pick(COLORS);
+            if (mode === 'color') {
+                var othersC = sample(COLORS, 3, [c]).map(function (x) { return x[0]; });
+                return { kind: 'shape', instr: 'What color is this?', speak: 'What color is this?', bigSvg: shapeSvg(s, c[1], 90), options: shuffle([c[0]].concat(othersC)), answer: c[0] };
+            }
+            var othersS = sample(SHAPES, 3, [s]);
+            return { kind: 'shape', instr: 'What shape is this?', speak: 'What shape is this?', bigSvg: shapeSvg(s, c[1], 90), options: shuffle([s].concat(othersS)), answer: s };
+        }
     }
 };
 
 /* ================= app ================= */
 var screen = state ? 'home' : 'setup';
 var game = null, cur = null, fxLock = false;
-var setupSel = { theme: (state && state.theme) || 'superhero', name: (state && state.name) || '', char: (state && state.charName) || '' };
+var setupSel = { theme: (state && state.theme) || 'superhero', name: (state && state.name) || '', char: (state && state.charName) || '', kg: (state && state.kg) || 'kg1' };
 var parentHold = null;
+var editTf = null, photoFrom = 'parents';
 
 function theme() { return THEMES[(state && state.theme) || 'superhero']; }
 function kidName() { return (state && state.name) || 'friend'; }
@@ -422,12 +619,13 @@ function render() {
     h += '<div class="kl-spark" style="top:26%;right:8%;animation-delay:1.2s;font-size:17px">⭐</div>';
     h += '<div class="kl-spark" style="top:58%;left:4%;animation-delay:2.1s;font-size:15px">✦</div>';
     h += '<div class="kl-spark" style="top:74%;right:6%;animation-delay:.6s;font-size:19px">✨</div>';
-    h += '<div class="kl-wrap">';
+    h += '<div class="kl-wrap"><div class="kl-page">';
     if (screen === 'setup') h += setupHtml();
     else if (screen === 'home') h += homeHtml();
     else if (screen === 'game') h += gameHtml();
     else if (screen === 'parents') h += parentsHtml();
-    h += '<div class="kl-footer" dir="ltr">© Hazem Saleh</div>';
+    else if (screen === 'photo') h += photoHtml();
+    h += '</div><div class="kl-footer" dir="ltr">© Hazem Saleh</div>';
     h += '</div></div><div class="kl-fx" id="fx"></div>';
     document.getElementById('app').innerHTML = h;
     applyTheme();
@@ -449,6 +647,13 @@ function setupHtml() {
         h += '<button type="button" class="kl-themebtn' + (setupSel.theme === k ? ' kl-themebtn-on' : '') + '" data-theme="' + k + '">' + t.art() + '<span class="tn">' + esc(t.ar) + '</span></button>';
     });
     h += '</div>';
+    h += '<label class="kl-label">المرحلة</label>';
+    h += '<div class="kl-themes">';
+    ['kg1', 'kg2'].forEach(function (k) {
+        h += '<button type="button" class="kl-themebtn kl-kgbtn' + (setupSel.kg === k ? ' kl-themebtn-on' : '') + '" data-kg="' + k + '"><span class="tn" style="font-size:19px">' + (k === 'kg1' ? 'KG1 🌱' : 'KG2 🚀') + '</span><span class="tn" style="font-size:12px;font-weight:700">' + (k === 'kg1' ? 'تأسيس أول (٤-٥ سنين)' : 'تأسيس تاني (٥-٦ سنين)') + '</span></button>';
+    });
+    h += '</div>';
+    h += '<button type="button" class="kl-ghost" data-act="photo-open" style="width:100%">📸 صورة الطفل في الشخصية (اختياري)</button>';
     h += '<button type="button" class="kl-cta" data-act="start">يلا نبدأ! 🎉</button>';
     h += '<div class="kl-warn">⚠️ البيانات بتتحفظ على الجهاز ده بس. مسح أيقونة التطبيق من الشاشة الرئيسية بيمسح تقدم الطفل — اعملوا نسخة من الإعدادات لو حابين.</div>';
     h += '</div>';
@@ -459,9 +664,11 @@ function homeHtml() {
     var t = theme();
     var h = '<div class="kl-topbar">';
     h += '<div class="kl-stars">⭐ ' + (state.stars || 0) + '</div>';
+    h += '<div style="display:flex;gap:8px">';
+    h += '<button type="button" class="kl-iconbtn" data-act="mute" aria-label="sound">' + (state.muted ? '🔇' : '🔊') + '</button>';
     h += '<button type="button" class="kl-iconbtn" data-act="parents" id="parents-btn" aria-label="parents">⚙️</button>';
-    h += '</div>';
-    h += '<div class="kl-hero"><div class="kl-hero-art">' + t.art() + '</div>';
+    h += '</div></div>';
+    h += '<div class="kl-hero"><div class="kl-hero-art">' + heroArt('happy') + '</div>';
     h += '<div class="kl-hi">Hi, ' + esc(kidName()) + '! 👋</div>';
     h += '<div class="kl-sub">' + esc(charName()) + ' is ready to play!</div></div>';
     h += '<div class="kl-menu">';
@@ -483,7 +690,8 @@ function gameHtml() {
     var h = '<div class="kl-backrow">';
     h += '<button type="button" class="kl-iconbtn" data-act="home">🏠</button>';
     h += '<div class="kl-gtitle">' + g.em + ' ' + g.title + '</div>';
-    h += '<div class="kl-stars" style="margin-inline-start:auto">⭐ ' + (state.stars || 0) + '</div>';
+    h += '<button type="button" class="kl-iconbtn" data-act="mute" style="margin-inline-start:auto" aria-label="sound">' + (state.muted ? '🔇' : '🔊') + '</button>';
+    h += '<div class="kl-stars">⭐ ' + (state.stars || 0) + '</div>';
     h += '</div>';
     h += '<div class="kl-lvlrow">';
     for (var i = 1; i <= 5; i++) h += '<div class="kl-dot' + (i <= Math.min(5, lv) ? ' kl-dot-on' : '') + '"></div>';
@@ -493,6 +701,7 @@ function gameHtml() {
     else if (cur.kind === 'word') h += '<div class="kl-big-emoji">' + cur.big + '</div><div class="kl-instr">' + esc(cur.instr) + '</div>';
     else if (cur.kind === 'count') h += '<div class="kl-objs">' + cur.objs.join(' ') + '</div><div class="kl-instr">' + esc(cur.instr) + '</div>';
     else if (cur.kind === 'math') h += '<div class="kl-eq">' + esc(cur.eq) + '</div>';
+    else if (cur.kind === 'shape') { if (cur.bigSvg) h += '<div class="kl-big-emoji">' + cur.bigSvg + '</div>'; h += '<div class="kl-instr">' + esc(cur.instr) + '</div>'; }
     else if (cur.kind === 'spell') {
         h += '<div class="kl-big-emoji">' + cur.big + '</div>';
         h += '<div class="kl-spell-row">';
@@ -504,7 +713,7 @@ function gameHtml() {
     }
     h += '</div>';
     if (cur.kind === 'letter') {
-        h += '<div class="kl-instr" style="text-align:center;color:#fff;margin-bottom:8px">Tap the letter ' + esc(cur.answer) + '</div>';
+        h += '<div class="kl-instr" style="text-align:center;color:#fff;margin-bottom:8px">' + esc(cur.hint || ('Tap the letter ' + cur.answer)) + '</div>';
         h += '<div class="kl-opts">';
         cur.options.forEach(function (o) { h += '<button type="button" class="kl-opt" data-opt="' + esc(o) + '">' + esc(o) + '</button>'; });
         h += '</div>';
@@ -517,7 +726,10 @@ function gameHtml() {
         h += '</div>';
     } else {
         h += '<div class="kl-opts">';
-        cur.options.forEach(function (o) { h += '<button type="button" class="kl-opt" data-opt="' + esc(o) + '">' + esc(o) + '</button>'; });
+        cur.options.forEach(function (o) {
+            if (o && typeof o === 'object') h += '<button type="button" class="kl-opt kl-opt-svg" data-opt="' + esc(o.v) + '">' + o.h + '</button>';
+            else h += '<button type="button" class="kl-opt" data-opt="' + esc(o) + '">' + esc(o) + '</button>';
+        });
         h += '</div>';
     }
     return h;
@@ -540,6 +752,24 @@ function parentsHtml() {
         h += '<button type="button" class="kl-themebtn' + (state.theme === k ? ' kl-themebtn-on' : '') + '" data-ptheme="' + k + '">' + t.art() + '<span class="tn">' + esc(t.ar) + '</span></button>';
     });
     h += '</div>';
+    h += '<label class="kl-label">المرحلة (الأهل بيختاروها)</label>';
+    h += '<div class="kl-themes">';
+    ['kg1', 'kg2'].forEach(function (k) {
+        h += '<button type="button" class="kl-themebtn kl-kgbtn' + ((state.kg || 'kg1') === k ? ' kl-themebtn-on' : '') + '" data-pkg="' + k + '"><span class="tn" style="font-size:19px">' + (k === 'kg1' ? 'KG1 🌱' : 'KG2 🚀') + '</span><span class="tn" style="font-size:12px;font-weight:700">' + (k === 'kg1' ? 'تأسيس أول (٤-٥ سنين)' : 'تأسيس تاني (٥-٦ سنين)') + '</span></button>';
+    });
+    h += '</div>';
+    h += '<label class="kl-label">منهج المرحلة الحالية</label>';
+    h += '<div class="kl-kg">';
+    Object.keys(GAMES).forEach(function (id) {
+        var g2 = GAMES[id];
+        var lv2 = (state.levels && state.levels[id]) || 1;
+        h += '<div class="kl-kg-row"><span>' + g2.em + ' ' + esc(g2.title) + '</span><span class="kl-kg-chip">' + (state.kg === 'kg2' ? 'KG2' : 'KG1') + ' · L' + lv2 + '</span></div>';
+        h += '<div class="kl-kg-desc">' + esc(g2.kg[state.kg === 'kg2' ? 'kg2' : 'kg1']) + '</div>';
+    });
+    h += '</div>';
+    h += '<div class="kl-note">المستوى (L) بيترفع لوحده كل ما الطفل يجاوب صح جوه المرحلة.</div>';
+    h += '<button type="button" class="kl-cta" data-act="photo-open" style="background:linear-gradient(135deg,#38bdf8,#6366f1)">صورة الطفل جوه الشخصية 📸</button>';
+    h += '<div class="kl-warn" style="background:#ecfeff;color:#155e75">🔊 صوت اللعبة (Miss Lily) بيستخدم أصوات الجهاز نفسه وشغال أوفلاين. زرار ' + (state.muted ? '🔇' : '🔊') + ' في الصفحة الرئيسية بيسكت الصوت والمؤثرات.</div>';
     h += '<button type="button" class="kl-cta" data-act="pasave">حفظ ✅</button>';
     h += '<button type="button" class="kl-ghost" data-act="backup">نسخ البيانات 📋</button>';
     h += '<button type="button" class="kl-ghost kl-danger" data-act="reset">مسح التقدم 🗑️</button>';
@@ -550,13 +780,39 @@ function parentsHtml() {
 }
 var parentMsg = '';
 
+function photoHtml() {
+    var store = photoStore();
+    if (!editTf) editTf = Object.assign({ x: 0, y: 0, s: 1, r: 0 }, store.faceTf || {});
+    var h = '<div class="kl-topbar">';
+    h += '<button type="button" class="kl-iconbtn" data-act="photo-done">✔️</button>';
+    h += '<div class="kl-gtitle">📸 صورة الطفل</div><div></div>';
+    h += '</div>';
+    h += '<div class="kl-card kl-rtl">';
+    h += '<div class="kl-note">الصورة بتتحفظ على الجهاز ده بس — مش بتترفع لأي مكان على الإنترنت 🔒</div>';
+    h += '<div class="kl-stage" id="face-stage" dir="ltr">' + costumeSvg((state && state.theme) || setupSel.theme, 'happy', true) + '</div>';
+    if (store.photo) {
+        h += '<label class="kl-label">التكبير</label><input type="range" class="kl-slider" id="fc-s" min="0.4" max="3" step="0.02" value="' + editTf.s + '" dir="ltr">';
+        h += '<label class="kl-label">اللف</label><input type="range" class="kl-slider" id="fc-r" min="-60" max="60" step="1" value="' + editTf.r + '" dir="ltr">';
+        h += '<div class="kl-note">حركوا الصورة بصباع واحد — صباعين للتكبير واللف</div>';
+        h += '<button type="button" class="kl-cta" data-act="photo-choose">تغيير الصورة 🔄</button>';
+        h += '<button type="button" class="kl-ghost kl-danger" data-act="photo-clear">مسح الصورة 🗑️</button>';
+    } else {
+        h += '<div class="kl-note">لسه مفيش صورة — اختاروا صورة وش الطفل من الاستوديو</div>';
+        h += '<button type="button" class="kl-cta" data-act="photo-choose">اختاروا صورة 📷</button>';
+    }
+    h += '<input type="file" id="face-file" accept="image/*" style="display:none">';
+    h += '</div>';
+    return h;
+}
+
 /* ---------- game flow ---------- */
 function startGame(id) {
     game = id;
-    cur = GAMES[id].gen((state.levels && state.levels[id]) || 1);
+    cur = GAMES[id].gen((state.levels && state.levels[id]) || 1, state.kg || 'kg1');
     cur.usedIdx = [];
     screen = 'game';
     render();
+    SFX.whoosh();
     if (cur.speak) say(cur.speak);
 }
 
@@ -568,6 +824,7 @@ function levelUpMaybe(id, correct) {
         if (state.streaks[id] >= 3 && (state.levels[id] || 1) < 5) {
             state.levels[id] = (state.levels[id] || 1) + 1;
             state.streaks[id] = 0;
+            SFX.fanfare();
             say('Level up! Level ' + state.levels[id] + '!');
         }
     } else {
@@ -575,10 +832,10 @@ function levelUpMaybe(id, correct) {
     }
 }
 
-function fx(emoji, text, speakText) {
+function fx(mood, text, speakText) {
     var el = document.getElementById('fx');
     if (!el) return;
-    el.innerHTML = '<div class="kl-fx-card"><div class="kl-fx-em">' + emoji + '</div><div class="kl-fx-txt">' + esc(text) + '</div></div>';
+    el.innerHTML = '<div class="kl-fx-card"><div class="kl-fx-art">' + heroArt(mood === 'oops' ? 'oops' : 'wow') + '</div><div class="kl-fx-txt">' + esc(text) + '</div></div>';
     el.classList.add('kl-fx-on');
     if (speakText) say(speakText);
     for (var i = 0; i < 3; i++) {
@@ -614,7 +871,7 @@ function nextRound(delay) {
         if (el) el.classList.remove('kl-fx-on');
         fxLock = false;
         if (screen === 'game') {
-            cur = GAMES[game].gen((state.levels && state.levels[game]) || 1);
+            cur = GAMES[game].gen((state.levels && state.levels[game]) || 1, state.kg || 'kg1');
             cur.usedIdx = [];
             render();
             if (cur.speak) say(cur.speak);
@@ -624,6 +881,7 @@ function nextRound(delay) {
 
 function answer(val, btn) {
     if (fxLock) return;
+    SFX.pop();
     var right = String(val) === String(cur.answer);
     if (right) {
         if (btn) btn.classList.add('kl-opt-right');
@@ -631,14 +889,14 @@ function answer(val, btn) {
         levelUpMaybe(game, true);
         save();
         var line = cheer(theme().cheers);
-        fx('🌟', line.replace(kidName(), kidName()), line);
+        SFX.correct(); SFX.star(); fx('yay', line, line);
         nextRound(1600);
     } else {
         if (btn) btn.classList.add('kl-opt-wrong');
         levelUpMaybe(game, false);
         save();
         var line2 = cheer(theme().oops);
-        fx('💪', line2, line2);
+        SFX.wrong(); fx('oops', line2, line2);
         setTimeout(function () {
             var el = document.getElementById('fx');
             if (el) el.classList.remove('kl-fx-on');
@@ -649,6 +907,7 @@ function answer(val, btn) {
 
 function spellTap(idx) {
     if (fxLock) return;
+    SFX.pop();
     var ch = cur.tiles[idx];
     var expect = cur.word[cur.placed.length];
     if (ch === expect) {
@@ -661,14 +920,14 @@ function spellTap(idx) {
             save();
             var line = cheer(theme().cheers);
             render();
-            fx('🌟', line, cur.word + '! ' + line);
+            SFX.correct(); SFX.star(); fx('yay', line, cur.word + '! ' + line);
             nextRound(1800);
         } else {
             render();
         }
     } else {
         var line2 = cheer(theme().oops);
-        fx('💪', line2, line2);
+        SFX.wrong(); fx('oops', line2, line2);
         setTimeout(function () {
             var el = document.getElementById('fx');
             if (el) el.classList.remove('kl-fx-on');
@@ -689,6 +948,17 @@ function wire() {
     document.querySelectorAll('[data-ptheme]').forEach(function (b) {
         b.addEventListener('click', function () { state.theme = b.getAttribute('data-ptheme'); save(); render(); });
     });
+    document.querySelectorAll('[data-kg]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var nEl = document.getElementById('su-name'), cEl = document.getElementById('su-char');
+            if (nEl) setupSel.name = nEl.value;
+            if (cEl) setupSel.char = cEl.value;
+            setupSel.kg = b.getAttribute('data-kg'); render();
+        });
+    });
+    document.querySelectorAll('[data-pkg]').forEach(function (b) {
+        b.addEventListener('click', function () { state.kg = b.getAttribute('data-pkg'); save(); SFX.pop(); render(); });
+    });
     document.querySelectorAll('[data-game]').forEach(function (b) {
         b.addEventListener('click', function () { startGame(b.getAttribute('data-game')); });
     });
@@ -705,12 +975,36 @@ function wire() {
                 var nm = (document.getElementById('su-name').value || '').trim();
                 var ch = (document.getElementById('su-char').value || '').trim();
                 if (!nm) { say('Please write the kid name first'); return; }
-                state = { name: nm, charName: ch || THEMES[setupSel.theme].charDef, theme: setupSel.theme, stars: 0, levels: {}, streaks: {} };
+                state = { name: nm, charName: ch || THEMES[setupSel.theme].charDef, theme: setupSel.theme, kg: setupSel.kg, stars: 0, levels: {}, streaks: {}, photo: setupSel.photo || null, faceTf: setupSel.faceTf || null };
                 save();
                 screen = 'home';
                 render();
                 say('Hi ' + nm + '! Let us play and learn!');
-            } else if (act === 'home') { screen = 'home'; render(); }
+            } else if (act === 'home') { SFX.whoosh(); screen = 'home'; render(); }
+            else if (act === 'mute') {
+                state.muted = !state.muted; save();
+                if (state.muted && voiceOK) { try { speechSynthesis.cancel(); } catch (e) {} }
+                if (!state.muted) SFX.pop();
+                render();
+            }
+            else if (act === 'photo-open') {
+                photoFrom = screen;
+                editTf = Object.assign({ x: 0, y: 0, s: 1, r: 0 }, photoStore().faceTf || {});
+                SFX.whoosh(); screen = 'photo'; render();
+            }
+            else if (act === 'photo-done') {
+                photoStore().faceTf = editTf;
+                if (state) save();
+                SFX.whoosh(); screen = photoFrom; render();
+            }
+            else if (act === 'photo-choose') { var fi2 = document.getElementById('face-file'); if (fi2) fi2.click(); }
+            else if (act === 'photo-clear') {
+                var st2 = photoStore();
+                st2.photo = null; st2.faceTf = { x: 0, y: 0, s: 1, r: 0 };
+                editTf = null;
+                if (state) save();
+                render();
+            }
             else if (act === 'pasave') {
                 state.name = (document.getElementById('pa-name').value || '').trim() || state.name;
                 state.charName = (document.getElementById('pa-char').value || '').trim() || theme().charDef;
@@ -743,6 +1037,82 @@ function wire() {
         pb2.addEventListener('mousedown', startHold);
         pb2.addEventListener('mouseup', cancelHold);
         pb2.addEventListener('mouseleave', cancelHold);
+    }
+
+    /* photo upload (100% local) */
+    var fi = document.getElementById('face-file');
+    if (fi) {
+        fi.addEventListener('change', function () {
+            var f = fi.files && fi.files[0];
+            if (!f) return;
+            var rd = new FileReader();
+            rd.onload = function () {
+                var img = new Image();
+                img.onload = function () {
+                    var m = Math.min(1, 320 / Math.max(img.width || 1, img.height || 1));
+                    var cv = document.createElement('canvas');
+                    cv.width = Math.max(1, Math.round(img.width * m));
+                    cv.height = Math.max(1, Math.round(img.height * m));
+                    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+                    var store = photoStore();
+                    store.photo = cv.toDataURL('image/jpeg', 0.85);
+                    editTf = { x: 0, y: 0, s: 1, r: 0 };
+                    store.faceTf = editTf;
+                    if (state) save();
+                    render();
+                };
+                img.src = rd.result;
+            };
+            rd.readAsDataURL(f);
+        });
+    }
+
+    /* face stage: drag to move, pinch to zoom + rotate */
+    var stg = document.getElementById('face-stage');
+    if (stg) {
+        var pts = {}, last1 = null, g0 = null;
+        var pair = function () {
+            var ks = Object.keys(pts), a = pts[ks[0]], b = pts[ks[1]];
+            var dx = b.x - a.x, dy = b.y - a.y;
+            return { d: Math.sqrt(dx * dx + dy * dy), a: Math.atan2(dy, dx) * 180 / Math.PI };
+        };
+        var syncSliders = function () {
+            var s = document.getElementById('fc-s'), r = document.getElementById('fc-r');
+            if (s) s.value = editTf.s;
+            if (r) r.value = editTf.r;
+        };
+        stg.addEventListener('pointerdown', function (e) {
+            try { stg.setPointerCapture(e.pointerId); } catch (er) {}
+            pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+            if (Object.keys(pts).length === 1) last1 = { x: e.clientX, y: e.clientY };
+            if (Object.keys(pts).length === 2) { var m = pair(); g0 = { d: m.d, a: m.a, s: editTf.s, r: editTf.r }; }
+        });
+        stg.addEventListener('pointermove', function (e) {
+            if (!pts[e.pointerId] || !editTf) return;
+            pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+            var n = Object.keys(pts).length;
+            var k = 120 / Math.max(1, stg.clientWidth);
+            if (n === 1 && last1) {
+                editTf.x += (e.clientX - last1.x) * k;
+                editTf.y += (e.clientY - last1.y) * k;
+                last1 = { x: e.clientX, y: e.clientY };
+            } else if (n === 2 && g0) {
+                var m = pair();
+                if (g0.d > 0) editTf.s = Math.min(3, Math.max(0.4, g0.s * m.d / g0.d));
+                editTf.r = Math.min(180, Math.max(-180, g0.r + (m.a - g0.a)));
+            }
+            applyTf(); syncSliders();
+        });
+        var upFn = function (e) {
+            delete pts[e.pointerId];
+            var ks = Object.keys(pts);
+            if (ks.length === 1) { last1 = { x: pts[ks[0]].x, y: pts[ks[0]].y }; g0 = null; }
+        };
+        stg.addEventListener('pointerup', upFn);
+        stg.addEventListener('pointercancel', upFn);
+        var sS = document.getElementById('fc-s'), sR = document.getElementById('fc-r');
+        if (sS) sS.addEventListener('input', function () { editTf.s = Number(sS.value); applyTf(); });
+        if (sR) sR.addEventListener('input', function () { editTf.r = Number(sR.value); applyTf(); });
     }
 }
 
