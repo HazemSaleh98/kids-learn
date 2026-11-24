@@ -150,6 +150,23 @@ GAMES.pattern.gen = function (lvl, kg) {
     return { mode: 'shape', seq: seqS.slice(0, 5), shape: shp, options: shuffle(optNames),
         instr: 'What comes next?', keys: [rnd(2) ? 'instr_pattern_1' : 'instr_pattern_2'], answer: ansS };
 };
+GAMES.memory = GAMES.memory || {};
+GAMES.memory.gen = function (lvl, kg) {
+    kg = kg || 'kg1';
+    var picPool = ALLWORDS.filter(function (w) { return !!WIMG[w]; });
+    var n = lvl >= 3 ? 8 : 6;
+    if (lvl >= 2) {
+        /* letter -> picture: distinct initial letters only, no ambiguity */
+        var used = {}, wsL = [];
+        shuffle(picPool.slice()).forEach(function (w) {
+            var L0 = w[0].toUpperCase();
+            if (!used[L0] && wsL.length < n) { used[L0] = 1; wsL.push(w); }
+        });
+        return { mode: 'letter', words: wsL, instr: 'Match every letter with its picture!', keys: ['instr_memory_letter'], answer: 'all' };
+    }
+    var ws = sample(picPool, n, []);
+    return { mode: 'pic', words: ws, instr: 'Find all the matching pairs!', keys: ['instr_memory_pic'], answer: 'all' };
+};
 function cntKey(path) {
     var f = path.replace(/\.png$/, '');
     if (f.indexOf('food/') === 0) return 'food_' + f.slice(5);
@@ -167,8 +184,6 @@ class GameBase extends Phaser.Scene {
         /* world */
         var bg = this.add.image(W / 2, H / 2, 'bg_grass');
         bg.setScale(Math.max(W / bg.width, H / bg.height) * 1.02);
-        var sun = this.add.image(W - 52, 100, 'sun').setScale(.34).setAlpha(.9);
-        this.tweens.add({ targets: sun, angle: 360, duration: 36000, repeat: -1 });
         addCloud(this, 'cloud3', 210, 62000, .4);
         addCloud(this, 'cloud4', 300, 52000, .34, -20000).setAlpha(.7);
         /* header */
@@ -796,7 +811,113 @@ class PatternScene extends GameBase {
     }
 }
 
-/* ================= 8) Story Time: buddy-narrated stories ================= */
+/* ================= 8) Memory Match ================= */
+class MemoryScene extends GameBase {
+    constructor() { super('g_memory', 'memory'); }
+    buildRound(cur) {
+        var s = this;
+        var n = cur.words.length * 2, rows = n / 4;
+        var cw = 84, x0 = 57, stepX = 92;
+        var y0 = rows === 3 ? 252 : 212, rowH = rows === 3 ? 148 : 126;
+        s.addPlayBuddy(W / 2, rows === 3 ? 726 : 730, rows === 3 ? 96 : 88);
+        var cards = [];
+        cur.words.forEach(function (w) {
+            if (cur.mode === 'letter') {
+                cards.push({ pair: w, kind: 'letter', label: w[0].toUpperCase() });
+                cards.push({ pair: w, kind: 'pic', word: w });
+            } else {
+                cards.push({ pair: w, kind: 'pic', word: w });
+                cards.push({ pair: w, kind: 'pic', word: w });
+            }
+        });
+        shuffle(cards);
+        this.flipped = []; this.matched = 0; this.lockFlip = false;
+        cards.forEach(function (cd, i) {
+            var cx = x0 + (i % 4) * stepX, cy = y0 + Math.floor(i / 4) * rowH;
+            var c = s.add.container(cx, cy);
+            var back = s.add.graphics();
+            back.fillStyle(0xff6b9d, 1).fillRoundedRect(-cw / 2, -cw / 2, cw, cw, 18);
+            back.lineStyle(3, 0xffffff, .9).strokeRoundedRect(-cw / 2, -cw / 2, cw, cw, 18);
+            var backMotif = s.add.image(0, 0, 'tile_heart').setScale(.32).setAlpha(.85);
+            var front = s.add.container(0, 0);
+            var fg = s.add.graphics();
+            fg.fillStyle(0xffffff, 1).fillRoundedRect(-cw / 2, -cw / 2, cw, cw, 18);
+            fg.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(-cw / 2, -cw / 2, cw, cw, 18);
+            front.add(fg);
+            if (cd.kind === 'letter') {
+                if (s.textures.exists('tile_' + cd.label)) front.add(s.add.image(0, 0, 'tile_' + cd.label).setScale(.52));
+                else front.add(s.add.text(0, 0, cd.label, { fontSize: '40px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+            } else {
+                var im = s.add.image(0, -8, 'w_' + cd.word);
+                im.setScale(Math.min(50 / im.width, 50 / im.height));
+                front.add(im);
+                front.add(s.add.text(0, 27, cd.word, { fontSize: '13px', fontStyle: '900', color: '#7a7194' }).setOrigin(.5));
+            }
+            front.setVisible(false);
+            c.add([back, backMotif, front]);
+            c.setSize(cw, cw);
+            c.setInteractive({ useHandCursor: true });
+            c.setScale(0);
+            s.tweens.add({ targets: c, scaleX: 1, scaleY: 1, duration: 380, delay: 100 + i * 50, ease: 'Back.easeOut' });
+            cd.go = c; cd.front = front; cd.backBits = [back, backMotif];
+            c.on('pointerdown', function () { s.flipCard(cd, cur); });
+            s.track(c);
+        });
+    }
+    flipCard(cd, cur) {
+        var s = this;
+        if (s.roundLock || s.lockFlip || cd.done || cd.open) return;
+        cd.open = true;
+        SFX.play('flip');
+        if (s.playBuddy) s.playBuddy.react('peek');
+        s.tweens.add({
+            targets: cd.go, scaleX: 0, duration: 110, onComplete: function () {
+                cd.backBits.forEach(function (b) { b.setVisible(false); });
+                cd.front.setVisible(true);
+                s.tweens.add({ targets: cd.go, scaleX: 1, duration: 110 });
+            }
+        });
+        s.flipped.push(cd);
+        if (s.flipped.length < 2) return;
+        var a = s.flipped[0], b = s.flipped[1];
+        s.flipped = [];
+        if (a.pair === b.pair && a !== b) {
+            a.done = b.done = true;
+            s.time.delayedCall(360, function () {
+                SFX.play('chime');
+                s.popParticles(a.go.x, a.go.y, [0xffd93d, 0x4ade80]);
+                s.popParticles(b.go.x, b.go.y, [0xffd93d, 0x4ade80]);
+                if (!(state && state.muted)) VO.say('word_' + a.pair);
+                if (s.playBuddy) s.playBuddy.react('yay');
+                [a, b].forEach(function (cd2) {
+                    s.tweens.add({ targets: cd2.go, angle: 4, duration: 120, yoyo: true, repeat: 1 });
+                    cd2.go.setAlpha(.85);
+                });
+                s.matched++;
+                if (s.matched >= cur.words.length) s.win();
+            });
+        } else {
+            s.lockFlip = true;
+            s.time.delayedCall(640, function () {
+                SFX.play('buzz');
+                if (s.playBuddy) s.playBuddy.react('no');
+                [a, b].forEach(function (cd2) {
+                    cd2.open = false;
+                    s.tweens.add({
+                        targets: cd2.go, scaleX: 0, duration: 110, onComplete: function () {
+                            cd2.front.setVisible(false);
+                            cd2.backBits.forEach(function (b2) { b2.setVisible(true); });
+                            s.tweens.add({ targets: cd2.go, scaleX: 1, duration: 110 });
+                        }
+                    });
+                });
+                s.lockFlip = false;
+            });
+        }
+    }
+}
+
+/* ================= 9) Story Time: buddy-narrated stories ================= */
 var STORY_ART = { cat: '🐱', sleep: '😴', milk: '🥛', bus: '🚌', hill: '⛰️', home: '🏠', park: '🌳', fish: '🐟', pond: '🏞️', gift: '🎁', apple: '🍎', jump: '🤸', bonk: '💫', star: '⭐', play: '🎈', friends: '💛', garden: '🌷', butterfly: '🦋' };
 var BUDDY_THEME = { fuzzy: 'monster_blue', blinky: 'monster_green', captain: 'hero', luna: 'caped', princess: 'princess', fairy: 'fairy' };
 var BUDDY_AR = { fuzzy: 'فزفز', blinky: 'بلينكي', captain: 'كابتن ستار', luna: 'لونا', princess: 'الأميرة', fairy: 'الجنية' };

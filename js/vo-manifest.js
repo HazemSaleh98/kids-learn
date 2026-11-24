@@ -116,7 +116,9 @@ var VO_MANIFEST = {
         pattern_1: 'What comes next?', pattern_2: 'Finish the pattern!',
         story_1: 'Story time!',
         place_1: 'How many is that? Count the tens and the ones!',
-        skip_1: 'Count the pattern! What number comes next?'
+        skip_1: 'Count the pattern! What number comes next?',
+        memory_pic: 'Find all the matching pairs!',
+        memory_letter: 'Match every letter with its picture!'
     };
     Object.keys(instr).forEach(function (k) { L['instr_' + k] = { t: instr[k] }; });
 })();

@@ -80,7 +80,13 @@ function makePlayBuddy(scene, x, y, size) {
     var hop = scene.tweens.add({ targets: c, y: y - size * .16, duration: 300, yoyo: true, repeat: -1, repeatDelay: 3200, ease: 'Quad.easeOut' });
     var busy = false;
     function react(kind) {
-        if (!c.active || busy) return;
+        if (!c.active) return;
+        if (kind === 'peek') {
+            if (busy) return;
+            scene.tweens.add({ targets: img, angle: 7, duration: 90, yoyo: true, repeat: 1, onComplete: function () { img.angle = 0; } });
+            return;
+        }
+        if (busy) return;
         if (kind === 'no') {
             busy = true;
             scene.tweens.add({ targets: c, x: x - 10, duration: 65, yoyo: true, repeat: 3, onComplete: function () { c.x = x; busy = false; } });
@@ -138,15 +144,9 @@ class HomeScene extends Phaser.Scene {
         /* world */
         var bg = this.add.image(W / 2, H / 2, 'bg_grass');
         bg.setScale(Math.max(W / bg.width, H / bg.height) * 1.02);
-        var sun = this.add.image(W - 60, 74, 'sun').setScale(.5);
-        this.tweens.add({ targets: sun, angle: 360, duration: 30000, repeat: -1 });
         addCloud(this, 'cloud1', 90, 46000, .45);
         addCloud(this, 'cloud3', 170, 68000, .5, -26000);
         addCloud(this, 'cloud4', 250, 56000, .42, -12000).setAlpha(.75);
-        this.add.image(34, H - 190, 'tree').setScale(.4).setDepth(0);
-        this.add.image(W - 30, H - 230, 'treePine').setScale(.34).setDepth(0);
-        this.add.image(120, H - 60, 'bush1').setScale(.5).setDepth(0);
-        this.add.image(W - 110, H - 40, 'bush2').setScale(.55).setDepth(0);
 
         /* top bar */
         var pill = this.add.graphics();
@@ -184,24 +184,24 @@ class HomeScene extends Phaser.Scene {
         ids.forEach(function (id, i) {
             var g = GAMES[id];
             var col = SPOTCOLORS[i % SPOTCOLORS.length];
-            var cx = (i % 2 === 0) ? 102 : 288, cy = 322 + Math.floor(i / 2) * 148;
+            var cx = (i % 2 === 0) ? 104 : 286, cy = 288 + Math.floor(i / 2) * 124;
             var btn = s.add.container(cx, cy);
             var bg2 = s.add.graphics();
-            bg2.fillStyle(col[1], 1).fillRoundedRect(-88, -66, 176, 138, 26); /* shadow lip */
-            bg2.fillStyle(col[0], 1).fillRoundedRect(-88, -74, 176, 138, 26);
+            bg2.fillStyle(col[1], 1).fillRoundedRect(-82, -56, 164, 120, 24); /* shadow lip */
+            bg2.fillStyle(col[0], 1).fillRoundedRect(-82, -64, 164, 120, 24);
             btn.add(bg2);
             var circ = s.add.graphics();
-            circ.fillStyle(0xffffff, 1).fillCircle(0, -34, 28);
+            circ.fillStyle(0xffffff, 1).fillCircle(0, -30, 22);
             btn.add(circ);
-            var ico = s.add.image(0, -34, g.ico).setScale(g.icos || .4);
+            var ico = s.add.image(0, -30, g.ico).setScale((g.icos || .4) * .78);
             if (g.icoTint) ico.setTint(g.icoTint);
             btn.add(ico);
-            if (g.icoText) btn.add(s.add.text(0, -34, g.icoText, { fontSize: '26px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
-            btn.add(s.add.text(0, 2, g.title, { fontSize: '17px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
-            btn.add(s.add.text(0, 24, g.sub, { fontSize: '11.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
+            if (g.icoText) btn.add(s.add.text(0, -30, g.icoText, { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
+            btn.add(s.add.text(0, 0, g.title, { fontSize: '15.5px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+            btn.add(s.add.text(0, 20, g.sub, { fontSize: '10.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;
-            btn.add(s.add.text(0, 46, 'Level ' + lv, { fontSize: '11px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 8, y: 2 } }).setOrigin(.5));
-            btn.setSize(176, 140);
+            btn.add(s.add.text(0, 39, 'Level ' + lv, { fontSize: '10px', fontStyle: '900', color: '#fff', backgroundColor: 'rgba(255,255,255,.3)', padding: { x: 7, y: 2 } }).setOrigin(.5));
+            btn.setSize(164, 120);
             btn.setInteractive({ useHandCursor: true });
             btn.on('pointerdown', function () {
                 SFX.play('tap');
