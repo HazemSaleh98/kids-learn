@@ -152,6 +152,7 @@ class HomeScene extends Phaser.Scene {
             var ico = s.add.image(0, -34, g.ico).setScale(g.icos || .4);
             if (g.icoTint) ico.setTint(g.icoTint);
             btn.add(ico);
+            if (g.icoText) btn.add(s.add.text(0, -34, g.icoText, { fontSize: '26px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5));
             btn.add(s.add.text(0, 2, g.title, { fontSize: '17px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
             btn.add(s.add.text(0, 24, g.sub, { fontSize: '11.5px', fontStyle: '700', color: 'rgba(255,255,255,.92)' }).setOrigin(.5));
             var lv = (state.levels && state.levels[id]) || 1;

@@ -144,7 +144,8 @@ var VO = (function () {
             if (named && VO_FILES[named]) this.say(named);
             else this.say('cheer_' + n);
         },
-        speak: function (text, lang) { stopAll(); tts(text, lang); },
+        /* cancel-then-speak needs a beat on Android Chrome or the utterance is dropped */
+        speak: function (text, lang) { stopAll(); setTimeout(function () { tts(text, lang); }, 80); },
         hasClip: function (key) { return typeof VO_FILES !== 'undefined' && !!VO_FILES[key]; },
         hasArClip: function (key) { return typeof VO_AR_FILES !== 'undefined' && !!VO_AR_FILES[key]; },
         oops: function () { this.say('oops_' + (1 + rnd(3))); },

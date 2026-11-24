@@ -270,12 +270,12 @@ var STORIES = [
 
 /* ================= game registry (meta; scenes attach .scene) ================= */
 var GAMES = {
-    letters: { ico: 'bubble', icos: .55, icoTint: 0xff9ecb, em: '🫧', title: 'Letter Bubbles', sub: 'Pop the sounds!', scene: 'g_letters', kg: { kg1: 'الحروف الكبيرة ثم أصواتها بترتيب المنهج (ساتبين)', kg2: 'المركبات الصوتية sh ch th ng والقصور الطويلة ai ee igh oa', g1: 'الحروف الساكنة السحرية a-e i-e o-e u-e واللواحق ing ed' } },
-    words: { ico: 'food_fish', icos: .9, em: '🍎', title: 'Feed the Buddy', sub: 'Yummy words!', scene: 'g_feed', kg: { kg1: 'كلمات بسيطة مع صورها', kg2: 'قراءة بالتقطيع الصوتي + كلمات النظر', g1: 'كلمات نظر أطول + قراءة أسرع' } },
+    letters: { ico: 'bubble', icos: .3, icoText: 'Aa', em: '🫧', title: 'Letter Bubbles', sub: 'Pop the sounds!', scene: 'g_letters', kg: { kg1: 'الحروف الكبيرة ثم أصواتها بترتيب المنهج (ساتبين)', kg2: 'المركبات الصوتية sh ch th ng والقصور الطويلة ai ee igh oa', g1: 'الحروف الساكنة السحرية a-e i-e o-e u-e واللواحق ing ed' } },
+    words: { ico: 'food_donut1', icos: .2, em: '🍎', title: 'Feed the Buddy', sub: 'Yummy words!', scene: 'g_feed', kg: { kg1: 'كلمات بسيطة مع صورها', kg2: 'قراءة بالتقطيع الصوتي + كلمات النظر', g1: 'كلمات نظر أطول + قراءة أسرع' } },
     spelling: { ico: 'tile_A', icos: .48, em: '🚂', title: 'Word Train', sub: 'Build the word', scene: 'g_train', kg: { kg1: 'تهجي كلمات CVC بالأصوات', kg2: 'كلمات بالمركبات الصوتية', g1: 'كلمات بالحروف الطويلة واللواحق' } },
     counting: { ico: 'food_carrot', icos: .62, em: '🧺', title: 'Picnic Count', sub: 'Feed me 4!', scene: 'g_count', kg: { kg1: 'العد حتى ١٠ + أكتر/أقل', kg2: 'العد حتى ٢٠ + أكتر/أقل', g1: 'العد حتى ٣٠ بالعشرات + أكتر/أقل' } },
     math: { ico: 'ship_red', icos: .6, em: '🚀', title: 'Rocket Math', sub: 'Launch the answer', scene: 'g_rocket', kg: { kg1: 'جمع وطرح في حدود ٥', kg2: 'تكوين العشرة + جمع وطرح حتى ٢٠', g1: 'جمع وطرح حتى ٢٠ والعشرات الكاملة' } },
-    shapes: { ico: 'shape_red_circle', icos: .5, em: '🧩', title: 'Shape Sorter', sub: 'Sort the shapes', scene: 'g_sort', kg: { kg1: 'أسماء الأشكال والألوان', kg2: 'تمييز الشكل واللون مع بعض', g1: 'تمييز الشكل واللون مع بعض' } },
+    shapes: { ico: 'shape_blue_square', icos: .34, em: '🧩', title: 'Shape Sorter', sub: 'Sort the shapes', scene: 'g_sort', kg: { kg1: 'أسماء الأشكال والألوان', kg2: 'تمييز الشكل واللون مع بعض', g1: 'تمييز الشكل واللون مع بعض' } },
     pattern: { ico: 'tile_heart', icos: .5, em: '🎨', title: 'Pattern Train', sub: 'What comes next?', scene: 'g_pattern', kg: { kg1: 'أنماط بسيطة AB بالألوان', kg2: 'أنماط ABB و ABC + أنماط الأعداد', g1: 'العد القفزي ٢ و ٥ و ١٠' } },
-    story: { ico: 'w_owl', icos: .95, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
+    story: { ico: 'w_owl', icos: .42, em: '📖', title: 'Story Time', sub: 'Buddy tales!', scene: 'g_story', kg: { kg1: 'قصص قصيرة بصوت الشخصيات (عربي وإنجليزي)', kg2: 'قصص أطول بجمل أغنى', g1: 'قصص أطول بجمل أغنى' } }
 };
