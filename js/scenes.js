@@ -177,7 +177,7 @@ class HomeScene extends Phaser.Scene {
         bb.fillStyle(0xffffff, 1).fillRoundedRect(168, 130, 206, 96, 20);
         bb.lineStyle(3, 0xffd93d, 1).strokeRoundedRect(168, 130, 206, 96, 20);
         bb.fillStyle(0xffd93d, 1).fillTriangle(168, 196, 168, 170, 148, 186);
-        this.add.text(182, 150, 'Hi, ' + kidName() + '! 👋', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
+        this.add.text(182, 150, 'Hi, ' + kidName() + '!', { fontSize: '21px', fontStyle: '900', color: '#3b2a5e' });
         this.add.text(182, 182, "Let's play and learn\nwith " + charName() + '!', { fontSize: '14.5px', fontStyle: '700', color: '#7a7194' });
 
         /* game spots */

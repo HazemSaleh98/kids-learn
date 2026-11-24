@@ -124,6 +124,11 @@ var VO = (function () {
             var b = buddyId();
             if (enNamed && VO_FILES[enNamed]) pool.push(enNamed, enNamed);
             if (b && slug && typeof VO_AR_FILES !== 'undefined' && VO_AR_FILES[b + '_cheer__' + slug]) pool.push('ar:' + b + '_cheer__' + slug, 'ar:' + b + '_cheer__' + slug);
+            /* personalized hype lines (strong praise addressed to the kid) */
+            if (b && slug && typeof VO_AR_FILES !== 'undefined') {
+                var hk = b + '_hype_' + (1 + rnd(3)) + '__' + slug;
+                if (VO_AR_FILES[hk]) pool.push('ar:' + hk, 'ar:' + hk, 'ar:' + hk);
+            }
             if (b && typeof VO_AR_FILES !== 'undefined') {
                 if (VO_AR_FILES[b + '_cheer_1']) pool.push('ar:' + b + '_cheer_1');
                 if (VO_AR_FILES[b + '_cheer_2']) pool.push('ar:' + b + '_cheer_2');

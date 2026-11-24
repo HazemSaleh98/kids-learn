@@ -1029,7 +1029,7 @@ class BalloonScene extends GameBase {
 }
 
 /* ================= 10) Story Time: buddy-narrated stories ================= */
-var STORY_ART_HAS = { fuzzy_apple: true };
+var STORY_ART_HAS = { fuzzy_apple: true, sam_cat: true, blinky_star: true, princess_butterfly: true, red_bus: true, fish_mom: true };
 var STORY_ART = { cat: '🐱', sleep: '😴', milk: '🥛', bus: '🚌', hill: '⛰️', home: '🏠', park: '🌳', fish: '🐟', pond: '🏞️', gift: '🎁', apple: '🍎', jump: '🤸', bonk: '💫', star: '⭐', play: '🎈', friends: '💛', garden: '🌷', butterfly: '🦋' };
 var BUDDY_THEME = { fuzzy: 'monster_blue', blinky: 'monster_green', captain: 'hero', luna: 'caped', princess: 'princess', fairy: 'fairy' };
 var BUDDY_AR = { fuzzy: 'فزفز', blinky: 'بلينكي', captain: 'كابتن ستار', luna: 'لونا', princess: 'الأميرة', fairy: 'الجنية' };
@@ -1046,7 +1046,14 @@ class StoryScene extends Phaser.Scene {
         backG.fillStyle(0x3b2a5e, 1).fillTriangle(38, 26, 38, 50, 22, 38);
         var back = this.add.zone(14, 14, 48, 48).setOrigin(0).setInteractive({ useHandCursor: true });
         back.on('pointerdown', function () { VO.stop(); if (s.mode === 'read') s.showPicker(); else s.scene.start('home'); });
-        this.add.text(W / 2, 40, '📖 Story Time', { fontSize: '26px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5);
+        /* bundled book icon (no OS emoji) */
+        var bk = this.add.graphics();
+        bk.fillStyle(0xffffff, .96);
+        bk.fillRoundedRect(W / 2 - 96, 24, 15, 30, 4);
+        bk.fillRoundedRect(W / 2 - 79, 24, 15, 30, 4);
+        bk.fillStyle(0x9b59f5, 1).fillRect(W / 2 - 83, 24, 4, 30);
+        bk.fillRoundedRect(W / 2 - 96, 50, 32, 5, 2);
+        this.add.text(W / 2 + 16, 40, 'Story Time', { fontSize: '26px', fontStyle: '900', color: '#3b2a5e' }).setOrigin(.5);
         this.showPicker();
     }
     clearLayer() {
@@ -1065,7 +1072,21 @@ class StoryScene extends Phaser.Scene {
             g.fillStyle(col[1], 1).fillRoundedRect(-88, -72, 176, 158, 24);
             g.fillStyle(col[0], 1).fillRoundedRect(-88, -80, 176, 158, 24);
             c.add(g);
-            c.add(s.add.text(0, -44, st.em, { fontSize: '40px' }).setOrigin(.5));
+            var thumbK = 'storyart_' + st.id + '_p1';
+            if (STORY_ART_HAS[st.id] && s.textures.exists(thumbK)) {
+                var tf = s.add.graphics();
+                tf.fillStyle(0xffffff, 1).fillRoundedRect(-62, -78, 124, 66, 12);
+                c.add(tf);
+                var th = s.add.image(0, -45, thumbK);
+                var tsc = Math.min(116 / th.width, 58 / th.height);
+                th.setScale(tsc);
+                var tmask = s.make.graphics({ x: 0, y: 0, add: false });
+                tmask.fillStyle(0xffffff, 1).fillRoundedRect(cx - 58, cy - 74, 116, 58, 10);
+                th.setMask(tmask.createGeometryMask());
+                c.add(th);
+            } else {
+                c.add(s.add.text(0, -44, st.em, { fontSize: '40px' }).setOrigin(.5));
+            }
             c.add(s.add.text(0, 2, st.title.ar, { fontSize: '17px', fontStyle: '900', color: '#fff', align: 'center', wordWrap: { width: 160 } }).setOrigin(.5));
             var tk = BUDDY_THEME[st.buddy] || st.buddy;
             if (s.textures.exists('theme_' + tk)) {
@@ -1073,7 +1094,7 @@ class StoryScene extends Phaser.Scene {
                 bm.setScale(46 / Math.max(bm.width, bm.height));
                 c.add(bm);
             }
-            c.add(s.add.text(12, 44, st.lang === 'ar' ? 'عربي 🎧' : 'English 🎧', { fontSize: '13px', fontStyle: '700', color: 'rgba(255,255,255,.95)' }).setOrigin(.5));
+            c.add(s.add.text(12, 44, st.lang === 'ar' ? 'بصوت عربي' : 'English voice', { fontSize: '13px', fontStyle: '700', color: 'rgba(255,255,255,.95)' }).setOrigin(.5));
             c.setSize(176, 158);
             c.setInteractive({ useHandCursor: true });
             c.setScale(0);
@@ -1165,7 +1186,8 @@ class StoryScene extends Phaser.Scene {
         var ng = this.add.graphics();
         ng.fillStyle(last ? 0x2ecc71 : 0xff9f43, 1).fillRoundedRect(-84, -34, 168, 68, 22);
         nx.add(ng);
-        nx.add(this.add.text(0, 0, last ? 'النهاية! ⭐' : 'التالي ◀', { fontSize: '20px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        nx.add(this.add.text(last ? 8 : 0, 0, last ? 'النهاية!' : 'التالي ◀', { fontSize: '20px', fontStyle: '900', color: '#fff' }).setOrigin(.5));
+        if (last) nx.add(this.add.image(-38, 0, 'tile_star').setScale(.2));
         nx.setSize(168, 68); nx.setInteractive({ useHandCursor: true });
         nx.on('pointerdown', function () {
             if (s.finished) return;
