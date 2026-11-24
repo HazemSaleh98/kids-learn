@@ -1655,11 +1655,12 @@ class StoryScene extends Phaser.Scene {
             c.add(s.add.text(0, 2, st.title.ar, { fontFamily: FONT_MAIN, fontSize: '17px', fontStyle: '900', color: '#fff', align: 'center', wordWrap: { width: 160 } }).setOrigin(.5));
             var tk = BUDDY_THEME[st.buddy] || st.buddy;
             if (s.textures.exists('theme_' + tk)) {
-                var bm = s.add.image(-58, 44, 'theme_' + tk);
-                bm.setScale(46 / Math.max(bm.width, bm.height));
+                var bm = s.add.image(-56, 42, 'theme_' + tk);
+                bm.setScale(62 / Math.max(bm.width, bm.height));
                 c.add(bm);
+                s.tweens.add({ targets: bm, y: 36, duration: 1100 + rnd(500), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
             }
-            c.add(s.add.text(12, 44, st.lang === 'ar' ? 'بصوت عربي' : 'English voice', { fontFamily: FONT_MAIN, fontSize: '13px', fontStyle: '700', color: 'rgba(255,255,255,.95)' }).setOrigin(.5));
+            c.add(s.add.text(20, 44, st.lang === 'ar' ? 'بصوت عربي' : 'English voice', { fontFamily: FONT_MAIN, fontSize: '13px', fontStyle: '700', color: 'rgba(255,255,255,.95)' }).setOrigin(.5));
             c.setSize(176, 158);
             c.setInteractive({ useHandCursor: true });
             c.setScale(0);
