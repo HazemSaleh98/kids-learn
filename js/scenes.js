@@ -401,6 +401,7 @@ if (KLSTYLE === 'candy') SPOTCOLORS = [[0xff6b9d, 0xe04a82], [0x4f8ef7, 0x3a6fd8
 if (KLSTYLE === 'bubblegum') SPOTCOLORS = [[0xff4d8d, 0xd92662], [0x3d7bff, 0x1e54e0], [0xff8f1f, 0xe06a00], [0x17c964, 0x0a9e4c], [0x8a3ffc, 0x6920d8], [0xff4d4d, 0xd92b2b]];
 
 function startGameScene(scene, id) {
+    if (id === 'math' && typeof MathAcademy !== 'undefined') { MathAcademy.open(); return; }
     var key = GAMES[id] && GAMES[id].scene;
     if (key && scene.scene.get(key)) goScene(scene, key);
 }
