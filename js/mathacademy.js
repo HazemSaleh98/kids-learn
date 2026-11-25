@@ -108,7 +108,7 @@ var MathAcademy = (function () {
     }
     function genMul(o) {
         var a, b;
-        if (o.tbl) { a = o.tbl; b = r(1, 12); if (r(0, 1)) { var t = a; a = b; b = t; } }
+        if (o.tbl) { a = o.tbl; b = r(o.tbl === 1 ? 0 : 1, 12); if (r(0, 1)) { var t = a; a = b; b = t; } }
         else if (o.mix) { a = r(2, 12); b = r(2, 12); }
         else if (o.big) { for (var k = 0; k < 300; k++) { a = r(12, 99); b = r(2, 9); if (a * b <= 900) break; } }
         else { a = r(2, 90); b = pk([10, 100]); if (b === 100) a = r(1, 9); if (a * b > 900) a = r(1, 9); if (r(0, 1)) { var u = a; a = b; b = u; } }
@@ -132,7 +132,9 @@ var MathAcademy = (function () {
     function qFrom(op, a, b, ans) {
         var exp;
         if (op === '×') {
-            if (a <= 12 && b <= 12) exp = say(a + ' × ' + b + ' = ' + ans) + arr(Math.min(a, b), Math.max(a, b)) + skip(Math.min(a, b), Math.max(a, b)).replace(/<div class="sk"/, '<div class="sk"');
+            if (a === 0 || b === 0) exp = say('صفر مرات من أي حاجة = <b>0</b>: ' + a + ' × ' + b + ' = 0');
+            else if (a === 1 || b === 1) exp = say('مرة واحدة بس! العدد بيفضل زي ما هو: ' + a + ' × ' + b + ' = ' + ans);
+            else if (a <= 12 && b <= 12) exp = say(a + ' × ' + b + ' = ' + ans) + arr(Math.min(a, b), Math.max(a, b)) + skip(Math.min(a, b), Math.max(a, b)).replace(/<div class="sk"/, '<div class="sk"');
             else if (a % 10 === 0 || b % 10 === 0 || a === 100 || b === 100) exp = say('الضرب في ' + (a > b ? b : a) + ': نضيف أصفار. ' + a + ' × ' + b + ' = ' + ans);
             else { var big = Math.max(a, b), sm = Math.min(a, b); exp = say('نفصّل: ' + big + ' = ' + Math.floor(big / 10) * 10 + ' + ' + big % 10) + say(Math.floor(big / 10) * 10 + ' × ' + sm + ' = ' + Math.floor(big / 10) * 10 * sm + ' ، و ' + big % 10 + ' × ' + sm + ' = ' + big % 10 * sm) + say(Math.floor(big / 10) * 10 * sm + ' + ' + big % 10 * sm + ' = <b>' + ans + '</b>'); }
         } else {
@@ -151,6 +153,7 @@ var MathAcademy = (function () {
     }
     function lvl(id, ico, en, ar, learn, gen, mc) { return { id: id, ico: ico, en: en, ar: ar, learn: learn, gen: gen, mc: mc }; }
     var TIPS = {
+        1: 'أي عدد × 1 = نفس العدد (مرة واحدة بس!). وأي عدد × 0 = صفر (صفر مرات = مفيش حاجة).',
         2: 'الضرب في 2 معناه نضاعف العدد (نجمعه مع نفسه). 6 × 2 = 6 + 6.',
         3: 'عدّ بالتلاتات: 3 ، 6 ، 9 ، 12 ... وكل مرة نزود 3.',
         4: 'الضرب في 4 = نضاعف مرتين. 7 × 4 = (7 × 2) × 2 = 14 × 2 = 28.',
@@ -164,6 +167,13 @@ var MathAcademy = (function () {
         12: '12 × 7 = (10 × 7) + (2 × 7) = 70 + 14 = 84. فرّق 12 لـ 10 و 2.'
     };
     function tableLevel(n) {
+        if (n === 1) return lvl('m1', '1️⃣', 'Table of 1 and 0', 'جدول 1 (وكمان الصفر)', [
+            say('جدول <b>1</b> أسهل جدول: مرة واحدة بس من كل عدد!') + '<div class="ex">' + arr(1, 5) + '</div>' + say('1 × 5 = 5 &nbsp; (صف واحد فيه 5 نقط)'),
+            say('أي عدد × 1 يفضل <b>زي ما هو</b>.') + skip(1, 12),
+            tbl(1),
+            say('والصفر؟ <b>0 مرات</b> من أي حاجة = مفيش حاجة!') + '<div class="stp" dir="ltr">0 × 7 = 0 &nbsp; | &nbsp; 7 × 0 = 0 &nbsp; | &nbsp; 1 × 0 = 0</div>',
+            say('💡 ' + TIPS[1])
+        ], mk('mul', { tbl: 1 }), true);
         return lvl('m' + n, '✖️', 'Table of ' + n, 'جدول ' + n, [
             say('جدول الضرب في <b>' + n + '</b>: العدد ده بيتكرر كذا مرة؟') + '<div class="ex">' + arr(n, 5) + '</div>' + say(n + ' × 5 = ' + (n * 5) + ' &nbsp; (' + n + ' في ٥ صفوف)'),
             say('العدّ القفزي (كل مرة نزود ' + n + '):') + skip(n, 12),
@@ -240,7 +250,7 @@ var MathAcademy = (function () {
                     say('الضرب هو <b>جمع متكرر</b> بسرعة!') + '<div class="stp" dir="ltr">3 + 3 + 3 + 3 = 12 &nbsp;→&nbsp; <b>4 × 3 = 12</b></div>',
                     say('4 صفوف، في كل صف 3 نقط:') + '<div class="ex">' + arr(4, 3) + '</div>' + say('4 × 3 = 12')
                 ], mk('mul', { tbl: 2 }), true)
-            ].concat([2, 10, 5, 3, 4, 6, 7, 8, 9, 11, 12].map(tableLevel), [
+            ].concat([1, 2, 10, 5, 3, 4, 6, 7, 8, 9, 11, 12].map(tableLevel), [
                 lvl('mm', '🎯', 'Mixed tables', 'كل الجداول مع بعض', [say('دلوقتي كل الجداول من 2 لـ 12 مخلوطة. جاهز؟ 💪')], mk('mul', { mix: true }), true),
                 lvl('mt', '🔟', '× 10 and × 100', 'الضرب في 10 و 100', [say('الضرب في 10 = نضيف <b>صفر</b>. والضرب في 100 = نضيف <b>صفرين</b>.') + '<div class="stp" dir="ltr">34 × 10 = 340 &nbsp; | &nbsp; 7 × 100 = 700</div>'], mk('mul', {}), false),
                 lvl('mb', '🏆', '2-digit × 1-digit', 'ضرب عددين في رقم', [say('نفصّل العدد الكبير لعشرات وآحاد:') + '<div class="stp" dir="ltr">23 × 4 = (20 × 4) + (3 × 4) = 80 + 12 = <b>92</b></div>', say('جرب: 45 × 6') + '<div class="stp" dir="ltr">(40 × 6) + (5 × 6) = 240 + 30 = <b>270</b></div>'], mk('mul', { big: true }), false)
@@ -251,7 +261,7 @@ var MathAcademy = (function () {
         var by = {}; TRACKS.forEach(function (t) { t.levels.forEach(function (l) { by[l.id] = l; }); });
         function L(ids) { return ids.map(function (i) { return by[i]; }); }
         var mulT = TRACKS[3]; var tb = {}; mulT.levels.forEach(function (l) { tb[l.id] = l; });
-        var mulOrder = ['mx', 'm2', 'm5', 'm10', 'm3', 'm4', 'm6', 'm7', 'm8', 'm9', 'm11', 'm12', 'mm', 'mt', 'mb'];
+        var mulOrder = ['mx', 'm1', 'm2', 'm5', 'm10', 'm3', 'm4', 'm6', 'm7', 'm8', 'm9', 'm11', 'm12', 'mm', 'mt', 'mb'];
         TRACKS = [
             { id: 'pv', ico: '🧱', ar: 'الأعداد وخط الأعداد', en: 'Numbers & Place Value', color: '#ff9f43', levels: L(['pv1', 'nl']) },
             { id: 'a20', ico: '🌱', ar: 'جمع وطرح لحد 20', en: 'Add & Subtract to 20', color: '#2ecc71', levels: L(['a1', 's1', 'a2', 's2']) },
