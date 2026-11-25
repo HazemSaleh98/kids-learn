@@ -285,7 +285,7 @@ var MathAcademy = (function () {
     function mikePlay(file) {
         try { if (mAud) mAud.pause(); } catch (e) {}
         if (state && state.muted) return;
-        try { mAud = new Audio('assets/audio/mike/' + file + '.m4a'); var p = mAud.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { mAud = new Audio('assets/audio/mike/' + (/^mk_/.test(file) ? '' : 'mike_') + file + '.m4a'); var p = mAud.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
     }
     function mikeId(kind) {
         var pool = { ok: ['ok_2', 'ok_4'], streak: ['streak_2'], retry: ['retry_2', 'retry_3'], done: ['done_3'] };
